@@ -746,41 +746,56 @@ except FileNotFoundError:
 
 random.shuffle(ACCOUNTS)
 
-for account in ACCOUNTS:
+finished_accounts = []
+def main():
+    try:
+        for account in ACCOUNTS:
+            if account['username'] in finished_accounts:
+                continue
+            prYellow('********************' + account['username'] + '********************')
+            browser = browserSetup(True, PC_USER_AGENT)
+            print('[LOGIN]', 'Logging-in...')
+            login(browser, account['username'], account['password'])
+            prGreen('[LOGIN] Logged-in successfully !')
+            startingPoints = POINTS_COUNTER
+            prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
+            browser.get('https://account.microsoft.com/rewards/')
+            print('[DAILY SET]', 'Trying to complete the Daily Set...')
+            completeDailySet(browser)
+            prGreen('[DAILY SET] Completed the Daily Set successfully !')
+            print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
+            completePunchCards(browser)
+            prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
+            print('[MORE PROMO]', 'Trying to complete More Promotions...')
+            completeMorePromotions(browser)
+            prGreen('[MORE PROMO] Completed More Promotions successfully !')
+            remainingSearches, remainingSearchesM = getRemainingSearches(browser)
+            if remainingSearches != 0:
+                print('[BING]', 'Starting Desktop and Edge Bing searches...')
+                bingSearches(browser, remainingSearches)
+                prGreen('[BING] Finished Desktop and Edge Bing searches !')
+            browser.quit()
 
-    prYellow('********************' + account['username'] + '********************')
-    browser = browserSetup(True, PC_USER_AGENT)
-    print('[LOGIN]', 'Logging-in...')
-    login(browser, account['username'], account['password'])
-    prGreen('[LOGIN] Logged-in successfully !')
-    startingPoints = POINTS_COUNTER
-    prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
-    browser.get('https://account.microsoft.com/rewards/')
-    print('[DAILY SET]', 'Trying to complete the Daily Set...')
-    completeDailySet(browser)
-    prGreen('[DAILY SET] Completed the Daily Set successfully !')
-    print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
-    completePunchCards(browser)
-    prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
-    print('[MORE PROMO]', 'Trying to complete More Promotions...')
-    completeMorePromotions(browser)
-    prGreen('[MORE PROMO] Completed More Promotions successfully !')
-    remainingSearches, remainingSearchesM = getRemainingSearches(browser)
-    if remainingSearches != 0:
-        print('[BING]', 'Starting Desktop and Edge Bing searches...')
-        bingSearches(browser, remainingSearches)
-        prGreen('[BING] Finished Desktop and Edge Bing searches !')
-    browser.quit()
-
-    if remainingSearchesM != 0:
-        browser = browserSetup(True, MOBILE_USER_AGENT)
-        print('[LOGIN]', 'Logging-in...')
-        login(browser, account['username'], account['password'], True)
-        print('[LOGIN]', 'Logged-in successfully !')
-        print('[BING]', 'Starting Mobile Bing searches...')
-        bingSearches(browser, remainingSearchesM, True)
-        prGreen('[BING] Finished Mobile Bing searches !')
+            if remainingSearchesM != 0:
+                browser = browserSetup(True, MOBILE_USER_AGENT)
+                print('[LOGIN]', 'Logging-in...')
+                login(browser, account['username'], account['password'], True)
+                print('[LOGIN]', 'Logged-in successfully !')
+                print('[BING]', 'Starting Mobile Bing searches...')
+                bingSearches(browser, remainingSearchesM, True)
+                prGreen('[BING] Finished Mobile Bing searches !')
+                browser.quit()
+            
+            prGreen('[POINTS] You have earned ' + str(POINTS_COUNTER - startingPoints) + ' points today !')
+            prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
+            
+            finished_accounts.append(account['username'])
+            
+    except:
         browser.quit()
-    
-    prGreen('[POINTS] You have earned ' + str(POINTS_COUNTER - startingPoints) + ' points today !')
-    prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
+        main()
+
+if __name__ == '__main__':
+    main()
+    print ('Done!')
+    input('Press any key to close the program...')
