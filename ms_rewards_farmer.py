@@ -7,6 +7,8 @@ import urllib.parse
 import ipapi
 import os
 
+from func_timeout import func_set_timeout
+
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -34,6 +36,7 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     return chrome_browser_obj
 
 # Define login function
+@func_set_timeout(180)
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Access to bing.com
     browser.get('https://login.live.com/')
@@ -79,6 +82,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     print('[LOGIN]', 'Ensuring login on Bing...')
     checkBingLogin(browser, isMobile)
 
+@func_set_timeout(180)
 def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     global POINTS_COUNTER
     #Access Bing.com
@@ -271,6 +275,7 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
         else:
             break
 
+@func_set_timeout(1200)
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     browser.get('https://bing.com')
     time.sleep(2)
@@ -465,6 +470,7 @@ def getDashboardData(browser: WebDriver) -> dict:
     dashboard = json.loads(dashboard)
     return dashboard
 
+@func_set_timeout(240)
 def completeDailySet(browser: WebDriver):
     d = getDashboardData(browser)['dailySetPromotions']
     todayDate = datetime.today().strftime('%m/%d/%Y')
@@ -535,7 +541,8 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 time.sleep(2)
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
-
+                
+@func_set_timeout(300)
 def completePunchCards(browser: WebDriver):
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
@@ -658,6 +665,7 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
+@func_set_timeout(300)
 def completeMorePromotions(browser: WebDriver):
     morePromotions = getDashboardData(browser)['morePromotions']
     i = 0
@@ -729,7 +737,7 @@ prPurple("        by Charles Bel (@charlesbel)               version 1.1\n")
 LANG, GEO, TZ = getCCodeLangAndOffset()
 
 try:
-    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
+    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts1.json'
     ACCOUNTS = json.load(open(account_path, "r"))
 except FileNotFoundError:
     with open(account_path, 'w') as f:
