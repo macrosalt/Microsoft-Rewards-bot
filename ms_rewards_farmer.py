@@ -737,7 +737,8 @@ prPurple("        by Charles Bel (@charlesbel)               version 1.1\n")
 LANG, GEO, TZ = getCCodeLangAndOffset()
 
 try:
-    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
+    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts1.json'
+    filename, ext = os.path.splitext(os.path.basename(account_path))
     ACCOUNTS = json.load(open(account_path, "r"))
 except FileNotFoundError:
     with open(account_path, 'w') as f:
@@ -754,18 +755,27 @@ except FileNotFoundError:
 
 finished_accounts = []
 logs = {}
+shared_items = []
 
 try:
-    with open('Logs.txt') as file:
+    # Read datas on 'logs.txt'
+    with open(f'Logs_{filename}.txt') as file:
         data = file.read()
     logs = json.loads(data)
     
-    # sync accounts and logs file for new accounts.
+    # sync accounts and logs file for new accounts or remove accounts from logs.
     for user in ACCOUNTS:
+        shared_items.append(user['username'])
         if not user['username'] in logs.keys():
-            logs[user["username"]] = {"Last check": "", "Today's point": "", "Points": "" }
-            with open('log.txt', 'w') as file:
+            logs[user["username"]] = {"Last check": "", "Today's points": "", "Points": "" }
+            with open(f'Logs_{filename}.txt', 'w') as file:
                 file.write(json.dumps(logs, indent = 4))
+    if shared_items != logs.keys():
+        diff = logs.keys() - shared_items
+        for accs in list(diff):
+            del logs[accs]
+        with open(f'Logs_{filename}.txt', 'w') as file:
+            file.write(json.dumps(logs, indent = 4))
     
     # check that if any of accounts has farmed today or not.
     for username in logs.keys():
@@ -773,12 +783,12 @@ try:
             finished_accounts.append(username)
     prPurple('[LOGS] Logs loaded sucessfully.')
 except FileNotFoundError:
-    prPurple('[LOGS] "Logs.txt" file not found.')
+    prPurple(f'[LOGS] "Logs_{filename}.txt" file not found.')
     for account in ACCOUNTS:
         logs[account["username"]] = {"Last check": "", "Today's points": "", "Points": "" }
-    with open('Logs.txt', 'w') as file:
+    with open(f'Logs_{filename}.txt', 'w') as file:
         file.write(json.dumps(logs, indent = 4))
-    prPurple('[LOGS] "Logs.txt" created.')
+    prPurple(f'[LOGS] "Logs_{filename}.txt" created.')
 
 def main():
     try:
@@ -828,7 +838,7 @@ def main():
             logs[account['username']]["Today's points"] = new_points
             logs[account['username']]["Points"] = POINTS_COUNTER
             
-            with open('Logs.txt', 'w') as file:
+            with open(f'Logs_{filename}.txt', 'w') as file:
                 file.write(json.dumps(logs, indent = 4))
             
     except:
