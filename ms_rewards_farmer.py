@@ -737,7 +737,7 @@ prPurple("        by Charles Bel (@charlesbel)               version 1.1\n")
 LANG, GEO, TZ = getCCodeLangAndOffset()
 
 try:
-    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts1.json'
+    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
     ACCOUNTS = json.load(open(account_path, "r"))
 except FileNotFoundError:
     with open(account_path, 'w') as f:
@@ -752,9 +752,34 @@ except FileNotFoundError:
     input()
     ACCOUNTS = json.load(open(account_path, "r"))
 
-random.shuffle(ACCOUNTS)
-
 finished_accounts = []
+logs = {}
+
+try:
+    with open('Logs.txt') as file:
+        data = file.read()
+    logs = json.loads(data)
+    
+    # sync accounts and logs file for new accounts.
+    for user in ACCOUNTS:
+        if not user['username'] in logs.keys():
+            logs[user["username"]] = {"Last check": "", "Today's point": "", "Points": "" }
+            with open('log.txt', 'w') as file:
+                file.write(json.dumps(logs, indent = 4))
+    
+    # check that if any of accounts has farmed today or not.
+    for username in logs.keys():
+        if logs[username]["Last check"] == str(date.today()):
+            finished_accounts.append(username)
+    prPurple('[LOGS] Logs loaded sucessfully.')
+except FileNotFoundError:
+    prPurple('[LOGS] "Logs.txt" file not found.')
+    for account in ACCOUNTS:
+        logs[account["username"]] = {"Last check": "", "Today's points": "", "Points": "" }
+    with open('Logs.txt', 'w') as file:
+        file.write(json.dumps(logs, indent = 4))
+    prPurple('[LOGS] "Logs.txt" created.')
+
 def main():
     try:
         for account in ACCOUNTS:
@@ -794,10 +819,17 @@ def main():
                 prGreen('[BING] Finished Mobile Bing searches !')
                 browser.quit()
             
-            prGreen('[POINTS] You have earned ' + str(POINTS_COUNTER - startingPoints) + ' points today !')
+            new_points = POINTS_COUNTER - startingPoints
+            prGreen('[POINTS] You have earned ' + str(new_points) + ' points today !')
             prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
             
             finished_accounts.append(account['username'])
+            logs[account['username']]["Last check"] = str(date.today())
+            logs[account['username']]["Today's points"] = new_points
+            logs[account['username']]["Points"] = POINTS_COUNTER
+            
+            with open('Logs.txt', 'w') as file:
+                file.write(json.dumps(logs, indent = 4))
             
     except:
         browser.quit()
