@@ -840,12 +840,17 @@ def main():
             
             with open(f'Logs_{filename}.txt', 'w') as file:
                 file.write(json.dumps(logs, indent = 4))
-            
+               
     except:
         browser.quit()
         main()
 
 if __name__ == '__main__':
+    start = time.time()
     main()
-    print ('Done!')
+    end = time.time()
+    delta = end - start
+    hour, remain = divmod(delta, 3600)
+    min, sec = divmod(remain, 60)
+    print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
     input('Press any key to close the program...')
