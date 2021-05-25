@@ -256,6 +256,7 @@ def getAnswerCode(key: str, string: str) -> str:
 	t += int(key[-2:], 16)
 	return str(t)
 
+@func_set_timeout(1500)
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
@@ -275,7 +276,7 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
         else:
             break
 
-@func_set_timeout(1200)
+@func_set_timeout(180)
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     browser.get('https://bing.com')
     time.sleep(2)
@@ -737,7 +738,7 @@ prPurple("        by Charles Bel (@charlesbel)               version 1.1\n")
 LANG, GEO, TZ = getCCodeLangAndOffset()
 
 try:
-    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts1.json'
+    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
     filename, ext = os.path.splitext(os.path.basename(account_path))
     ACCOUNTS = json.load(open(account_path, "r"))
 except FileNotFoundError:
@@ -790,7 +791,7 @@ except FileNotFoundError:
         file.write(json.dumps(logs, indent = 4))
     prPurple(f'[LOGS] "Logs_{filename}.txt" created.')
 
-def main():
+def App():
     try:
         for account in ACCOUNTS:
             if account['username'] in finished_accounts:
@@ -843,14 +844,17 @@ def main():
                
     except:
         browser.quit()
-        main()
+        App()
 
-if __name__ == '__main__':
+def main():
     start = time.time()
-    main()
+    App()
     end = time.time()
     delta = end - start
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
     print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
     input('Press any key to close the program...')
+    
+if __name__ == '__main__':
+    main()
