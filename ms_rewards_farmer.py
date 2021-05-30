@@ -726,14 +726,15 @@ def prPurple(prt):
 def prYellow(prt):
     print("\033[93m{}\033[00m".format(prt))
 
-prRed("""
-███╗   ███╗███████╗    ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
-████╗ ████║██╔════╝    ██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗
-██╔████╔██║███████╗    █████╗  ███████║██████╔╝██╔████╔██║█████╗  ██████╔╝
-██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
-██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
-╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
-prPurple("        by Charles Bel (@charlesbel)               version 1.1\n")
+def Logo():
+    prRed("""
+    ███╗   ███╗███████╗    ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
+    ████╗ ████║██╔════╝    ██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗
+    ██╔████╔██║███████╗    █████╗  ███████║██████╔╝██╔████╔██║█████╗  ██████╔╝
+    ██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
+    ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
+    ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
+    prPurple("        by FarshadZ (@Farshadz1997)               version 1.1\n")
 
 LANG, GEO, TZ = getCCodeLangAndOffset()
 
@@ -757,6 +758,7 @@ except FileNotFoundError:
 finished_accounts = []
 logs = {}
 shared_items = []
+
 
 try:
     # Read datas on 'logs.txt'
@@ -840,16 +842,30 @@ def App():
             logs[account['username']]["Points"] = POINTS_COUNTER
             
             with open(f'Logs_{filename}.txt', 'w') as file:
-                file.write(json.dumps(logs, indent = 4))
-               
+                file.write(json.dumps(logs, indent = 4))         
     except:
         browser.quit()
         App()
 
 def main():
-    start = time.time()
-    App()
-    end = time.time()
+    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
+    if answer in ["Y", "y"] :
+        run_on = input("Set your time in 24h format (HH:MM): ")
+        while True:
+            real_time = datetime.now()
+            now = real_time.strftime("%H:%M")
+            if now == run_on:
+                start = time.time()
+                Logo()
+                App()
+                end = time.time()
+                break
+            time.sleep(20)
+    else:
+        start = time.time()
+        Logo()
+        App()
+        end = time.time()
     delta = end - start
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
