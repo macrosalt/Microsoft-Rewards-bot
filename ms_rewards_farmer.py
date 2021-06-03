@@ -739,7 +739,7 @@ def Logo():
 LANG, GEO, TZ = getCCodeLangAndOffset()
 
 try:
-    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts2.json'
+    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
     filename, ext = os.path.splitext(os.path.basename(account_path))
     ACCOUNTS = json.load(open(account_path, "r"))
 except FileNotFoundError:
@@ -784,7 +784,7 @@ try:
     for username in logs.keys():
         if logs[username]["Last check"] == str(date.today()):
             finished_accounts.append(username)
-    prPurple('[LOGS] Logs loaded sucessfully.')
+    prPurple('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
     prPurple(f'[LOGS] "Logs_{filename}.txt" file not found.')
     for account in ACCOUNTS:
