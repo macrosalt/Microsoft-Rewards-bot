@@ -1,4 +1,3 @@
-accounts.json
+*.json
+*.txt
 chromedriver.exe
-timeout test.py
-Logs.txt

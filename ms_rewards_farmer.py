@@ -759,7 +759,14 @@ finished_accounts = []
 logs = {}
 shared_items = []
 
+# set time for launch program
+answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
+if answer in ["Y", "y"] :
+    run_on = input("Set your time in 24h format (HH:MM): ")
+    global time_set
+    time_set = True
 
+# logs
 try:
     # Read datas on 'logs.txt'
     with open(f'Logs_{filename}.txt') as file:
@@ -847,11 +854,11 @@ def App():
         browser.quit()
         App()
 
+
 def main():
-    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
-    if answer in ["Y", "y"] :
-        run_on = input("Set your time in 24h format (HH:MM): ")
-        while True:
+    try:
+        global time_set
+        while time_set:
             real_time = datetime.now()
             now = real_time.strftime("%H:%M")
             if now == run_on:
@@ -859,18 +866,20 @@ def main():
                 Logo()
                 App()
                 end = time.time()
-                break
             time.sleep(20)
-    else:
         start = time.time()
         Logo()
         App()
         end = time.time()
-    delta = end - start
-    hour, remain = divmod(delta, 3600)
-    min, sec = divmod(remain, 60)
-    print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
-    input('Press any key to close the program...')
+        delta = end - start
+        hour, remain = divmod(delta, 3600)
+        min, sec = divmod(remain, 60)
+        print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
+        input('Press any key to close the program...')
+    except:
+        time_set = False
+        LANG, GEO, TZ = getCCodeLangAndOffset()
+        main()
     
 if __name__ == '__main__':
     main()
