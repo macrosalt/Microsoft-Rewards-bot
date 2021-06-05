@@ -17,8 +17,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, UnexpectedAlertPresentException, NoAlertPresentException
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.183 Safari/537.36 Edg/86.0.622.63'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; Pixel 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0. 3945.79 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/90.0.818.66'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -791,7 +791,7 @@ try:
     for username in logs.keys():
         if logs[username]["Last check"] == str(date.today()):
             finished_accounts.append(username)
-    prPurple('[LOGS] Logs loaded sucessfully.')
+    prPurple('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
     prPurple(f'[LOGS] "Logs_{filename}.txt" file not found.')
     for account in ACCOUNTS:
