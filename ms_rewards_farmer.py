@@ -17,7 +17,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, UnexpectedAlertPresentException, NoAlertPresentException
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/90.0.818.66'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.37'
 MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
@@ -854,32 +854,35 @@ def App():
         browser.quit()
         App()
 
-
 def main():
     try:
         global time_set
-        while time_set:
-            real_time = datetime.now()
-            now = real_time.strftime("%H:%M")
-            if now == run_on:
-                start = time.time()
-                Logo()
-                App()
-                end = time.time()
-            time.sleep(20)
-        start = time.time()
-        Logo()
-        App()
-        end = time.time()
+        if time_set:
+            while True:
+                real_time = datetime.now()
+                now = real_time.strftime("%H:%M")
+                if now == run_on:
+                    start = time.time()
+                    Logo()
+                    App()
+                    end = time.time()
+                    break
+                time.sleep(20)
+        else:
+            start = time.time()
+            Logo()
+            App()
+            end = time.time()
+    except:
+        time_set = False
+        # LANG, GEO, TZ = getCCodeLangAndOffset()
+        main()
+    else:
         delta = end - start
         hour, remain = divmod(delta, 3600)
         min, sec = divmod(remain, 60)
         print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
         input('Press any key to close the program...')
-    except:
-        time_set = False
-        LANG, GEO, TZ = getCCodeLangAndOffset()
-        main()
-    
+          
 if __name__ == '__main__':
     main()
