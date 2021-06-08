@@ -717,6 +717,10 @@ def getRemainingSearches(browser: WebDriver):
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
 
+def Write_on_logs():
+    with open(f'Logs_{filename}.txt', 'w') as file:
+        file.write(json.dumps(logs, indent = 4))
+
 def prRed(prt):
     print("\033[91m{}\033[00m".format(prt))
 def prGreen(prt):
@@ -748,15 +752,14 @@ except FileNotFoundError:
             "username": "Your Email",
             "password": "Your Password"
         }], indent=4))
-    prPurple("""
-[ACCOUNT] Accounts credential file "accounts.json" created.
+    prPurple(f"""
+[ACCOUNT] Accounts credential file "{filename}{ext}" created.
 [ACCOUNT] Edit with your credentials and save, then press any key to continue...
     """)
     input()
     ACCOUNTS = json.load(open(account_path, "r"))
 
 finished_accounts = []
-logs = {}
 shared_items = []
 
 # set time for launch program
@@ -777,27 +780,36 @@ try:
     for user in ACCOUNTS:
         shared_items.append(user['username'])
         if not user['username'] in logs.keys():
-            logs[user["username"]] = {"Last check": "", "Today's points": "", "Points": "" }
-            with open(f'Logs_{filename}.txt', 'w') as file:
-                file.write(json.dumps(logs, indent = 4))
+            logs[user["username"]] = {"Last check": "",
+                                      "Today's points": 0,
+                                      "Points": 0,
+                                      "Daily": False,
+                                      "Punch cards": False,
+                                      "More promotions": False,
+                                      "PC searches": False}
+            Write_on_logs()
     if shared_items != logs.keys():
         diff = logs.keys() - shared_items
         for accs in list(diff):
             del logs[accs]
-        with open(f'Logs_{filename}.txt', 'w') as file:
-            file.write(json.dumps(logs, indent = 4))
+        Write_on_logs()
     
     # check that if any of accounts has farmed today or not.
     for username in logs.keys():
         if logs[username]["Last check"] == str(date.today()):
             finished_accounts.append(username)
+        else:
+            logs[username]["Daily"] = False
+            logs[username]["Punch cards"] = False
+            logs[username]["More promotions"] = False
+            logs[username]["PC searches"] = False
+            
     prPurple('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
     prPurple(f'[LOGS] "Logs_{filename}.txt" file not found.')
     for account in ACCOUNTS:
-        logs[account["username"]] = {"Last check": "", "Today's points": "", "Points": "" }
-    with open(f'Logs_{filename}.txt', 'w') as file:
-        file.write(json.dumps(logs, indent = 4))
+        logs[account["username"]] = {"Last check": "", "Today's points": 0, "Points": 0 }
+    Write_on_logs()
     prPurple(f'[LOGS] "Logs_{filename}.txt" created.')
 
 def App():
@@ -806,50 +818,74 @@ def App():
             if account['username'] in finished_accounts:
                 continue
             prYellow('********************' + account['username'] + '********************')
-            browser = browserSetup(True, PC_USER_AGENT)
-            print('[LOGIN]', 'Logging-in...')
-            login(browser, account['username'], account['password'])
-            prGreen('[LOGIN] Logged-in successfully !')
-            startingPoints = POINTS_COUNTER
-            prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
-            browser.get('https://account.microsoft.com/rewards/')
-            print('[DAILY SET]', 'Trying to complete the Daily Set...')
-            completeDailySet(browser)
-            prGreen('[DAILY SET] Completed the Daily Set successfully !')
-            print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
-            completePunchCards(browser)
-            prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
-            print('[MORE PROMO]', 'Trying to complete More Promotions...')
-            completeMorePromotions(browser)
-            prGreen('[MORE PROMO] Completed More Promotions successfully !')
-            remainingSearches, remainingSearchesM = getRemainingSearches(browser)
-            if remainingSearches != 0:
-                print('[BING]', 'Starting Desktop and Edge Bing searches...')
-                bingSearches(browser, remainingSearches)
-                prGreen('[BING] Finished Desktop and Edge Bing searches !')
-            browser.quit()
-
-            if remainingSearchesM != 0:
-                browser = browserSetup(True, MOBILE_USER_AGENT)
+            if not logs[account['username']]['PC searches']:
+                browser = browserSetup(True, PC_USER_AGENT)
                 print('[LOGIN]', 'Logging-in...')
-                login(browser, account['username'], account['password'], True)
-                print('[LOGIN]', 'Logged-in successfully !')
-                print('[BING]', 'Starting Mobile Bing searches...')
-                bingSearches(browser, remainingSearchesM, True)
+                login(browser, account['username'], account['password'])
+                prGreen('[LOGIN] Logged-in successfully !')
+                startingPoints = POINTS_COUNTER
+                prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
+                browser.get('https://account.microsoft.com/rewards/')
+                if not logs[account['username']]['Daily']:
+                    print('[DAILY SET]', 'Trying to complete the Daily Set...')
+                    completeDailySet(browser)
+                    logs[account['username']]['Daily'] = True
+                    Write_on_logs()
+                    prGreen('[DAILY SET] Completed the Daily Set successfully !')
+                if not logs[account['username']]['Punch cards']:
+                    print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
+                    completePunchCards(browser)
+                    logs[account['username']]['Punch cards'] = True
+                    Write_on_logs()
+                    prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
+                if not logs[account['username']]['More promotions']:
+                    print('[MORE PROMO]', 'Trying to complete More Promotions...')
+                    completeMorePromotions(browser)
+                    logs[account['username']]['More promotions'] = True
+                    Write_on_logs()
+                    prGreen('[MORE PROMO] Completed More Promotions successfully !')
+                remainingSearches, remainingSearchesM = getRemainingSearches(browser)
+                if remainingSearches != 0:
+                    print('[BING]', 'Starting Desktop and Edge Bing searches...')
+                    bingSearches(browser, remainingSearches)
+                    prGreen('[BING] Finished Desktop and Edge Bing searches !')
+                browser.quit()
+
+            browser = browserSetup(True, MOBILE_USER_AGENT)
+            print('[LOGIN]', 'Logging-in...')
+            login(browser, account['username'], account['password'], True)
+            print('[LOGIN]', 'Logged-in successfully !')
+            if logs[account['username']]['PC searches']:
+                startingPoints = POINTS_COUNTER
+                browser.get('https://account.microsoft.com/rewards/')
+                remainingSearches, remainingSearchesM = getRemainingSearches(browser)
+                if remainingSearchesM != 0:
+                    print('[BING]', 'Starting Mobile Bing searches...')
+                    bingSearches(browser, remainingSearchesM, True)
                 prGreen('[BING] Finished Mobile Bing searches !')
                 browser.quit()
-            
-            new_points = POINTS_COUNTER - startingPoints
-            prGreen('[POINTS] You have earned ' + str(new_points) + ' points today !')
+            else:
+                logs[account['username']]['PC searches'] = True # PC searches set True here because if it set ture after it's function then for mobile...
+                Write_on_logs() # it would always go through if condition
+                if remainingSearchesM != 0:
+                    bingSearches(browser, remainingSearchesM, True)
+                    prGreen('[BING] Finished Mobile Bing searches !')
+                browser.quit()
+                
+            New_points = POINTS_COUNTER - startingPoints
+            prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
             prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
             
             finished_accounts.append(account['username'])
             logs[account['username']]["Last check"] = str(date.today())
-            logs[account['username']]["Today's points"] = new_points
+            logs[account['username']]["Today's points"] = New_points
             logs[account['username']]["Points"] = POINTS_COUNTER
+            del logs[account['username']]["Daily"]
+            del logs[account['username']]["Punch cards"]
+            del logs[account['username']]["More promotions"]
+            del logs[account['username']]["PC searches"]
             
-            with open(f'Logs_{filename}.txt', 'w') as file:
-                file.write(json.dumps(logs, indent = 4))         
+            Write_on_logs()        
     except:
         browser.quit()
         App()
@@ -867,7 +903,7 @@ def main():
                     App()
                     end = time.time()
                     break
-                time.sleep(20)
+                time.sleep(30)
         else:
             start = time.time()
             Logo()
