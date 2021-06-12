@@ -766,7 +766,6 @@ shared_items = []
 answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
 if answer in ["Y", "y"] :
     run_on = input("Set your time in 24h format (HH:MM): ")
-    global time_set
     time_set = True
 
 # logs
@@ -782,11 +781,7 @@ try:
         if not user['username'] in logs.keys():
             logs[user["username"]] = {"Last check": "",
                                       "Today's points": 0,
-                                      "Points": 0,
-                                      "Daily": False,
-                                      "Punch cards": False,
-                                      "More promotions": False,
-                                      "PC searches": False}
+                                      "Points": 0}
             Write_on_logs()
     if shared_items != logs.keys():
         diff = logs.keys() - shared_items
@@ -803,6 +798,7 @@ try:
             logs[username]["Punch cards"] = False
             logs[username]["More promotions"] = False
             logs[username]["PC searches"] = False
+            Write_on_logs()
             
     prPurple('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
