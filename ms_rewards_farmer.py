@@ -761,6 +761,7 @@ except FileNotFoundError:
 
 finished_accounts = []
 shared_items = []
+ERROR = True # A flag for when error occurred
 
 # set time for launch program
 answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
@@ -771,9 +772,7 @@ if answer in ["Y", "y"] :
 # logs
 try:
     # Read datas on 'logs.txt'
-    with open(f'Logs_{filename}.txt') as file:
-        data = file.read()
-    logs = json.loads(data)
+    logs = json.load(open(f"logs_{filename}.txt", "r"))
     
     # sync accounts and logs file for new accounts or remove accounts from logs.
     for user in ACCOUNTS:
@@ -793,6 +792,8 @@ try:
     for username in logs.keys():
         if logs[username]["Last check"] == str(date.today()):
             finished_accounts.append(username)
+        elif list(logs[username].keys()) == ["Last check", "Today's points", "Points", "Daily", "Punch cards", "More promotions", "PC searches"]:
+            continue
         else:
             logs[username]["Daily"] = False
             logs[username]["Punch cards"] = False
@@ -802,7 +803,7 @@ try:
             
     prPurple('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
-    prPurple(f'[LOGS] "Logs_{filename}.txt" file not found.')
+    prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
     for account in ACCOUNTS:
         logs[account["username"]] = {"Last check": "", "Today's points": 0, "Points": 0 }
     Write_on_logs()
@@ -810,6 +811,7 @@ except FileNotFoundError:
 
 def App():
     try:
+        global ERROR
         for account in ACCOUNTS:
             if account['username'] in finished_accounts:
                 continue
@@ -845,13 +847,16 @@ def App():
                     print('[BING]', 'Starting Desktop and Edge Bing searches...')
                     bingSearches(browser, remainingSearches)
                     prGreen('[BING] Finished Desktop and Edge Bing searches !')
+                    logs[account['username']]['PC searches'] = True
+                    Write_on_logs()
+                    ERROR = False
                 browser.quit()
 
             browser = browserSetup(True, MOBILE_USER_AGENT)
             print('[LOGIN]', 'Logging-in...')
             login(browser, account['username'], account['password'], True)
-            print('[LOGIN]', 'Logged-in successfully !')
-            if logs[account['username']]['PC searches']:
+            prGreen('[LOGIN] Logged-in successfully !')
+            if logs[account['username']]['PC searches'] and ERROR:
                 startingPoints = POINTS_COUNTER
                 browser.get('https://account.microsoft.com/rewards/')
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
@@ -859,14 +864,11 @@ def App():
                     print('[BING]', 'Starting Mobile Bing searches...')
                     bingSearches(browser, remainingSearchesM, True)
                 prGreen('[BING] Finished Mobile Bing searches !')
-                browser.quit()
             else:
-                logs[account['username']]['PC searches'] = True # PC searches set True here because if it set ture after it's function then for mobile...
-                Write_on_logs() # it would always go through if condition
                 if remainingSearchesM != 0:
                     bingSearches(browser, remainingSearchesM, True)
                     prGreen('[BING] Finished Mobile Bing searches !')
-                browser.quit()
+            browser.quit()
                 
             New_points = POINTS_COUNTER - startingPoints
             prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
@@ -883,12 +885,13 @@ def App():
             
             Write_on_logs()        
     except:
+        ERROR = True
         browser.quit()
         App()
 
 def main():
     try:
-        global time_set
+        global time_set, ERROR
         if time_set:
             while True:
                 real_time = datetime.now()
@@ -906,8 +909,8 @@ def main():
             App()
             end = time.time()
     except:
+        ERROR = True
         time_set = False
-        # LANG, GEO, TZ = getCCodeLangAndOffset()
         main()
     else:
         delta = end - start
