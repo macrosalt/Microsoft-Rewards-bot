@@ -6,19 +6,21 @@ import random
 import urllib.parse
 import ipapi
 import os
-
+from random_word import RandomWords
 from func_timeout import func_set_timeout
+from urllib.request import urlopen
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, UnexpectedAlertPresentException, NoAlertPresentException
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.37'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.181 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.55'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -32,6 +34,7 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     if headless_mode :
         options.add_argument("--headless")
     options.add_argument('log-level=3')
+    options.add_argument("--start-maximized")
     chrome_browser_obj = webdriver.Chrome(options=options)
     return chrome_browser_obj
 
@@ -48,7 +51,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Click next
     browser.find_element_by_id('idSIButton9').click()
     # Wait 2 seconds
-    time.sleep(2)
+    time.sleep(5)
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter password
@@ -256,12 +259,15 @@ def getAnswerCode(key: str, string: str) -> str:
 	t += int(key[-2:], 16)
 	return str(t)
 
-@func_set_timeout(1500)
+@func_set_timeout(950)
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
-    search_terms = getGoogleTrends(numberOfSearches)
-    for word in search_terms :
+    R = RandomWords()
+    search_terms = R.get_random_words(limit = numberOfSearches)
+    if search_terms == None:
+        search_terms = getGoogleTrends(numberOfSearches)
+    for word in search_terms:
         i += 1
         print('[BING]', str(i) + "/" + str(numberOfSearches))
         points = bingSearch(browser, word, isMobile)
@@ -269,21 +275,20 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
             relatedTerms = getRelatedTerms(word)
             for term in relatedTerms :
                 points = bingSearch(browser, term, isMobile)
-                if not points <= POINTS_COUNTER :
+                if points >= POINTS_COUNTER:
                     break
         if points > 0:
             POINTS_COUNTER = points
         else:
             break
 
-@func_set_timeout(180)
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     browser.get('https://bing.com')
     time.sleep(2)
     searchbar = browser.find_element_by_id('sb_form_q')
     searchbar.send_keys(word)
     searchbar.submit()
-    time.sleep(random.randint(10, 15))
+    time.sleep(random.randint(12, 20))
     points = 0
     try:
         if not isMobile:
@@ -344,9 +349,9 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
-    time.sleep(2)
+    time.sleep(5)
     browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
-    time.sleep(1)
+    time.sleep(3)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
     if not waitUntilQuizLoads(browser):
@@ -400,9 +405,8 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
             numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
             for question in range(numberOfQuestions):
                 browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-                time.sleep(5)
-                browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
-                time.sleep(3)
+                time.sleep(8)
+                # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
             time.sleep(5)
             browser.close()
             time.sleep(2)
@@ -433,13 +437,13 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
-    time.sleep(8)
+    time.sleep(10)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
     browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
-    time.sleep(3)
+    time.sleep(5)
     for question in range(10):
         answerEncodeKey = browser.execute_script("return _G.IG")
 
@@ -455,10 +459,10 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
 
         if (answer1Code == correctAnswerCode):
             answer1.click()
-            time.sleep(8)
+            time.sleep(10)
         elif (answer2Code == correctAnswerCode):
             answer2.click()
-            time.sleep(8)
+            time.sleep(10)
 
     time.sleep(5)
     browser.close()
@@ -471,7 +475,7 @@ def getDashboardData(browser: WebDriver) -> dict:
     dashboard = json.loads(dashboard)
     return dashboard
 
-@func_set_timeout(240)
+@func_set_timeout(360)
 def completeDailySet(browser: WebDriver):
     d = getDashboardData(browser)['dailySetPromotions']
     todayDate = datetime.today().strftime('%m/%d/%Y')
@@ -534,25 +538,31 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
                 for question in range(numberOfQuestions):
                     browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-                    time.sleep(5)
-                    browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
-                    time.sleep(3)
+                    time.sleep(10)
+                    # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
                 time.sleep(5)
                 browser.close()
                 time.sleep(2)
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
                 
-@func_set_timeout(300)
+@func_set_timeout(360)
 def completePunchCards(browser: WebDriver):
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
         try:
             if punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and punchCard['parentPromotion']['complete'] == False and punchCard['parentPromotion']['pointProgressMax'] != 0:
                 url = punchCard['parentPromotion']['attributes']['destination']
-                path = url.replace('https://account.microsoft.com/rewards/dashboard/','')
-                userCode = path[:4]
-                dest = 'https://account.microsoft.com/rewards/dashboard/' + userCode + path.split(userCode)[1]
+                if browser.current_url.startswith('https://rewards.'):
+                    path = url.replace('https://rewards.microsoft.com', '')
+                    new_url = 'https://rewards.microsoft.com/dashboard/'
+                    userCode = path[11:15]
+                    dest = new_url + userCode + path.split(userCode)[1]
+                else:
+                    path = url.replace('https://account.microsoft.com/rewards/dashboard/','')
+                    new_url = 'https://account.microsoft.com/rewards/dashboard/'
+                    userCode = path[:4]
+                    dest = new_url + userCode + path.split(userCode)[1]
                 completePunchCard(browser, dest, punchCard['childPromotions'])
         except:
             resetTabs(browser)
@@ -621,7 +631,7 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     for question in range(numberOfQuestions):
         browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
         time.sleep(5)
-        browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
+        # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
         time.sleep(3)
     time.sleep(5)
     browser.close()
@@ -666,7 +676,7 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
-@func_set_timeout(300)
+@func_set_timeout(480)
 def completeMorePromotions(browser: WebDriver):
     morePromotions = getDashboardData(browser)['morePromotions']
     i = 0
@@ -716,6 +726,13 @@ def getRemainingSearches(browser: WebDriver):
         targetMobile = counters['mobileSearch'][0]['pointProgressMax']
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
+
+def CheckForNewTemplate(browser: WebDriver):
+    try:
+        time.sleep(10)
+        browser.find_element_by_xpath('/html[1]/body[1]/div[1]/div[2]/main[1]/section[1]/div[1]/div[2]/section[1]/div[1]/a[2]').click()
+    except:
+        pass
 
 def Write_on_logs():
     with open(f'Logs_{filename}.txt', 'w') as file:
@@ -768,6 +785,8 @@ answer = input("If you want to run the program on a specefic time press (Y/y) an
 if answer in ["Y", "y"] :
     run_on = input("Set your time in 24h format (HH:MM): ")
     time_set = True
+else:
+    time_set = False
 
 # logs
 try:
@@ -789,23 +808,30 @@ try:
         Write_on_logs()
     
     # check that if any of accounts has farmed today or not.
-    for username in logs.keys():
-        if logs[username]["Last check"] == str(date.today()):
-            finished_accounts.append(username)
-        elif list(logs[username].keys()) == ["Last check", "Today's points", "Points", "Daily", "Punch cards", "More promotions", "PC searches"]:
+    for key in logs.keys():
+        if logs[key]["Last check"] == str(date.today()):
+            finished_accounts.append(key)
+        elif list(logs[key].keys()) == ["Last check", "Today's points", "Points", "Daily", "Punch cards", "More promotions", "PC searches"]:
             continue
         else:
-            logs[username]["Daily"] = False
-            logs[username]["Punch cards"] = False
-            logs[username]["More promotions"] = False
-            logs[username]["PC searches"] = False
+            logs[key]["Daily"] = False
+            logs[key]["Punch cards"] = False
+            logs[key]["More promotions"] = False
+            logs[key]["PC searches"] = False
             Write_on_logs()
             
-    prPurple('[LOGS] Logs loaded successfully.')
+    prGreen('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
     prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
+    logs = {}
     for account in ACCOUNTS:
-        logs[account["username"]] = {"Last check": "", "Today's points": 0, "Points": 0 }
+        logs[account["username"]] = {"Last check": "",
+                                     "Today's points": 0,
+                                     "Points": 0,
+                                     "Daily": False,
+                                     "Punch cards": False,
+                                     "More promotions": False,
+                                     "PC searches": False}
     Write_on_logs()
     prPurple(f'[LOGS] "Logs_{filename}.txt" created.')
 
@@ -817,13 +843,14 @@ def App():
                 continue
             prYellow('********************' + account['username'] + '********************')
             if not logs[account['username']]['PC searches']:
-                browser = browserSetup(True, PC_USER_AGENT)
+                browser = browserSetup(False, PC_USER_AGENT)
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'])
                 prGreen('[LOGIN] Logged-in successfully !')
                 startingPoints = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
-                browser.get('https://account.microsoft.com/rewards/')
+                browser.get('https://account.microsoft.com/rewards')
+                CheckForNewTemplate(browser)
                 if not logs[account['username']]['Daily']:
                     print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
@@ -852,13 +879,14 @@ def App():
                     ERROR = False
                 browser.quit()
 
-            browser = browserSetup(True, MOBILE_USER_AGENT)
+            browser = browserSetup(False, MOBILE_USER_AGENT)
             print('[LOGIN]', 'Logging-in...')
             login(browser, account['username'], account['password'], True)
             prGreen('[LOGIN] Logged-in successfully !')
             if logs[account['username']]['PC searches'] and ERROR:
                 startingPoints = POINTS_COUNTER
                 browser.get('https://account.microsoft.com/rewards/')
+                CheckForNewTemplate(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 if remainingSearchesM != 0:
                     print('[BING]', 'Starting Mobile Bing searches...')
@@ -866,6 +894,7 @@ def App():
                 prGreen('[BING] Finished Mobile Bing searches !')
             else:
                 if remainingSearchesM != 0:
+                    print('[BING]', 'Starting Mobile Bing searches...')
                     bingSearches(browser, remainingSearchesM, True)
                     prGreen('[BING] Finished Mobile Bing searches !')
             browser.quit()
@@ -884,40 +913,38 @@ def App():
             del logs[account['username']]["PC searches"]
             
             Write_on_logs()        
-    except:
+    except Exception as e:
+        print(e)
         ERROR = True
         browser.quit()
         App()
 
 def main():
     try:
-        global time_set, ERROR
+        global time_set, ERROR, run_on
         if time_set:
             while True:
                 real_time = datetime.now()
                 now = real_time.strftime("%H:%M")
                 if now == run_on:
-                    start = time.time()
-                    Logo()
                     App()
-                    end = time.time()
                     break
                 time.sleep(30)
         else:
-            start = time.time()
-            Logo()
             App()
-            end = time.time()
     except:
+        prRed('[ERROR] Time out occurred.\n')
         ERROR = True
         time_set = False
         main()
-    else:
-        delta = end - start
-        hour, remain = divmod(delta, 3600)
-        min, sec = divmod(remain, 60)
-        print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
-        input('Press any key to close the program...')
           
 if __name__ == '__main__':
+    start = time.time()
+    Logo()
     main()
+    end = time.time()
+    delta = end - start
+    hour, remain = divmod(delta, 3600)
+    min, sec = divmod(remain, 60)
+    print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
+    input('Press any key to close the program...')
