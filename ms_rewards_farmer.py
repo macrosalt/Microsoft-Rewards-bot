@@ -7,8 +7,7 @@ import urllib.parse
 import ipapi
 import os
 from random_word import RandomWords
-from func_timeout import func_set_timeout
-from urllib.request import urlopen
+from func_timeout import func_set_timeout, FunctionTimedOut, func_timeout
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -19,7 +18,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, UnexpectedAlertPresentException, NoAlertPresentException
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.55'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.55'
 MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
@@ -39,7 +38,7 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     return chrome_browser_obj
 
 # Define login function
-@func_set_timeout(180)
+@func_set_timeout(220)
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Access to bing.com
     browser.get('https://login.live.com/')
@@ -85,7 +84,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     print('[LOGIN]', 'Ensuring login on Bing...')
     checkBingLogin(browser, isMobile)
 
-@func_set_timeout(180)
+@func_set_timeout(210)
 def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     global POINTS_COUNTER
     #Access Bing.com
@@ -122,7 +121,10 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             time.sleep(3)
         except:
             if str(browser.current_url).split('?')[0] == "https://account.live.com/proofs/Add":
-                input('[LOGIN] Please complete the Security Check on ' + browser.current_url)
+                prRed('[LOGIN] Please complete the Security Check on ' + current_account)
+                finished_accounts.append(current_account)
+                logs[current_account]['Last check'] = 'Requires manual check!'
+                Write_on_logs()
                 exit()
     #Wait 2 seconds
     time.sleep(2)
@@ -133,7 +135,12 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     #Update Counter
     try:
         if not isMobile:
-            POINTS_COUNTER = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
+            try:
+                POINTS_COUNTER = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
+            except:
+                browser.find_element_by_id('id_s').click()
+                time.sleep(10)
+                checkBingLogin(browser, isMobile)
         else:
             try:
                 browser.find_element_by_id('mHamburger').click()
@@ -326,7 +333,7 @@ def completePromotionalItems(browser: WebDriver):
 
 def completeDailySetSearch(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(random.randint(13, 17))
@@ -337,7 +344,7 @@ def completeDailySetSearch(browser: WebDriver, cardNumber: int):
 
 def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
@@ -350,7 +357,7 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
 
 def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[' + str(cardNumber) + ']/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
     time.sleep(3)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
@@ -392,7 +399,7 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
 
 def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
     time.sleep(2)
-    browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
@@ -434,7 +441,7 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
 
 def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     time.sleep(2)
-    browser.find_element_by_xpath('//*[@id="daily-sets"]/mee-card-group[1]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(10)
@@ -571,7 +578,7 @@ def completePunchCards(browser: WebDriver):
     time.sleep(2)
 
 def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="more-activities"]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(random.randint(13, 17))
@@ -581,7 +588,7 @@ def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="more-activities"]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
@@ -622,7 +629,7 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="more-activities"]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
@@ -630,9 +637,8 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
     for question in range(numberOfQuestions):
         browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-        time.sleep(5)
+        time.sleep(8)
         # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
-        time.sleep(3)
     time.sleep(5)
     browser.close()
     time.sleep(2)
@@ -640,7 +646,7 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="more-activities"]/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/div[3]/a').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
@@ -779,6 +785,7 @@ except FileNotFoundError:
 finished_accounts = []
 shared_items = []
 ERROR = True # A flag for when error occurred
+current_account = None
 
 # set time for launch program
 answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
@@ -800,12 +807,10 @@ try:
             logs[user["username"]] = {"Last check": "",
                                       "Today's points": 0,
                                       "Points": 0}
-            Write_on_logs()
     if shared_items != logs.keys():
         diff = logs.keys() - shared_items
         for accs in list(diff):
             del logs[accs]
-        Write_on_logs()
     
     # check that if any of accounts has farmed today or not.
     for key in logs.keys():
@@ -818,8 +823,8 @@ try:
             logs[key]["Punch cards"] = False
             logs[key]["More promotions"] = False
             logs[key]["PC searches"] = False
-            Write_on_logs()
-            
+    
+    Write_on_logs()               
     prGreen('[LOGS] Logs loaded successfully.')
 except FileNotFoundError:
     prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
@@ -833,7 +838,7 @@ except FileNotFoundError:
                                      "More promotions": False,
                                      "PC searches": False}
     Write_on_logs()
-    prPurple(f'[LOGS] "Logs_{filename}.txt" created.')
+    prGreen(f'[LOGS] "Logs_{filename}.txt" created.')
 
 def App():
     try:
@@ -841,6 +846,7 @@ def App():
         for account in ACCOUNTS:
             if account['username'] in finished_accounts:
                 continue
+            current_account = account['username']
             prYellow('********************' + account['username'] + '********************')
             if not logs[account['username']]['PC searches']:
                 browser = browserSetup(False, PC_USER_AGENT)
@@ -911,8 +917,18 @@ def App():
             del logs[account['username']]["Punch cards"]
             del logs[account['username']]["More promotions"]
             del logs[account['username']]["PC searches"]
+            Write_on_logs()
             
-            Write_on_logs()        
+    except FunctionTimedOut:
+        if logs[current_account]["Daily"] == True and logs[current_account]["Punch cards"] == True and logs[current_account]["More promotions"] == True and logs[current_account]["PC searches"] == False:
+            logs[current_account]['PC searches'] = True
+            prRed('[ERROR] Due to time out in PC searches it expected that PC searches is done.\n')
+            Write_on_logs()
+        else:
+            prRed('[ERROR] Time out raised.\n')
+        ERROR = True
+        browser.quit()
+        App()
     except Exception as e:
         print(e)
         ERROR = True
@@ -933,7 +949,7 @@ def main():
         else:
             App()
     except:
-        prRed('[ERROR] Time out occurred.\n')
+        prRed('[ERROR] Time out occurred in main function.\n')
         ERROR = True
         time_set = False
         main()
