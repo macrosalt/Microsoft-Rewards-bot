@@ -7,21 +7,29 @@ import urllib.parse
 import ipapi
 import os
 from random_word import RandomWords
-from func_timeout import func_set_timeout, FunctionTimedOut, func_timeout
+from func_timeout import func_set_timeout, FunctionTimedOut
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, UnexpectedAlertPresentException, NoAlertPresentException
+from selenium.common.exceptions import (NoSuchElementException, TimeoutException, ElementNotInteractableException, 
+                                        UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.55'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36 Edg/94.0.992.38'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
+
+# Global variables
+FINISHED_ACCOUNTS = [] # added accounts when finished or those have same date as today date in LOGS at beginning.
+SHARED_ITEMS = [] # similar account in 'accounts.json' and 'logs_accounts.txt'.
+ERROR = True # A flag for when error occurred.
+MOBILE = True # A flag for when the account has mobile bing search, it is useful for accounts level 1 to pass mobile.
+CURRENT_ACCOUNT = None # save current account into this variable when farming.
+LOGS = {} # Dictionary of accounts to write in 'logs_accounts.txt'.
 
 # Define browser setup function
 def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -> WebDriver:
@@ -35,7 +43,10 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
     chrome_browser_obj = webdriver.Chrome(options=options)
-    return chrome_browser_obj
+    browser_version = chrome_browser_obj.capabilities['browserVersion']
+    webdriver_version = chrome_browser_obj.capabilities['chrome']['chromedriverVersion'].split(' ')[0]
+    if browser_version[0:2] == webdriver_version[0:2]:
+        return chrome_browser_obj
 
 # Define login function
 @func_set_timeout(220)
@@ -59,6 +70,10 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     print('[LOGIN]', 'Writing password...')
     # Click next
     browser.find_element_by_id('idSIButton9').click()
+    # Wait 5 seconds
+    time.sleep(5)
+    # Click No
+    browser.find_element_by_id('idBtn_Back').click()
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
@@ -121,9 +136,9 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             time.sleep(3)
         except:
             if str(browser.current_url).split('?')[0] == "https://account.live.com/proofs/Add":
-                prRed('[LOGIN] Please complete the Security Check on ' + current_account)
-                finished_accounts.append(current_account)
-                logs[current_account]['Last check'] = 'Requires manual check!'
+                prRed('[LOGIN] Please complete the Security Check on ' + CURRENT_ACCOUNT)
+                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
                 Write_on_logs()
                 exit()
     #Wait 2 seconds
@@ -682,7 +697,7 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
-@func_set_timeout(480)
+@func_set_timeout(600)
 def completeMorePromotions(browser: WebDriver):
     morePromotions = getDashboardData(browser)['morePromotions']
     i = 0
@@ -741,17 +756,20 @@ def CheckForNewTemplate(browser: WebDriver):
         pass
 
 def Write_on_logs():
+    global LOGS
     with open(f'Logs_{filename}.txt', 'w') as file:
-        file.write(json.dumps(logs, indent = 4))
+        file.write(json.dumps(LOGS, indent = 4))
 
 def prRed(prt):
     print("\033[91m{}\033[00m".format(prt))
 def prGreen(prt):
     print("\033[92m{}\033[00m".format(prt))
-def prPurple(prt):
-    print("\033[95m{}\033[00m".format(prt))
 def prYellow(prt):
     print("\033[93m{}\033[00m".format(prt))
+def prBlue(prt):
+    print(f'\033[94m{prt}\033[00m')
+def prPurple(prt):
+    print("\033[95m{}\033[00m".format(prt))
 
 def Logo():
     prRed("""
@@ -762,8 +780,6 @@ def Logo():
     ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
     ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
     prPurple("        by FarshadZ (@Farshadz1997)               version 1.1\n")
-
-LANG, GEO, TZ = getCCodeLangAndOffset()
 
 try:
     account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
@@ -782,73 +798,60 @@ except FileNotFoundError:
     input()
     ACCOUNTS = json.load(open(account_path, "r"))
 
-finished_accounts = []
-shared_items = []
-ERROR = True # A flag for when error occurred
-current_account = None
-
-# set time for launch program
-answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
-if answer in ["Y", "y"] :
-    run_on = input("Set your time in 24h format (HH:MM): ")
-    time_set = True
-else:
-    time_set = False
-
-# logs
-try:
-    # Read datas on 'logs.txt'
-    logs = json.load(open(f"logs_{filename}.txt", "r"))
-    
-    # sync accounts and logs file for new accounts or remove accounts from logs.
-    for user in ACCOUNTS:
-        shared_items.append(user['username'])
-        if not user['username'] in logs.keys():
-            logs[user["username"]] = {"Last check": "",
-                                      "Today's points": 0,
-                                      "Points": 0}
-    if shared_items != logs.keys():
-        diff = logs.keys() - shared_items
-        for accs in list(diff):
-            del logs[accs]
-    
-    # check that if any of accounts has farmed today or not.
-    for key in logs.keys():
-        if logs[key]["Last check"] == str(date.today()):
-            finished_accounts.append(key)
-        elif list(logs[key].keys()) == ["Last check", "Today's points", "Points", "Daily", "Punch cards", "More promotions", "PC searches"]:
-            continue
-        else:
-            logs[key]["Daily"] = False
-            logs[key]["Punch cards"] = False
-            logs[key]["More promotions"] = False
-            logs[key]["PC searches"] = False
-    
-    Write_on_logs()               
-    prGreen('[LOGS] Logs loaded successfully.')
-except FileNotFoundError:
-    prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
-    logs = {}
-    for account in ACCOUNTS:
-        logs[account["username"]] = {"Last check": "",
-                                     "Today's points": 0,
-                                     "Points": 0,
-                                     "Daily": False,
-                                     "Punch cards": False,
-                                     "More promotions": False,
-                                     "PC searches": False}
-    Write_on_logs()
-    prGreen(f'[LOGS] "Logs_{filename}.txt" created.')
+# LOGS
+def Logs():
+    global LOGS
+    try:
+        # Read datas on 'logs_accounts.txt'
+        LOGS = json.load(open(f"logs_{filename}.txt", "r"))
+        # sync accounts and logs file for new accounts or remove accounts from logs.
+        for user in ACCOUNTS:
+            SHARED_ITEMS.append(user['username'])
+            if not user['username'] in LOGS.keys():
+                LOGS[user["username"]] = {"Last check": "",
+                                        "Today's points": 0,
+                                        "Points": 0}
+        if SHARED_ITEMS != LOGS.keys():
+            diff = LOGS.keys() - SHARED_ITEMS
+            for accs in list(diff):
+                del LOGS[accs]
+        
+        # check that if any of accounts has farmed today or not.
+        for key in LOGS.keys():
+            if LOGS[key]["Last check"] == str(date.today()):
+                FINISHED_ACCOUNTS.append(key)
+            elif list(LOGS[key].keys()) == ["Last check", "Today's points", "Points", "Daily", "Punch cards", "More promotions", "PC searches"]:
+                continue
+            else:
+                LOGS[key]["Daily"] = False
+                LOGS[key]["Punch cards"] = False
+                LOGS[key]["More promotions"] = False
+                LOGS[key]["PC searches"] = False
+        Write_on_logs()               
+        prGreen('[LOGS] Logs loaded successfully.\n')
+    except FileNotFoundError:
+        prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
+        LOGS = {}
+        for account in ACCOUNTS:
+            LOGS[account["username"]] = {"Last check": "",
+                                        "Today's points": 0,
+                                        "Points": 0,
+                                        "Daily": False,
+                                        "Punch cards": False,
+                                        "More promotions": False,
+                                        "PC searches": False}
+        Write_on_logs()
+        prGreen(f'[LOGS] "Logs_{filename}.txt" created.\n')
 
 def App():
     try:
-        global ERROR
+        global ERROR, MOBILE
         for account in ACCOUNTS:
-            if account['username'] in finished_accounts:
+            if account['username'] in FINISHED_ACCOUNTS:
                 continue
-            current_account = account['username']
+            CURRENT_ACCOUNT = account['username']
             prYellow('********************' + account['username'] + '********************')
-            if not logs[account['username']]['PC searches']:
+            if not LOGS[account['username']]['PC searches']:
                 browser = browserSetup(False, PC_USER_AGENT)
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'])
@@ -857,71 +860,73 @@ def App():
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
                 browser.get('https://account.microsoft.com/rewards')
                 CheckForNewTemplate(browser)
-                if not logs[account['username']]['Daily']:
+                if not LOGS[account['username']]['Daily']:
                     print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
-                    logs[account['username']]['Daily'] = True
+                    LOGS[account['username']]['Daily'] = True
                     Write_on_logs()
                     prGreen('[DAILY SET] Completed the Daily Set successfully !')
-                if not logs[account['username']]['Punch cards']:
+                if not LOGS[account['username']]['Punch cards']:
                     print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
                     completePunchCards(browser)
-                    logs[account['username']]['Punch cards'] = True
+                    LOGS[account['username']]['Punch cards'] = True
                     Write_on_logs()
                     prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
-                if not logs[account['username']]['More promotions']:
+                if not LOGS[account['username']]['More promotions']:
                     print('[MORE PROMO]', 'Trying to complete More Promotions...')
                     completeMorePromotions(browser)
-                    logs[account['username']]['More promotions'] = True
+                    LOGS[account['username']]['More promotions'] = True
                     Write_on_logs()
                     prGreen('[MORE PROMO] Completed More Promotions successfully !')
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
+                MOBILE = True if remainingSearchesM != 0 else False
                 if remainingSearches != 0:
                     print('[BING]', 'Starting Desktop and Edge Bing searches...')
                     bingSearches(browser, remainingSearches)
                     prGreen('[BING] Finished Desktop and Edge Bing searches !')
-                    logs[account['username']]['PC searches'] = True
+                    LOGS[account['username']]['PC searches'] = True
                     Write_on_logs()
                     ERROR = False
                 browser.quit()
 
-            browser = browserSetup(False, MOBILE_USER_AGENT)
-            print('[LOGIN]', 'Logging-in...')
-            login(browser, account['username'], account['password'], True)
-            prGreen('[LOGIN] Logged-in successfully !')
-            if logs[account['username']]['PC searches'] and ERROR:
-                startingPoints = POINTS_COUNTER
-                browser.get('https://account.microsoft.com/rewards/')
-                CheckForNewTemplate(browser)
-                remainingSearches, remainingSearchesM = getRemainingSearches(browser)
-                if remainingSearchesM != 0:
-                    print('[BING]', 'Starting Mobile Bing searches...')
-                    bingSearches(browser, remainingSearchesM, True)
-                prGreen('[BING] Finished Mobile Bing searches !')
-            else:
-                if remainingSearchesM != 0:
-                    print('[BING]', 'Starting Mobile Bing searches...')
-                    bingSearches(browser, remainingSearchesM, True)
+            if MOBILE:
+                browser = browserSetup(False, MOBILE_USER_AGENT)
+                print('[LOGIN]', 'Logging-in...')
+                login(browser, account['username'], account['password'], True)
+                prGreen('[LOGIN] Logged-in successfully !')
+                if LOGS[account['username']]['PC searches'] and ERROR:
+                    startingPoints = POINTS_COUNTER
+                    browser.get('https://rewards.microsoft.com/dashboard')
+                    CheckForNewTemplate(browser)
+                    remainingSearches, remainingSearchesM = getRemainingSearches(browser)
+                    if remainingSearchesM != 0:
+                        print('[BING]', 'Starting Mobile Bing searches...')
+                        bingSearches(browser, remainingSearchesM, True)
                     prGreen('[BING] Finished Mobile Bing searches !')
-            browser.quit()
+                else:
+                    if remainingSearchesM != 0:
+                        print('[BING]', 'Starting Mobile Bing searches...')
+                        bingSearches(browser, remainingSearchesM, True)
+                        prGreen('[BING] Finished Mobile Bing searches !')
+                browser.quit()
                 
             New_points = POINTS_COUNTER - startingPoints
             prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
             prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
             
-            finished_accounts.append(account['username'])
-            logs[account['username']]["Last check"] = str(date.today())
-            logs[account['username']]["Today's points"] = New_points
-            logs[account['username']]["Points"] = POINTS_COUNTER
-            del logs[account['username']]["Daily"]
-            del logs[account['username']]["Punch cards"]
-            del logs[account['username']]["More promotions"]
-            del logs[account['username']]["PC searches"]
+            FINISHED_ACCOUNTS.append(account['username'])
+            LOGS[account['username']]["Last check"] = str(date.today())
+            LOGS[account['username']]["Today's points"] = New_points
+            LOGS[account['username']]["Points"] = POINTS_COUNTER
+            del LOGS[account['username']]["Daily"]
+            del LOGS[account['username']]["Punch cards"]
+            del LOGS[account['username']]["More promotions"]
+            del LOGS[account['username']]["PC searches"]
             Write_on_logs()
             
     except FunctionTimedOut:
-        if logs[current_account]["Daily"] == True and logs[current_account]["Punch cards"] == True and logs[current_account]["More promotions"] == True and logs[current_account]["PC searches"] == False:
-            logs[current_account]['PC searches'] = True
+        if LOGS[CURRENT_ACCOUNT]["Daily"] == True and LOGS[CURRENT_ACCOUNT]["Punch cards"] == True and LOGS[CURRENT_ACCOUNT]["More promotions"] == True and LOGS[CURRENT_ACCOUNT]["PC searches"] == False:
+            LOGS[CURRENT_ACCOUNT]['PC searches'] = True
             prRed('[ERROR] Due to time out in PC searches it expected that PC searches is done.\n')
             Write_on_logs()
         else:
@@ -929,38 +934,52 @@ def App():
         ERROR = True
         browser.quit()
         App()
-    except Exception as e:
-        print(e)
+    except SessionNotCreatedException:
+        prBlue('[Driver] Session not created')
+        prBlue('[Driver] Please download correct version of webdriver form link below:')
+        prBlue('[Driver] https://chromedriver.chromium.org/downloads')
+        input('Press any key to close...')
+        exit()
+    except:
         ERROR = True
         browser.quit()
         App()
 
 def main():
+    global ERROR, LANG, GEO, TZ
+    # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
     try:
-        global time_set, ERROR, run_on
-        if time_set:
-            while True:
-                real_time = datetime.now()
-                now = real_time.strftime("%H:%M")
-                if now == run_on:
-                    App()
-                    break
-                time.sleep(30)
-        else:
-            App()
+        LANG, GEO, TZ = getCCodeLangAndOffset()
     except:
-        prRed('[ERROR] Time out occurred in main function.\n')
-        ERROR = True
+        LANG = 'en-US'
+        GEO = 'US'
+    # set time for launch program
+    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
+    if answer in ["Y", "y"] :
+        run_on = input("Set your time in 24h format (HH:MM): ")
+        time_set = True
+    else:
         time_set = False
-        main()
-          
-if __name__ == '__main__':
-    start = time.time()
     Logo()
-    main()
+    Logs()
+    if time_set:
+        while True:
+            real_time = datetime.now()
+            now = real_time.strftime("%H:%M")
+            if now == run_on:
+                start = time.time()
+                App()
+                break
+            time.sleep(30)
+    else:
+        start = time.time()
+        App()
     end = time.time()
     delta = end - start
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
     print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
     input('Press any key to close the program...')
+          
+if __name__ == '__main__':
+    main()

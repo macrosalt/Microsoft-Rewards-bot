@@ -6,3 +6,5 @@ selenium
 urllib3
 ipapi
 func_timeout
+random-word
+pyyaml
