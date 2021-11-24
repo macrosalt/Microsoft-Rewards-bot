@@ -18,8 +18,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36 Edg/94.0.992.38'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36 Edg/95.0.1020.30'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.50 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -38,15 +38,15 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     options = Options()
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_experimental_option("useAutomationExtension", False)
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
     if headless_mode :
         options.add_argument("--headless")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
     chrome_browser_obj = webdriver.Chrome(options=options)
-    browser_version = chrome_browser_obj.capabilities['browserVersion']
-    webdriver_version = chrome_browser_obj.capabilities['chrome']['chromedriverVersion'].split(' ')[0]
-    if browser_version[0:2] == webdriver_version[0:2]:
-        return chrome_browser_obj
+    return chrome_browser_obj
 
 # Define login function
 @func_set_timeout(220)
@@ -72,8 +72,31 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     browser.find_element_by_id('idSIButton9').click()
     # Wait 5 seconds
     time.sleep(5)
-    # Click No
-    browser.find_element_by_id('idBtn_Back').click()
+    try:
+        # Click No.
+        browser.find_element_by_id('idBtn_Back').click()
+    except NoSuchElementException:
+        # Check for if account has been locked.
+        try:
+            message = browser.find_element_by_id('StartHeader').get_attribute('innerHTML')
+            if message == 'Your account has been locked':
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked'
+                del LOGS[CURRENT_ACCOUNT]["Daily"]
+                del LOGS[CURRENT_ACCOUNT]["Punch cards"]
+                del LOGS[CURRENT_ACCOUNT]["More promotions"]
+                del LOGS[CURRENT_ACCOUNT]["PC searches"]
+                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                prRed('[ERROR] Your account has been locked')
+                Write_on_logs()
+        # Handling unusual activity detected.
+        except NoSuchElementException:
+            message = browser.find_element_by_id('iSelectProofTitle').get_attribute('innerHTML')
+            if message == 'Help us protect your account':
+                prRed('[ERROR] Unusual activity detected.')
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected'
+                Write_on_logs()
+                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        raise Exception
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
@@ -161,6 +184,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 browser.find_element_by_id('mHamburger').click()
             except:
                 try:
+                    browser.find_element_by_id('bnp_close_link').click()
+                    time.sleep(4)
                     browser.find_element_by_id('bnp_btn_accept').click()
                 except:
                     pass
@@ -281,7 +306,7 @@ def getAnswerCode(key: str, string: str) -> str:
 	t += int(key[-2:], 16)
 	return str(t)
 
-@func_set_timeout(950)
+@func_set_timeout(1100)
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
@@ -308,9 +333,11 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     browser.get('https://bing.com')
     time.sleep(2)
     searchbar = browser.find_element_by_id('sb_form_q')
-    searchbar.send_keys(word)
+    for char in word:
+        searchbar.send_keys(char)
+        time.sleep(0.33)
     searchbar.submit()
-    time.sleep(random.randint(12, 20))
+    time.sleep(random.randint(12, 24))
     points = 0
     try:
         if not isMobile:
@@ -375,7 +402,7 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
     browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[' + str(cardNumber) + ']/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
     time.sleep(3)
     browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(8)
+    time.sleep(12)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
@@ -817,16 +844,17 @@ def Logs():
                 del LOGS[accs]
         
         # check that if any of accounts has farmed today or not.
-        for key in LOGS.keys():
-            if LOGS[key]["Last check"] == str(date.today()):
-                FINISHED_ACCOUNTS.append(key)
-            elif list(LOGS[key].keys()) == ["Last check", "Today's points", "Points", "Daily", "Punch cards", "More promotions", "PC searches"]:
+        for account in LOGS.keys():
+            if LOGS[account]["Last check"] == str(date.today()) and list(LOGS[account].keys()) == ['Last check', "Today's points", 'Points']:
+                FINISHED_ACCOUNTS.append(account)
+            elif LOGS[account]['Last check'] == str(date.today()) and list(LOGS[account].keys()) == ['Last check', "Today's points", 'Points',
+                                                                                                     'Daily', 'Punch cards', 'More promotions', 'PC searches']:
                 continue
             else:
-                LOGS[key]["Daily"] = False
-                LOGS[key]["Punch cards"] = False
-                LOGS[key]["More promotions"] = False
-                LOGS[key]["PC searches"] = False
+                LOGS[account]['Daily'] = False
+                LOGS[account]['Punch cards'] = False
+                LOGS[account]['More promotions'] = False
+                LOGS[account]['PC searches'] = False 
         Write_on_logs()               
         prGreen('[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
@@ -844,12 +872,15 @@ def Logs():
         prGreen(f'[LOGS] "Logs_{filename}.txt" created.\n')
 
 def App():
+    global ERROR, MOBILE, CURRENT_ACCOUNT
     try:
-        global ERROR, MOBILE
         for account in ACCOUNTS:
             if account['username'] in FINISHED_ACCOUNTS:
                 continue
             CURRENT_ACCOUNT = account['username']
+            if LOGS[account['username']]["Last check"] != str(date.today()):
+                LOGS[account['username']]["Last check"] = str(date.today())
+                Write_on_logs()
             prYellow('********************' + account['username'] + '********************')
             if not LOGS[account['username']]['PC searches']:
                 browser = browserSetup(False, PC_USER_AGENT)
@@ -858,9 +889,9 @@ def App():
                 prGreen('[LOGIN] Logged-in successfully !')
                 startingPoints = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
-                browser.get('https://account.microsoft.com/rewards')
+                browser.get('https://rewards.microsoft.com/dashboard')
                 CheckForNewTemplate(browser)
-                if not LOGS[account['username']]['Daily']:
+                if not (int(datetime.now().strftime("%H")) in list(range(0,12))) or not (LOGS[account['username']]['Daily']):
                     print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
                     LOGS[account['username']]['Daily'] = True
@@ -890,7 +921,10 @@ def App():
                 browser.quit()
 
             if MOBILE:
-                browser = browserSetup(False, MOBILE_USER_AGENT)
+                if 'mobile_user_agent' in account.keys():
+                    browser = browserSetup(False, account['mobile_user_agent'])
+                else:
+                    browser = browserSetup(False, MOBILE_USER_AGENT)
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
@@ -915,7 +949,6 @@ def App():
             prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
             
             FINISHED_ACCOUNTS.append(account['username'])
-            LOGS[account['username']]["Last check"] = str(date.today())
             LOGS[account['username']]["Today's points"] = New_points
             LOGS[account['username']]["Points"] = POINTS_COUNTER
             del LOGS[account['username']]["Daily"]
@@ -925,7 +958,8 @@ def App():
             Write_on_logs()
             
     except FunctionTimedOut:
-        if LOGS[CURRENT_ACCOUNT]["Daily"] == True and LOGS[CURRENT_ACCOUNT]["Punch cards"] == True and LOGS[CURRENT_ACCOUNT]["More promotions"] == True and LOGS[CURRENT_ACCOUNT]["PC searches"] == False:
+        if (LOGS[CURRENT_ACCOUNT]["Daily"] == True and LOGS[CURRENT_ACCOUNT]["Punch cards"] == True
+                and LOGS[CURRENT_ACCOUNT]["More promotions"] == True and LOGS[CURRENT_ACCOUNT]["PC searches"] == False and not MOBILE):
             LOGS[CURRENT_ACCOUNT]['PC searches'] = True
             prRed('[ERROR] Due to time out in PC searches it expected that PC searches is done.\n')
             Write_on_logs()
@@ -946,7 +980,7 @@ def App():
         App()
 
 def main():
-    global ERROR, LANG, GEO, TZ
+    global LANG, GEO, TZ
     # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
     try:
         LANG, GEO, TZ = getCCodeLangAndOffset()
@@ -964,9 +998,8 @@ def main():
     Logs()
     if time_set:
         while True:
-            real_time = datetime.now()
-            now = real_time.strftime("%H:%M")
-            if now == run_on:
+            real_time = datetime.now().strftime("%H:%M")
+            if real_time == run_on:
                 start = time.time()
                 App()
                 break
