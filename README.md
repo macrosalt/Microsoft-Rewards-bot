@@ -12,7 +12,7 @@
 ██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
 ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
 ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
-       by Charles Bel (@charlesbel)          version 1.1
+        built by @charlesbel upgraded by @farshadz1997      version 1.1
 </pre>
 
 <p align="center">
@@ -30,7 +30,7 @@
     <li>Make sure you have Chrome installed</li>
     <li>Install ChromeDriver :<ul>
       <li>Windows :<ul>
-        <li>Download Chrome WebDriver : https://chromedriver.chromium.org/downloads</li>
+        <li>Download Chrome WebDriver as same as your Google Chrome version : https://chromedriver.chromium.org/downloads</li>
         <li>Place the file in X:\Windows (X as your Windows disk letter)</li>
       </ul>
       <li>MacOS or Linux :<ul>
@@ -41,11 +41,13 @@
     <li>Edit the accounts.json.sample with your accounts credentials and rename it by removing .sample at the end<br/>
     If you want to add more than one account, the syntax is the following : <pre>[{
         "username": "Your Email",
-        "password": "Your Password"
+        "password": "Your Password",
+        "mobile_user_agent": "your prefered mobile user agent"
     },
     {
         "username": "Your Email 2",
-        "password": "Your Password 2"
+        "password": "Your Password 2",
+        "mobile_user_agent": "your prefered mobile user agent"
 }]</pre></li>
     <li>Run the script</li>
    </ul>
@@ -60,5 +62,17 @@
   <li>Complete automatically the others promotions</li>
   <li>Headless Mode</li>
   <li>Multi-Account Management</li>
+  <li>Modified to be undetectable as bot</li>
+  <li>If it faces to an unexcepted error then try the account from first</li>  
+  <li>Save progress of bot in a log file and use it to pass completed account on the next start at the same day</li>
+  <li>Detect locked accounts</li>
+  <li>Detect unusual activites</li>
+  <li>Uses time out to prevent infinite loop</li>
+  <li>You can assign custom user-agent for mobile like above example</li>
+  <li>Set clock to start it at specific time</li>
+  <li>For Bing search it uses random word at first try and if api failed then it uses google trends</li>
 </ul>
 </p>
+<h2 align="center">⚠️CAUTION!⚠️</h2>
+<p align="center">
+  <h4 align="center">Do not use headless mode, it can caused your account to be suspended from Microsoft Rewards.</h4>
