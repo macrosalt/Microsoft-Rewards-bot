@@ -12,7 +12,7 @@
 ██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
 ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
 ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
-        built by @charlesbel upgraded by @farshadz1997      version 1.1
+        built by @charlesbel upgraded by @farshadz1997      version 2.0
 </pre>
 
 <p align="center">
@@ -63,7 +63,7 @@
   <li>Headless Mode</li>
   <li>Multi-Account Management</li>
   <li>Modified to be undetectable as bot</li>
-  <li>If it faces to an unexcepted error then try the account from first</li>  
+  <li>If it faces to an unexpected error then try the account from first</li>  
   <li>Save progress of bot in a log file and use it to pass completed account on the next start at the same day</li>
   <li>Detect locked accounts</li>
   <li>Detect unusual activites</li>

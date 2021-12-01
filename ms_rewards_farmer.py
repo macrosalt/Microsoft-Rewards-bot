@@ -39,6 +39,13 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
+    prefs = {"profile.default_content_setting_values.geolocation" :2,
+            "credentials_enable_service": False,
+            "profile.password_manager_enabled": False,
+            "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+            "webrtc.multiple_routes_enabled": False,
+            "webrtc.nonproxied_udp_enabled" : False}
+    options.add_experimental_option("prefs",prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     if headless_mode :
@@ -86,15 +93,15 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                 del LOGS[CURRENT_ACCOUNT]["More promotions"]
                 del LOGS[CURRENT_ACCOUNT]["PC searches"]
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                prRed('[ERROR] Your account has been locked')
-                Write_on_logs()
+                prRed('[ERROR] Your account has been locked!')
+                UpdateLogs()
         # Handling unusual activity detected.
         except NoSuchElementException:
             message = browser.find_element_by_id('iSelectProofTitle').get_attribute('innerHTML')
             if message == 'Help us protect your account':
                 prRed('[ERROR] Unusual activity detected.')
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected'
-                Write_on_logs()
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected!'
+                UpdateLogs()
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
         raise Exception
     # Wait 5 seconds
@@ -162,7 +169,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 prRed('[LOGIN] Please complete the Security Check on ' + CURRENT_ACCOUNT)
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
-                Write_on_logs()
+                UpdateLogs()
                 exit()
     #Wait 2 seconds
     time.sleep(2)
@@ -595,7 +602,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
                 
-@func_set_timeout(360)
+@func_set_timeout(420)
 def completePunchCards(browser: WebDriver):
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
@@ -782,7 +789,7 @@ def CheckForNewTemplate(browser: WebDriver):
     except:
         pass
 
-def Write_on_logs():
+def UpdateLogs():
     global LOGS
     with open(f'Logs_{filename}.txt', 'w') as file:
         file.write(json.dumps(LOGS, indent = 4))
@@ -855,7 +862,7 @@ def Logs():
                 LOGS[account]['Punch cards'] = False
                 LOGS[account]['More promotions'] = False
                 LOGS[account]['PC searches'] = False 
-        Write_on_logs()               
+        UpdateLogs()               
         prGreen('[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
         prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
@@ -868,7 +875,7 @@ def Logs():
                                         "Punch cards": False,
                                         "More promotions": False,
                                         "PC searches": False}
-        Write_on_logs()
+        UpdateLogs()
         prGreen(f'[LOGS] "Logs_{filename}.txt" created.\n')
 
 def App():
@@ -880,7 +887,7 @@ def App():
             CURRENT_ACCOUNT = account['username']
             if LOGS[account['username']]["Last check"] != str(date.today()):
                 LOGS[account['username']]["Last check"] = str(date.today())
-                Write_on_logs()
+                UpdateLogs()
             prYellow('********************' + account['username'] + '********************')
             if not LOGS[account['username']]['PC searches']:
                 browser = browserSetup(False, PC_USER_AGENT)
@@ -895,19 +902,19 @@ def App():
                     print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
                     LOGS[account['username']]['Daily'] = True
-                    Write_on_logs()
+                    UpdateLogs()
                     prGreen('[DAILY SET] Completed the Daily Set successfully !')
                 if not LOGS[account['username']]['Punch cards']:
                     print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
                     completePunchCards(browser)
                     LOGS[account['username']]['Punch cards'] = True
-                    Write_on_logs()
+                    UpdateLogs()
                     prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
                 if not LOGS[account['username']]['More promotions']:
                     print('[MORE PROMO]', 'Trying to complete More Promotions...')
                     completeMorePromotions(browser)
                     LOGS[account['username']]['More promotions'] = True
-                    Write_on_logs()
+                    UpdateLogs()
                     prGreen('[MORE PROMO] Completed More Promotions successfully !')
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = True if remainingSearchesM != 0 else False
@@ -916,7 +923,7 @@ def App():
                     bingSearches(browser, remainingSearches)
                     prGreen('[BING] Finished Desktop and Edge Bing searches !')
                     LOGS[account['username']]['PC searches'] = True
-                    Write_on_logs()
+                    UpdateLogs()
                     ERROR = False
                 browser.quit()
 
@@ -955,21 +962,15 @@ def App():
             del LOGS[account['username']]["Punch cards"]
             del LOGS[account['username']]["More promotions"]
             del LOGS[account['username']]["PC searches"]
-            Write_on_logs()
+            UpdateLogs()
             
     except FunctionTimedOut:
-        if (LOGS[CURRENT_ACCOUNT]["Daily"] == True and LOGS[CURRENT_ACCOUNT]["Punch cards"] == True
-                and LOGS[CURRENT_ACCOUNT]["More promotions"] == True and LOGS[CURRENT_ACCOUNT]["PC searches"] == False and not MOBILE):
-            LOGS[CURRENT_ACCOUNT]['PC searches'] = True
-            prRed('[ERROR] Due to time out in PC searches it expected that PC searches is done.\n')
-            Write_on_logs()
-        else:
-            prRed('[ERROR] Time out raised.\n')
+        prRed('[ERROR] Time out raised.\n')
         ERROR = True
         browser.quit()
         App()
     except SessionNotCreatedException:
-        prBlue('[Driver] Session not created')
+        prBlue('[Driver] Session not created.')
         prBlue('[Driver] Please download correct version of webdriver form link below:')
         prBlue('[Driver] https://chromedriver.chromium.org/downloads')
         input('Press any key to close...')
@@ -988,24 +989,25 @@ def main():
         LANG = 'en-US'
         GEO = 'US'
     # set time for launch program
+    Logo()
     answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
     if answer in ["Y", "y"] :
         run_on = input("Set your time in 24h format (HH:MM): ")
         time_set = True
     else:
         time_set = False
-    Logo()
-    Logs()
     if time_set:
         while True:
             real_time = datetime.now().strftime("%H:%M")
             if real_time == run_on:
                 start = time.time()
+                Logs()
                 App()
                 break
             time.sleep(30)
     else:
         start = time.time()
+        Logs()
         App()
     end = time.time()
     delta = end - start
