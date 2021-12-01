@@ -42,12 +42,12 @@
     If you want to add more than one account, the syntax is the following : <pre>[{
         "username": "Your Email",
         "password": "Your Password",
-        "mobile_user_agent": "your prefered mobile user agent"
+        "mobile_user_agent": "your preferred mobile user agent"
     },
     {
         "username": "Your Email 2",
         "password": "Your Password 2",
-        "mobile_user_agent": "your prefered mobile user agent"
+        "mobile_user_agent": "your preferred mobile user agent"
 }]</pre></li>
     <li>Run the script</li>
    </ul>
