@@ -87,7 +87,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         try:
             message = browser.find_element_by_id('StartHeader').get_attribute('innerHTML')
             if message == 'Your account has been locked':
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked'
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked.'
                 del LOGS[CURRENT_ACCOUNT]["Daily"]
                 del LOGS[CURRENT_ACCOUNT]["Punch cards"]
                 del LOGS[CURRENT_ACCOUNT]["More promotions"]
@@ -313,7 +313,7 @@ def getAnswerCode(key: str, string: str) -> str:
 	t += int(key[-2:], 16)
 	return str(t)
 
-@func_set_timeout(1100)
+@func_set_timeout(1200)
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
@@ -493,7 +493,7 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
-    time.sleep(10)
+    time.sleep(15)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
@@ -515,10 +515,10 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
 
         if (answer1Code == correctAnswerCode):
             answer1.click()
-            time.sleep(10)
+            time.sleep(15)
         elif (answer2Code == correctAnswerCode):
             answer2.click()
-            time.sleep(10)
+            time.sleep(15)
 
     time.sleep(5)
     browser.close()
@@ -585,7 +585,30 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 time.sleep(2)
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
-            if child['promotionType'] == "quiz":
+            if child['promotionType'] == "quiz" and child['pointProgressMax'] == 50 and child['complete'] == False:
+                browser.find_element_by_xpath('//*[@id="rewards-dashboard-punchcard-details"]/div[2]/div[2]/div[7]/div[3]/div[1]/a').click()
+                time.sleep(1)
+                browser.switch_to.window(window_name = browser.window_handles[1])
+                time.sleep(15)
+                try:
+                    browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+                except:
+                    pass
+                time.sleep(5)
+                waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]', 10)
+                numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
+                AnswerdQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.CorrectlyAnsweredQuestionCount")
+                numberOfQuestions -= AnswerdQuestions
+                for question in range(numberOfQuestions):
+                    answer = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
+                    browser.find_element_by_xpath(f'//input[@value="{answer}"]').click()
+                    time.sleep(15)
+                time.sleep(5)
+                browser.close()
+                time.sleep(2)
+                browser.switch_to.window(window_name=browser.window_handles[0])
+                time.sleep(2)
+            elif child['promotionType'] == "quiz" and child['pointProgressMax'] == 50 and child['complete'] == False:
                 browser.execute_script("document.getElementsByClassName('offer-cta')[0].click()")
                 time.sleep(1)
                 browser.switch_to.window(window_name = browser.window_handles[1])
@@ -813,7 +836,7 @@ def Logo():
     ██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
     ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
     ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
-    prPurple("        by FarshadZ (@Farshadz1997)               version 1.1\n")
+    prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.0\n")
 
 try:
     account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
