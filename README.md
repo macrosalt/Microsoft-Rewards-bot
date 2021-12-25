@@ -67,6 +67,7 @@
   <li>Modified to be undetectable as bot</li>
   <li>If it faces to an unexpected error then try the account from first</li>  
   <li>Save progress of bot in a log file and use it to pass completed account on the next start at the same day</li>
+  <li>Detect suspended accounts</li>
   <li>Detect locked accounts</li>
   <li>Detect unusual activites</li>
   <li>Uses time out to prevent infinite loop</li>
