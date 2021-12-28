@@ -88,12 +88,12 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             if message == 'Your account has been locked':
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                prRed('[ERROR] Your account has been locked !\n')
+                prRed('[ERROR] Your account has been locked !')
         # Handling unusual activity detected.
         except NoSuchElementException:
             message = browser.find_element_by_id('iSelectProofTitle').get_attribute('innerHTML')
             if message == 'Help us protect your account':
-                prRed('[ERROR] Unusual activity detected !\n')
+                prRed('[ERROR] Unusual activity detected !')
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
         del LOGS[CURRENT_ACCOUNT]["Daily"]
@@ -562,7 +562,6 @@ def getDashboardData(browser: WebDriver) -> dict:
     dashboard = json.loads(dashboard)
     return dashboard
 
-@func_set_timeout(360)
 def completeDailySet(browser: WebDriver):
     d = getDashboardData(browser)['dailySetPromotions']
     todayDate = datetime.today().strftime('%m/%d/%Y')
@@ -616,7 +615,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 time.sleep(2)
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
-            if child['promotionType'] == "quiz" and child['pointProgressMax'] == 50 and child['complete'] == False:
+            if child['promotionType'] == "quiz" and child['pointProgressMax'] >= 50 :
                 browser.find_element_by_xpath('//*[@id="rewards-dashboard-punchcard-details"]/div[2]/div[2]/div[7]/div[3]/div[1]/a').click()
                 time.sleep(1)
                 browser.switch_to.window(window_name = browser.window_handles[1])
@@ -639,7 +638,9 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 time.sleep(2)
                 browser.switch_to.window(window_name=browser.window_handles[0])
                 time.sleep(2)
-            elif child['promotionType'] == "quiz" and child['pointProgressMax'] == 50 and child['complete'] == False:
+                browser.refresh()
+                break
+            elif child['promotionType'] == "quiz" and child['pointProgressMax'] < 50:
                 browser.execute_script("document.getElementsByClassName('offer-cta')[0].click()")
                 time.sleep(1)
                 browser.switch_to.window(window_name = browser.window_handles[1])
@@ -655,8 +656,9 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 time.sleep(2)
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
+                browser.refresh()
+                break
                 
-@func_set_timeout(420)
 def completePunchCards(browser: WebDriver):
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
@@ -677,7 +679,7 @@ def completePunchCards(browser: WebDriver):
         except:
             resetTabs(browser)
     time.sleep(2)
-    browser.get('https://account.microsoft.com/rewards/')
+    browser.get('https://rewards.microsoft.com/dashboard/')
     time.sleep(2)
 
 def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
@@ -785,7 +787,6 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
-@func_set_timeout(600)
 def completeMorePromotions(browser: WebDriver):
     morePromotions = getDashboardData(browser)['morePromotions']
     i = 0
@@ -836,7 +837,7 @@ def getRemainingSearches(browser: WebDriver):
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
 
-# LOGS
+# Read logs and check whether account farmed or not
 def Logs():
     global LOGS
     try:
