@@ -18,8 +18,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36 Edg/95.0.1020.30'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.50 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.87 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -165,8 +165,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     global POINTS_COUNTER
     #Access Bing.com
     browser.get('https://bing.com/')
-    # Wait 8 seconds
-    time.sleep(8)
+    # Wait 15 seconds
+    time.sleep(15)
     #Accept Cookies
     try:
         browser.find_element_by_id('bnp_btn_accept').click()
@@ -202,12 +202,12 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
                 UpdateLogs()
                 exit()
-    #Wait 2 seconds
-    time.sleep(2)
+    #Wait 5 seconds
+    time.sleep(5)
     # Refresh page
     browser.get('https://bing.com/')
-    # Wait 5 seconds
-    time.sleep(10)
+    # Wait 15 seconds
+    time.sleep(15)
     #Update Counter
     try:
         if not isMobile:
@@ -215,7 +215,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 POINTS_COUNTER = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
             except:
                 browser.find_element_by_id('id_s').click()
-                time.sleep(10)
+                time.sleep(15)
                 checkBingLogin(browser, isMobile)
         else:
             try:
