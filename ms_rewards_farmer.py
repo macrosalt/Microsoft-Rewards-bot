@@ -8,6 +8,7 @@ import ipapi
 import os
 from random_word import RandomWords
 from func_timeout import func_set_timeout, FunctionTimedOut
+import warnings
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -145,6 +146,8 @@ def RewardsLogin(browser: WebDriver):
         # Check wheter account suspended or not
         if browser.find_element_by_xpath('//*[@id="error"]/h1').get_attribute('innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
+            LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A' 
+            LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A' 
             del LOGS[CURRENT_ACCOUNT]["Daily"]
             del LOGS[CURRENT_ACCOUNT]["Punch cards"]
             del LOGS[CURRENT_ACCOUNT]["More promotions"]
@@ -399,7 +402,7 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
 def completePromotionalItems(browser: WebDriver):
     try:
         item = getDashboardData(browser)["promotionalItem"]
-        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == "https://account.microsoft.com/rewards":
+        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == "https://rewards.microsoft.com":
             browser.find_element_by_xpath('//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
             browser.switch_to.window(window_name = browser.window_handles[1])
@@ -1031,6 +1034,7 @@ def App():
 
 def main():
     global LANG, GEO, TZ
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
     try:
         LANG, GEO, TZ = getCCodeLangAndOffset()
