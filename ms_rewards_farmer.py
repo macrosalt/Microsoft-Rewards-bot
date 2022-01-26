@@ -97,10 +97,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                 prRed('[ERROR] Unusual activity detected !')
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
-        del LOGS[CURRENT_ACCOUNT]["Daily"]
-        del LOGS[CURRENT_ACCOUNT]["Punch cards"]
-        del LOGS[CURRENT_ACCOUNT]["More promotions"]
-        del LOGS[CURRENT_ACCOUNT]["PC searches"]
+        CleanLogs()
         UpdateLogs()
         raise Exception
     # Wait 5 seconds
@@ -148,10 +145,7 @@ def RewardsLogin(browser: WebDriver):
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
             LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A' 
             LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A' 
-            del LOGS[CURRENT_ACCOUNT]["Daily"]
-            del LOGS[CURRENT_ACCOUNT]["Punch cards"]
-            del LOGS[CURRENT_ACCOUNT]["More promotions"]
-            del LOGS[CURRENT_ACCOUNT]["PC searches"]
+            CleanLogs()
             UpdateLogs()
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             raise Exception(prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
@@ -268,7 +262,7 @@ def waitUntilQuizLoads(browser: WebDriver):
     refreshCount = 0
     while True:
         try:
-            browser.find_element_by_xpath('//*[@id="rqStartQuiz"]')
+            browser.find_element_by_xpath('//*[@id="currentQuestionContainer"]')
             return True
         except:
             if tries < 10:
@@ -292,14 +286,14 @@ def findBetween(s: str, first: str, last: str) -> str:
         return ""
 
 def getCCodeLangAndOffset() -> tuple:
-    nfo = ipapi.location()
-    lang = nfo['languages'].split(',')[0]
-    geo = nfo['country']
-    if nfo['utc_offset'] == None:
-        tz = str(0)
-    else:
+    try:
+        nfo = ipapi.location()
+        lang = nfo['languages'].split(',')[0]
+        geo = nfo['country']
         tz = str(round(int(nfo['utc_offset']) / 100 * 60))
-    return(lang, geo, tz)
+        return(lang, geo, tz)
+    except:
+        return('en-US', 'US', '-480')
 
 def getGoogleTrends(numberOfwords: int) -> list:
     search_terms = []
@@ -336,9 +330,9 @@ def resetTabs(browser: WebDriver):
 
         browser.switch_to.window(curr)
         time.sleep(0.5)
-        browser.get('https://account.microsoft.com/rewards/')
+        browser.get('https://rewards.microsoft.com/')
     except:
-        browser.get('https://account.microsoft.com/rewards/')
+        browser.get('https://rewards.microsoft.com/')
 
 def getAnswerCode(key: str, string: str) -> str:
 	t = 0
@@ -347,7 +341,6 @@ def getAnswerCode(key: str, string: str) -> str:
 	t += int(key[-2:], 16)
 	return str(t)
 
-@func_set_timeout(1300)
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
@@ -402,7 +395,7 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
 def completePromotionalItems(browser: WebDriver):
     try:
         item = getDashboardData(browser)["promotionalItem"]
-        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == "https://rewards.microsoft.com":
+        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == "https://rewards.microsoft.com/":
             browser.find_element_by_xpath('//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
             browser.switch_to.window(window_name = browser.window_handles[1])
@@ -703,12 +696,15 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
-    browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+    CurrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
+    if CurrentQuestionNumber == 1:
+        browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
+    Questions = numberOfQuestions - CurrentQuestionNumber + 1
     numberOfOptions = browser.execute_script("return _w.rewardsQuizRenderInfo.numberOfOptions")
-    for question in range(numberOfQuestions):
+    for question in range(Questions):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
@@ -893,6 +889,12 @@ def UpdateLogs():
     with open(f'Logs_{filename}.txt', 'w') as file:
         file.write(json.dumps(LOGS, indent = 4))
 
+def CleanLogs():
+    del LOGS[CURRENT_ACCOUNT]["Daily"]
+    del LOGS[CURRENT_ACCOUNT]["Punch cards"]
+    del LOGS[CURRENT_ACCOUNT]["More promotions"]
+    del LOGS[CURRENT_ACCOUNT]["PC searches"]
+
 def prRed(prt):
     print("\033[91m{}\033[00m".format(prt))
 def prGreen(prt):
@@ -950,7 +952,7 @@ def App():
                 startingPoints = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
                 browser.get('https://rewards.microsoft.com/dashboard')
-                if not (int(datetime.now().strftime("%H")) in list(range(0,12))) or not (LOGS[CURRENT_ACCOUNT]['Daily']):
+                if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
                     LOGS[CURRENT_ACCOUNT]['Daily'] = True
@@ -1009,10 +1011,7 @@ def App():
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
-            del LOGS[CURRENT_ACCOUNT]["Daily"]
-            del LOGS[CURRENT_ACCOUNT]["Punch cards"]
-            del LOGS[CURRENT_ACCOUNT]["More promotions"]
-            del LOGS[CURRENT_ACCOUNT]["PC searches"]
+            CleanLogs()
             UpdateLogs()
             
     except FunctionTimedOut:
@@ -1036,15 +1035,11 @@ def main():
     global LANG, GEO, TZ
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
-    try:
-        LANG, GEO, TZ = getCCodeLangAndOffset()
-    except:
-        LANG = 'en-US'
-        GEO = 'US'
+    LANG, GEO, TZ = getCCodeLangAndOffset()
     # set time for launch program
     Logo()
     answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
-    if answer in ["Y", "y"] :
+    if answer.lower() == 'y':
         run_on = input("Set your time in 24h format (HH:MM): ")
         time_set = True
     else:
