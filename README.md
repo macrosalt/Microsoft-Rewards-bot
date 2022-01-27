@@ -39,7 +39,7 @@
       </ul>
     </ul></li>
     <li>Edit the accounts.json.sample with your accounts credentials and rename it by removing .sample at the end<br/>
-    If you want to add more than one account, the syntax is the following : <pre>[{
+    If you want to add more than one account, the syntax is the following (<code>mobile_user_agent</code> is optional): <pre>[{
         "username": "Your Email",
         "password": "Your Password",
         "mobile_user_agent": "your preferred mobile user agent"
@@ -50,7 +50,7 @@
         "mobile_user_agent": "your preferred mobile user agent"
 }]</pre></li>
     <li>Due to limits of Ipapi sometimes it returns error and it causes bot stops. So you can define default language and location to prevent it from 
-      <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/ae8d95845e77e61d6b154cb3cc9e2cd5ab69680c/ms_rewards_farmer.py#L989">here</a>.</li>
+      <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/479b2d4b25761d245dc6b3519627162a44d8f85b/ms_rewards_farmer.py#L296">here</a>.</li>
     <li>Run the script</li>
    </ul>
 </p>
@@ -78,4 +78,4 @@
 </p>
 <h2 align="center">⚠️CAUTION!⚠️</h2>
 <p align="center">
-  <h4 align="center">Do not use headless mode, it can caused your account to be suspended from Microsoft Rewards.</h4>
+  <h4 align="center">Do not use headless mode, it can cause your account to be suspended from Microsoft Rewards.</h4>
