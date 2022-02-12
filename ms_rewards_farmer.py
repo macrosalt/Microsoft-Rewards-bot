@@ -20,7 +20,7 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
 
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.87 Mobile Safari/537.36'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.87 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -982,26 +982,18 @@ def App():
                 browser.quit()
 
             if MOBILE:
-                if 'mobile_user_agent' in account.keys():
-                    browser = browserSetup(False, account['mobile_user_agent'])
-                else:
-                    browser = browserSetup(False, MOBILE_USER_AGENT)
+                browser = browserSetup(False, account.get('mobile_user_agent', MOBILE_USER_AGENT))
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
-                if LOGS[CURRENT_ACCOUNT]['PC searches'] and ERROR:
+                if LOGS[account['username']]['PC searches'] and ERROR:
                     startingPoints = POINTS_COUNTER
                     browser.get('https://rewards.microsoft.com/dashboard')
                     remainingSearches, remainingSearchesM = getRemainingSearches(browser)
-                    if remainingSearchesM != 0:
-                        print('[BING]', 'Starting Mobile Bing searches...')
-                        bingSearches(browser, remainingSearchesM, True)
-                    prGreen('[BING] Finished Mobile Bing searches !')
-                else:
-                    if remainingSearchesM != 0:
-                        print('[BING]', 'Starting Mobile Bing searches...')
-                        bingSearches(browser, remainingSearchesM, True)
-                        prGreen('[BING] Finished Mobile Bing searches !')
+                if remainingSearchesM != 0:
+                    print('[BING]', 'Starting Mobile Bing searches...')
+                    bingSearches(browser, remainingSearchesM, True)
+                prGreen('[BING] Finished Mobile Bing searches !')
                 browser.quit()
                 
             New_points = POINTS_COUNTER - startingPoints
