@@ -19,7 +19,7 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.62'
 MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.87 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
