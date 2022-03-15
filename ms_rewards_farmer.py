@@ -19,8 +19,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.62'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.87 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1150.30'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 11; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.58 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -292,6 +292,7 @@ def getCCodeLangAndOffset() -> tuple:
         geo = nfo['country']
         tz = str(round(int(nfo['utc_offset']) / 100 * 60))
         return(lang, geo, tz)
+    # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
     except:
         return('en-US', 'US', '-480')
 
@@ -1026,11 +1027,11 @@ def App():
 def main():
     global LANG, GEO, TZ
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
+    os.system('color')
     LANG, GEO, TZ = getCCodeLangAndOffset()
-    # set time for launch program
     Logo()
-    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
+    # set time for launch program
+    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: \n")
     if answer.lower() == 'y':
         run_on = input("Set your time in 24h format (HH:MM): ")
         time_set = True
