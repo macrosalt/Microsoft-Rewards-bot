@@ -24,6 +24,7 @@
 <h3 align="center">A simple bot that uses selenium to farm Microsoft Rewards written in Python.</h3>
 
 <h2 align="center">Installation</h2>
+<p allign="center">You can also find this repository on <a href="https://gitlab.com/farshadzargary1997/Microsoft-Rewards-bot">Gitlab</a>.</p>
 <p align="center">
   <ul>
     <li>Install requirements with the following command : <pre>pip install -r requirements.txt</pre></li>
