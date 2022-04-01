@@ -89,6 +89,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             if message == 'Your account has been locked':
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                UpdateLogs()
                 prRed('[ERROR] Your account has been locked !')
         # Handling unusual activity detected.
         except NoSuchElementException:
@@ -123,7 +124,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     print('[LOGIN]', 'Logged-in !')
      # Check Microsoft Rewards
     print('[LOGIN] Logging into Microsoft Rewards...')
-    RewardsLogin(browser)
+    # RewardsLogin(browser)
     # Check Login
     print('[LOGIN]', 'Ensuring login on Bing...')
     checkBingLogin(browser, isMobile)
@@ -149,11 +150,11 @@ def RewardsLogin(browser: WebDriver):
             UpdateLogs()
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             raise Exception(prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
-        # Check whether Rewards is availabel in your region or not
+        # Check whether Rewards is available in your region or not
         elif browser.find_element_by_xpath('//*[@id="error"]/h1').get_attribute('innerHTML') == 'Microsoft Rewards is not available in this country or region.':
             prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
-            input('[ERROR] Press any ket to close...')
-            exit()
+            input('[ERROR] Press any key to close...')
+            os._exit()
     except NoSuchElementException:
         pass
 
@@ -176,6 +177,15 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         except:
             try:
                 browser.find_element_by_id('bnp_btn_accept').click()
+            except:
+                pass
+            time.sleep(1)
+            try:
+                msg = browser.find_element_by_xpath('//*[@id="bnp_ttc_div"]/div[1]/div[2]/span').get_attribute('innerHTML')
+                if msg == 'This site uses cookies for analytics, personalized content and ads. By continuing to browse this site, you agree to this use.':
+                    browser.execute_script("""var element = document.evaluate('/html/body/div[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                                            element.remove();""")
+                    time.sleep(5)
             except:
                 pass
             time.sleep(1)
@@ -870,9 +880,9 @@ def Logs():
                 LOGS[account]['More promotions'] = False
                 LOGS[account]['PC searches'] = False 
         UpdateLogs()               
-        prGreen('[LOGS] Logs loaded successfully.\n')
+        prGreen('\n[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
-        prRed(f'[LOGS] "Logs_{filename}.txt" file not found.')
+        prRed(f'\n[LOGS] "Logs_{filename}.txt" file not found.')
         LOGS = {}
         for account in ACCOUNTS:
             LOGS[account["username"]] = {"Last check": "",
@@ -1031,16 +1041,12 @@ def main():
     LANG, GEO, TZ = getCCodeLangAndOffset()
     Logo()
     # set time for launch program
-    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: \n")
-    if answer.lower() == 'y':
-        run_on = input("Set your time in 24h format (HH:MM): ")
-        time_set = True
-    else:
-        time_set = False
+    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
+    time_set = True if answer.lower() == 'y' else False
     if time_set:
+        run_on = input("Set your time in 24h format (HH:MM): ")
         while True:
-            real_time = datetime.now().strftime("%H:%M")
-            if real_time == run_on:
+            if datetime.now().strftime("%H:%M") == run_on:
                 start = time.time()
                 Logs()
                 App()
