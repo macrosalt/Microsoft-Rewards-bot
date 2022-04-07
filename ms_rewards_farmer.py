@@ -9,6 +9,7 @@ import os
 from random_word import RandomWords
 from func_timeout import func_set_timeout, FunctionTimedOut
 import warnings
+import platform
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -53,6 +54,9 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
         options.add_argument("--headless")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
+    if platform.system() == 'Linux':
+        options.add_argument("--no-sandbox")
+        options.add_argument("----disable-dev-shm-usage")
     chrome_browser_obj = webdriver.Chrome(options=options)
     return chrome_browser_obj
 
