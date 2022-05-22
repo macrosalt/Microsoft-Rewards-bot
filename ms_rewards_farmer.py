@@ -379,7 +379,14 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
             break
 
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
-    browser.get('https://bing.com')
+    try:
+        if not isMobile:
+            browser.find_element_by_id('sb_form_q').clear()
+            time.sleep(1)
+        else:
+            browser.get('https://bing.com')
+    except:
+        browser.get('https://bing.com')
     time.sleep(2)
     searchbar = browser.find_element_by_id('sb_form_q')
     for char in word:
