@@ -10,6 +10,8 @@ from random_word import RandomWords
 from func_timeout import func_set_timeout, FunctionTimedOut
 import warnings
 import platform
+from argparse import ArgumentParser
+import sys
 
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -27,17 +29,21 @@ POINTS_COUNTER = 0
 
 # Global variables
 FINISHED_ACCOUNTS = [] # added accounts when finished or those have same date as today date in LOGS at beginning.
-SHARED_ITEMS = [] # similar account in 'accounts.json' and 'logs_accounts.txt'.
 ERROR = True # A flag for when error occurred.
 MOBILE = True # A flag for when the account has mobile bing search, it is useful for accounts level 1 to pass mobile.
 CURRENT_ACCOUNT = None # save current account into this variable when farming.
 LOGS = {} # Dictionary of accounts to write in 'logs_accounts.txt'.
 
 # Define browser setup function
-def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -> WebDriver:
+def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
     # Create Chrome browser
     from selenium.webdriver.chrome.options import Options
     options = Options()
+    if ARGS.session:
+        if not isMobile:
+            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+"/Profiles/" + CURRENT_ACCOUNT, "PC")}')
+        else:
+            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+"/Profiles/" + CURRENT_ACCOUNT, "Mobile")}')
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
@@ -50,20 +56,45 @@ def browserSetup(headless_mode: bool = False, user_agent: str = PC_USER_AGENT) -
     options.add_experimental_option("prefs",prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    if headless_mode :
+    if ARGS.headless:
         options.add_argument("--headless")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
     if platform.system() == 'Linux':
         options.add_argument("--no-sandbox")
-        options.add_argument("----disable-dev-shm-usage")
+        options.add_argument("--disable-dev-shm-usage")
     chrome_browser_obj = webdriver.Chrome(options=options)
     return chrome_browser_obj
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
+    # Close welcome tab for new sessions
+    if ARGS.session:
+        time.sleep(2)
+        if len(browser.window_handles) > 1:
+            current_window = browser.current_window_handle
+            for handler in browser.window_handles:
+                if handler != current_window:
+                    browser.switch_to.window(handler)
+                    time.sleep(0.5)
+                    browser.close()
+            browser.switch_to.window(current_window)
     # Access to bing.com
     browser.get('https://login.live.com/')
+    # Check if account is already logged in
+    if ARGS.session:
+        if browser.title == 'Microsoft account | Home':
+            prGreen('[LOGIN] Account already logged in !')
+            RewardsLogin(browser)
+            print('[LOGIN]', 'Ensuring login on Bing...')
+            checkBingLogin(browser, isMobile)
+            return
+        elif browser.title == 'Your account has been temporarily suspended':
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            UpdateLogs()
+            CleanLogs()
+            raise Exception(prRed('[ERROR] Your account has been locked !'))
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter email
@@ -169,6 +200,19 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     browser.get('https://bing.com/')
     # Wait 15 seconds
     time.sleep(15)
+    # try to get points at first if account already logged in
+    if ARGS.session:
+        try:
+            if not isMobile:
+                POINTS_COUNTER = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
+            else:
+                browser.find_element_by_id('mHamburger').click()
+                time.sleep(1)
+                POINTS_COUNTER = int(browser.find_element_by_id('fly_id_rc').get_attribute('innerHTML'))
+        except:
+            pass
+        else:
+            return None
     #Accept Cookies
     try:
         browser.find_element_by_id('bnp_btn_accept').click()
@@ -858,21 +902,66 @@ def getRemainingSearches(browser: WebDriver):
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
 
-# Read logs and check whether account farmed or not
+def validate_time(time: str):
+    '''
+    check the time format and return the time if it is valid, otherwise return None
+    '''
+    try:
+        t = datetime.strptime(time, "%H:%M").strftime("%H:%M")
+    except ValueError:
+        return None
+    else:
+        return t
+
+def argument_parser():
+    '''
+    getting args from command line (--everyday [time:(HH:MM)], --session, --headless)
+    '''
+    parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1", 
+                                    allow_abbrev=False, 
+                                    usage="You may use execute the program with the default config or use arguments to configure available options.")
+    parser.add_argument('--everyday', 
+                        metavar=None,
+                        help='[Optional] This argument takes an input as time in 24h format (HH:MM) to execute the program at the given time everyday.', 
+                        type=str, 
+                        required=False)
+    parser.add_argument('--headless',
+                        help='[Optional] Enable headless browser.',
+                        action = 'store_true',
+                        required=False)
+    parser.add_argument('--session',
+                        help='[Optional] Creates session for each account and use it.',
+                        action='store_true',
+                        required=False)
+    args = parser.parse_args()
+    if args.everyday:
+        if isinstance(validate_time(args.everyday), str):
+            args.everyday = validate_time(args.everyday)
+        else:
+            parser.error(f'"{args.everyday}" is not valid. Please use (HH:MM) format.')
+    if len(sys.argv) > 1:
+        for arg in vars(args):
+            prBlue(f"[INFO] {arg} : {getattr(args, arg)}")
+    return args
+
 def Logs():
+    '''
+    Read logs and check whether account farmed or not
+    '''
     global LOGS
+    shared_items =[]
     try:
         # Read datas on 'logs_accounts.txt'
         LOGS = json.load(open(f"logs_{filename}.txt", "r"))
         # sync accounts and logs file for new accounts or remove accounts from logs.
         for user in ACCOUNTS:
-            SHARED_ITEMS.append(user['username'])
+            shared_items.append(user['username'])
             if not user['username'] in LOGS.keys():
                 LOGS[user["username"]] = {"Last check": "",
                                         "Today's points": 0,
                                         "Points": 0}
-        if SHARED_ITEMS != LOGS.keys():
-            diff = LOGS.keys() - SHARED_ITEMS
+        if shared_items != LOGS.keys():
+            diff = LOGS.keys() - shared_items
             for accs in list(diff):
                 del LOGS[accs]
         
@@ -918,15 +1007,15 @@ def CleanLogs():
     del LOGS[CURRENT_ACCOUNT]["PC searches"]
 
 def prRed(prt):
-    print("\033[91m{}\033[00m".format(prt))
+    print(f"\033[91m{prt}\033[00m")
 def prGreen(prt):
-    print("\033[92m{}\033[00m".format(prt))
+    print(f"\033[92m{prt}\033[00m")
 def prYellow(prt):
-    print("\033[93m{}\033[00m".format(prt))
+    print(f"\033[93m{prt}\033[00m")
 def prBlue(prt):
-    print(f'\033[94m{prt}\033[00m')
+    print(f"\033[94m{prt}\033[00m")
 def prPurple(prt):
-    print("\033[95m{}\033[00m".format(prt))
+    print(f"\033[95m{prt}\033[00m")
 
 def Logo():
     prRed("""
@@ -936,7 +1025,7 @@ def Logo():
     ██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
     ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
     ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
-    prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.0\n")
+    prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.1\n")
 
 try:
     account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
@@ -956,6 +1045,9 @@ except FileNotFoundError:
     ACCOUNTS = json.load(open(account_path, "r"))
 
 def App():
+    '''
+    fuction that runs other functions to farm.
+    '''
     global ERROR, MOBILE, CURRENT_ACCOUNT
     try:
         for account in ACCOUNTS:
@@ -1004,7 +1096,7 @@ def App():
                 browser.quit()
 
             if MOBILE:
-                browser = browserSetup(False, account.get('mobile_user_agent', MOBILE_USER_AGENT))
+                browser = browserSetup(True, account.get('mobile_user_agent', MOBILE_USER_AGENT))
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
@@ -1046,22 +1138,30 @@ def App():
         App()
 
 def main():
-    global LANG, GEO, TZ
+    global LANG, GEO, TZ, ARGS
+    # ignore DeprecationWarning: Using Selenium 4 instead of Selenium 3
     warnings.filterwarnings("ignore", category=DeprecationWarning)
+    # show colors in terminal
     os.system('color')
-    LANG, GEO, TZ = getCCodeLangAndOffset()
     Logo()
-    # set time for launch program
-    answer = input("If you want to run the program on a specefic time press (Y/y) and if you don't just press Enter: ")
-    time_set = True if answer.lower() == 'y' else False
-    if time_set:
-        run_on = input("Set your time in 24h format (HH:MM): ")
+    # Get the arguments from the command line
+    ARGS = argument_parser()
+    LANG, GEO, TZ = getCCodeLangAndOffset()
+    # set time to launch the program if everyday is not set
+    if not ARGS.everyday:
+        answer = input('''If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter
+(\033[93manything other than time causes the script to start immediately\033[00m): ''')
+        run_on = validate_time(answer)
+    else:
+        run_on = ARGS.everyday
+    if run_on is not None:
         while True:
             if datetime.now().strftime("%H:%M") == run_on:
                 start = time.time()
                 Logs()
                 App()
-                break
+                if ARGS.everyday is None:
+                    break
             time.sleep(30)
     else:
         start = time.time()
