@@ -53,6 +53,16 @@
     <li>Due to limits of Ipapi sometimes it returns error and it causes bot stops. So you can define default language and location to prevent it from 
       <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/479b2d4b25761d245dc6b3519627162a44d8f85b/ms_rewards_farmer.py#L296">here</a>.</li>
     <li>Run the script</li>
+      <ul>
+        <li>Use optinal arguments</li>
+          <ul>
+            <li><code>--headless</code> You can use this argument to run the script in headless mode.</li>
+            <li><code>--session</code> Use this argument to create session for each account.</li>
+            <li><code>--everyday TIME</code> This argument takes time in 24h format (HH:MM) to run it everyday at the given time by leaving the program open.</li>
+            <li>For example type in your terminal <code>python ms_rewards_farmer.py --everyday 14:30 --headless --session</code> You don't need to use all of arguments.</li>
+          </ul>
+        <li>Run the script normally that session and headless disabled and it asks you to input a time if you want to run it at a specific time.</li>
+      </ul>
    </ul>
 </p>
 
