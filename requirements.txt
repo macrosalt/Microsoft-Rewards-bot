@@ -2,9 +2,9 @@ certifi
 chardet
 idna
 requests
-selenium
+selenium==3.141.0
 urllib3
 ipapi
 func_timeout
-random-word
+random-word==1.0.7
 pyyaml
