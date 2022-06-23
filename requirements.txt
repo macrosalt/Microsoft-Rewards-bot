@@ -1,10 +1,2 @@
-certifi
-chardet
-idna
-requests
-selenium==3.141.0
-urllib3
-ipapi
-func_timeout
-random-word==1.0.7
 pyyaml
+pyvirtualdisplay

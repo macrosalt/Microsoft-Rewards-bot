@@ -13,6 +13,7 @@ import platform
 from argparse import ArgumentParser
 import sys
 
+from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -1138,6 +1139,9 @@ def App():
         App()
 
 def main():
+    display = Display(visible=0, size=(900, 800))
+    display.start()
+
     global LANG, GEO, TZ, ARGS
     # ignore DeprecationWarning: Using Selenium 4 instead of Selenium 3
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -1173,6 +1177,7 @@ def main():
     min, sec = divmod(remain, 60)
     print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
     input('Press any key to close the program...')
-          
+    display.stop()
+
 if __name__ == '__main__':
     main()

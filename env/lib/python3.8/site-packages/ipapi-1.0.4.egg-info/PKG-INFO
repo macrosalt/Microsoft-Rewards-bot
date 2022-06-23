@@ -1,0 +1,12 @@
+Metadata-Version: 1.1
+Name: ipapi
+Version: 1.0.4
+Summary: ipapi - Python library. https://ipapi.co - IP Address Location & Geolocation API by Kloudend. A REST API for JSON, CSV, XML, YAML. Supported languages are PHP, JavaScript, Python, Node, Java, Ruby, Go, C# and more. Free & paid API for a secure, fast & reliable IP lookup (city, country, latitude, longitude, region, currency, timezone, and more)
+Home-page: https://github.com/ipapi-co/ipapi-python
+Author: ipapi
+Author-email: pweb@ipapi.co
+License: MIT License
+Download-URL: https://github.com/ipapi-co/ipapi-python/archive/1.0.4.tar.gz
+Description: UNKNOWN
+Keywords: ip location,ip lookup,ip geolocation,geolocation,ip address,ip address geolocation,ip address lookup,ip address to location,ip address tracer,ip address tracker,ip checker,ip lookup,ip tracker,ip-address,ipapi,ipapi.co,ipv4,ipv6,location,lookup ip address,trace ip address
+Platform: UNKNOWN
