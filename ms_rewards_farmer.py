@@ -23,8 +23,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36 Edg/101.0.1210.32'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.59 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -491,6 +491,14 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
+    # Accept cookie popup
+    if isElementExists(browser, 'bnp_container'):
+        browser.find_element_by_id('bnp_btn_accept').click()
+        time.sleep(2)
+    # Click on later on Bing wallpaper app popup
+    if isElementExists(browser, 'b_notificationContainer_bop'):
+        browser.find_element_by_id('bnp_hfly_cta2').click()
+        time.sleep(2)
     browser.find_element_by_id("btoption" + str(random.randint(0, 1))).click()
     time.sleep(random.randint(10, 15))
     browser.close()
@@ -507,6 +515,10 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element(By.ID, 'bnp_btn_accept').click()
+        time.sleep(2)
     browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
@@ -519,6 +531,10 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
                 if browser.find_element_by_id("rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
                     answers.append("rqAnswerOption" + str(i))
             for answer in answers:
+                # Click on later on Bing wallpaper app popup
+                if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+                    browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+                    time.sleep(2)
                 browser.find_element_by_id(answer).click()
                 time.sleep(5)
                 if not waitUntilQuestionRefresh(browser):
@@ -528,6 +544,10 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
             correctOption = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
             for i in range(4):
                 if browser.find_element_by_id("rqAnswerOption" + str(i)).get_attribute("data-option") == correctOption:
+                    # Click on later on Bing wallpaper app popup
+                    if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+                        browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+                        time.sleep(2)
                     browser.find_element_by_id("rqAnswerOption" + str(i)).click()
                     time.sleep(5)
                     if not waitUntilQuestionRefresh(browser):
@@ -546,6 +566,10 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element_by_id('bnp_btn_accept').click()
+        time.sleep(2)
     try :
         browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
         waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 3)
@@ -554,6 +578,11 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
             counter = str(browser.find_element_by_xpath('//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
             numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
             for question in range(numberOfQuestions):
+                # Click on later on Bing wallpaper app popup
+                if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+                    browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+                    time.sleep(2)
+                    
                 browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
                 time.sleep(8)
                 # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
@@ -588,6 +617,10 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(15)
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element_by_id('bnp_btn_accept').click()
+        time.sleep(2)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
@@ -595,6 +628,11 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(5)
     for question in range(10):
+        # Click on later on Bing wallpaper app popup
+        if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+            browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+            time.sleep(2)
+        
         answerEncodeKey = browser.execute_script("return _G.IG")
 
         answer1 = browser.find_element_by_id("rqAnswerOption0")
@@ -902,6 +940,14 @@ def getRemainingSearches(browser: WebDriver):
         targetMobile = counters['mobileSearch'][0]['pointProgressMax']
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
+
+def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
+    '''Returns True if given element exits else False'''
+    try:
+        browser.find_element(_by, element)
+    except NoSuchElementException:
+        return False
+    return True
 
 def validate_time(time: str):
     '''
