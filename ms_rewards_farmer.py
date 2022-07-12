@@ -22,8 +22,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.44'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.59 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.53 Safari/537.36 Edg/103.0.1264.37'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -491,11 +491,11 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
     # Accept cookie popup
-    if isElementExists(browser, 'bnp_container'):
+    if isElementExists(browser, By.ID, 'bnp_container'):
         browser.find_element_by_id('bnp_btn_accept').click()
         time.sleep(2)
     # Click on later on Bing wallpaper app popup
-    if isElementExists(browser, 'b_notificationContainer_bop'):
+    if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
         browser.find_element_by_id('bnp_hfly_cta2').click()
         time.sleep(2)
     browser.find_element_by_id("btoption" + str(random.randint(0, 1))).click()
