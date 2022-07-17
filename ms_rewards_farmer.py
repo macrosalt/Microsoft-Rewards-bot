@@ -115,27 +115,34 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Wait 5 seconds
     time.sleep(5)
     try:
-        # Click No.
-        browser.find_element(By.ID, 'idBtn_Back').click()
+        if ARGS.session:
+            # Click Yes to stay signed in.
+            browser.find_element(By.ID, 'idSIButton9').click()
+        else:
+            # Click No.
+            browser.find_element(By.ID, 'idBtn_Back').click()
     except NoSuchElementException:
         # Check for if account has been locked.
-        try:
-            message = browser.find_element(By.ID, 'StartHeader').get_attribute('innerHTML')
-            if message == 'Your account has been locked':
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                UpdateLogs()
-                prRed('[ERROR] Your account has been locked !')
-        # Handling unusual activity detected.
-        except NoSuchElementException:
-            message = browser.find_element(By.ID, 'iSelectProofTitle').get_attribute('innerHTML')
-            if message == 'Help us protect your account':
-                prRed('[ERROR] Unusual activity detected !')
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
-        CleanLogs()
-        UpdateLogs()
-        raise Exception
+        if browser.title == "Your account has been temporarily suspended":
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            UpdateLogs()
+            CleanLogs()
+            raise Exception(prRed('[ERROR] Your account has been locked !'))
+        elif browser.title == "Help us protect your account":
+            prRed('[ERROR] Unusual activity detected !')
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
+            UpdateLogs()
+            CleanLogs()
+            input('Press any key to close...')
+            os._exit(0)
+        else:
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unknown error !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            UpdateLogs()
+            CleanLogs()
+            raise Exception(prRed('[ERROR] Unknown error !'))
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
