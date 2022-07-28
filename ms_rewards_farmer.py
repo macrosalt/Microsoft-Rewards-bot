@@ -22,8 +22,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36 Edg/102.0.1245.30'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.59 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.53 Safari/537.36 Edg/103.0.1264.37'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -99,49 +99,56 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter email
     print('[LOGIN]', 'Writing email...')
-    browser.find_element_by_name("loginfmt").send_keys(email)
+    browser.find_element(By.NAME, "loginfmt").send_keys(email)
     # Click next
-    browser.find_element_by_id('idSIButton9').click()
+    browser.find_element(By.ID, 'idSIButton9').click()
     # Wait 2 seconds
     time.sleep(5)
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter password
-    browser.find_element_by_id("i0118").send_keys(pwd)
+    browser.find_element(By.ID, "i0118").send_keys(pwd)
     # browser.execute_script("document.getElementById('i0118').value = '" + pwd + "';")
     print('[LOGIN]', 'Writing password...')
     # Click next
-    browser.find_element_by_id('idSIButton9').click()
+    browser.find_element(By.ID, 'idSIButton9').click()
     # Wait 5 seconds
     time.sleep(5)
     try:
-        # Click No.
-        browser.find_element_by_id('idBtn_Back').click()
+        if ARGS.session:
+            # Click Yes to stay signed in.
+            browser.find_element(By.ID, 'idSIButton9').click()
+        else:
+            # Click No.
+            browser.find_element(By.ID, 'idBtn_Back').click()
     except NoSuchElementException:
         # Check for if account has been locked.
-        try:
-            message = browser.find_element_by_id('StartHeader').get_attribute('innerHTML')
-            if message == 'Your account has been locked':
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                UpdateLogs()
-                prRed('[ERROR] Your account has been locked !')
-        # Handling unusual activity detected.
-        except NoSuchElementException:
-            message = browser.find_element_by_id('iSelectProofTitle').get_attribute('innerHTML')
-            if message == 'Help us protect your account':
-                prRed('[ERROR] Unusual activity detected !')
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
-        CleanLogs()
-        UpdateLogs()
-        raise Exception
+        if browser.title == "Your account has been temporarily suspended":
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            UpdateLogs()
+            CleanLogs()
+            raise Exception(prRed('[ERROR] Your account has been locked !'))
+        elif browser.title == "Help us protect your account":
+            prRed('[ERROR] Unusual activity detected !')
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
+            UpdateLogs()
+            CleanLogs()
+            input('Press any key to close...')
+            os._exit(0)
+        else:
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unknown error !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            UpdateLogs()
+            CleanLogs()
+            raise Exception(prRed('[ERROR] Unknown error !'))
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
     print('[LOGIN]', 'Passing security checks...')
     try:
-        browser.find_element_by_id('iLandingViewAction').click()
+        browser.find_element(By.ID, 'iLandingViewAction').click()
     except (NoSuchElementException, ElementNotInteractableException) as e:
         pass
     # Wait complete loading
@@ -151,7 +158,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         pass
     # Click next
     try:
-        browser.find_element_by_id('idSIButton9').click()
+        browser.find_element(By.ID, 'idSIButton9').click()
         # Wait 5 seconds
         time.sleep(5)
     except (NoSuchElementException, ElementNotInteractableException) as e:
@@ -169,15 +176,15 @@ def RewardsLogin(browser: WebDriver):
     browser.get('https://rewards.microsoft.com/dashboard')
     try:
         time.sleep(10)
-        browser.find_element_by_id('raf-signin-link-id').click()
+        browser.find_element(By.ID, 'raf-signin-link-id').click()
     except:
         pass
     time.sleep(10)
     # Check for ErrorMessage
     try:
-        browser.find_element_by_id('error').is_displayed()
+        browser.find_element(By.ID, 'error').is_displayed()
         # Check wheter account suspended or not
-        if browser.find_element_by_xpath('//*[@id="error"]/h1').get_attribute('innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
+        if browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
             LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A' 
             LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A' 
@@ -186,7 +193,7 @@ def RewardsLogin(browser: WebDriver):
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             raise Exception(prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
         # Check whether Rewards is available in your region or not
-        elif browser.find_element_by_xpath('//*[@id="error"]/h1').get_attribute('innerHTML') == 'Microsoft Rewards is not available in this country or region.':
+        elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == 'Microsoft Rewards is not available in this country or region.':
             prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
             input('[ERROR] Press any key to close...')
             os._exit()
@@ -204,32 +211,32 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     if ARGS.session:
         try:
             if not isMobile:
-                POINTS_COUNTER = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
+                POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
             else:
-                browser.find_element_by_id('mHamburger').click()
+                browser.find_element(By.ID, 'mHamburger').click()
                 time.sleep(1)
-                POINTS_COUNTER = int(browser.find_element_by_id('fly_id_rc').get_attribute('innerHTML'))
+                POINTS_COUNTER = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
         except:
             pass
         else:
             return None
     #Accept Cookies
     try:
-        browser.find_element_by_id('bnp_btn_accept').click()
+        browser.find_element(By.ID, 'bnp_btn_accept').click()
     except:
         pass
     if isMobile:
         try:
             time.sleep(1)
-            browser.find_element_by_id('mHamburger').click()
+            browser.find_element(By.ID, 'mHamburger').click()
         except:
             try:
-                browser.find_element_by_id('bnp_btn_accept').click()
+                browser.find_element(By.ID, 'bnp_btn_accept').click()
             except:
                 pass
             time.sleep(1)
             try:
-                msg = browser.find_element_by_xpath('//*[@id="bnp_ttc_div"]/div[1]/div[2]/span').get_attribute('innerHTML')
+                msg = browser.find_element(By.XPATH, '//*[@id="bnp_ttc_div"]/div[1]/div[2]/span').get_attribute('innerHTML')
                 if msg == 'This site uses cookies for analytics, personalized content and ads. By continuing to browse this site, you agree to this use.':
                     browser.execute_script("""var element = document.evaluate('/html/body/div[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                                             element.remove();""")
@@ -238,17 +245,17 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 pass
             time.sleep(1)
             try:
-                browser.find_element_by_id('mHamburger').click()
+                browser.find_element(By.ID, 'mHamburger').click()
             except:
                 pass
         try:
             time.sleep(1)
-            browser.find_element_by_id('HBSignIn').click()
+            browser.find_element(By.ID, 'HBSignIn').click()
         except:
             pass
         try:
             time.sleep(2)
-            browser.find_element_by_id('iShowSkip').click()
+            browser.find_element(By.ID, 'iShowSkip').click()
             time.sleep(3)
         except:
             if str(browser.current_url).split('?')[0] == "https://account.live.com/proofs/Add":
@@ -267,25 +274,25 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     try:
         if not isMobile:
             try:
-                POINTS_COUNTER = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
+                POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
             except:
-                browser.find_element_by_id('id_s').click()
+                browser.find_element(By.ID, 'id_s').click()
                 time.sleep(15)
                 checkBingLogin(browser, isMobile)
         else:
             try:
-                browser.find_element_by_id('mHamburger').click()
+                browser.find_element(By.ID, 'mHamburger').click()
             except:
                 try:
-                    browser.find_element_by_id('bnp_close_link').click()
+                    browser.find_element(By.ID, 'bnp_close_link').click()
                     time.sleep(4)
-                    browser.find_element_by_id('bnp_btn_accept').click()
+                    browser.find_element(By.ID, 'bnp_btn_accept').click()
                 except:
                     pass
                 time.sleep(1)
-                browser.find_element_by_id('mHamburger').click()
+                browser.find_element(By.ID, 'mHamburger').click()
             time.sleep(1)
-            POINTS_COUNTER = int(browser.find_element_by_id('fly_id_rc').get_attribute('innerHTML'))
+            POINTS_COUNTER = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
     except:
         checkBingLogin(browser, isMobile)
 
@@ -300,7 +307,7 @@ def waitUntilQuestionRefresh(browser: WebDriver):
     refreshCount = 0
     while True:
         try:
-            browser.find_elements_by_class_name('rqECredits')[0]
+            browser.find_elements(By.CLASS_NAME, 'rqECredits')[0]
             return True
         except:
             if tries < 10:
@@ -320,7 +327,7 @@ def waitUntilQuizLoads(browser: WebDriver):
     refreshCount = 0
     while True:
         try:
-            browser.find_element_by_xpath('//*[@id="currentQuestionContainer"]')
+            browser.find_element(By.XPATH, '//*[@id="currentQuestionContainer"]')
             return True
         except:
             if tries < 10:
@@ -425,14 +432,14 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     try:
         if not isMobile:
-            browser.find_element_by_id('sb_form_q').clear()
+            browser.find_element(By.ID, 'sb_form_q').clear()
             time.sleep(1)
         else:
             browser.get('https://bing.com')
     except:
         browser.get('https://bing.com')
     time.sleep(2)
-    searchbar = browser.find_element_by_id('sb_form_q')
+    searchbar = browser.find_element(By.ID, 'sb_form_q')
     for char in word:
         searchbar.send_keys(char)
         time.sleep(0.33)
@@ -441,19 +448,19 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     points = 0
     try:
         if not isMobile:
-            points = int(browser.find_element_by_id('id_rc').get_attribute('innerHTML'))
+            points = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
         else:
             try :
-                browser.find_element_by_id('mHamburger').click()
+                browser.find_element(By.ID, 'mHamburger').click()
             except UnexpectedAlertPresentException:
                 try :
                     browser.switch_to.alert.accept()
                     time.sleep(1)
-                    browser.find_element_by_id('mHamburger').click()
+                    browser.find_element(By.ID, 'mHamburger').click()
                 except NoAlertPresentException :
                     pass
             time.sleep(1)
-            points = int(browser.find_element_by_id('fly_id_rc').get_attribute('innerHTML'))
+            points = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
     except:
         pass
     return points
@@ -462,7 +469,7 @@ def completePromotionalItems(browser: WebDriver):
     try:
         item = getDashboardData(browser)["promotionalItem"]
         if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == "https://rewards.microsoft.com/":
-            browser.find_element_by_xpath('//*[@id="promo-item"]/section/div/div/div/a').click()
+            browser.find_element(By.XPATH, '//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
             browser.switch_to.window(window_name = browser.window_handles[1])
             time.sleep(8)
@@ -475,7 +482,7 @@ def completePromotionalItems(browser: WebDriver):
 
 def completeDailySetSearch(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(random.randint(13, 17))
@@ -486,11 +493,19 @@ def completeDailySetSearch(browser: WebDriver, cardNumber: int):
 
 def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
-    browser.find_element_by_id("btoption" + str(random.randint(0, 1))).click()
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element(By.ID, 'bnp_btn_accept').click()
+        time.sleep(2)
+    # Click on later on Bing wallpaper app popup
+    if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+        browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+        time.sleep(2)
+    browser.find_element(By.ID, "btoption" + str(random.randint(0, 1))).click()
     time.sleep(random.randint(10, 15))
     browser.close()
     time.sleep(2)
@@ -499,14 +514,18 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
 
 def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[' + str(cardNumber) + ']/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[' + str(cardNumber) + ']/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
     time.sleep(3)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(12)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
-    browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element(By.ID, 'bnp_btn_accept').click()
+        time.sleep(2)
+    browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
@@ -515,10 +534,14 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
-                if browser.find_element_by_id("rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
+                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
                     answers.append("rqAnswerOption" + str(i))
             for answer in answers:
-                browser.find_element_by_id(answer).click()
+                # Click on later on Bing wallpaper app popup
+                if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+                    browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+                    time.sleep(2)
+                browser.find_element(By.ID, answer).click()
                 time.sleep(5)
                 if not waitUntilQuestionRefresh(browser):
                     return
@@ -526,8 +549,12 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
         elif numberOfOptions == 4:
             correctOption = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
             for i in range(4):
-                if browser.find_element_by_id("rqAnswerOption" + str(i)).get_attribute("data-option") == correctOption:
-                    browser.find_element_by_id("rqAnswerOption" + str(i)).click()
+                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute("data-option") == correctOption:
+                    # Click on later on Bing wallpaper app popup
+                    if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+                        browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+                        time.sleep(2)
+                    browser.find_element(By.ID, "rqAnswerOption" + str(i)).click()
                     time.sleep(5)
                     if not waitUntilQuestionRefresh(browser):
                         return
@@ -541,18 +568,27 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
 
 def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
     time.sleep(2)
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(8)
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element(By.ID, 'bnp_btn_accept').click()
+        time.sleep(2)
     try :
-        browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+        browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
         waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 3)
     except (NoSuchElementException, TimeoutException):
         try:
-            counter = str(browser.find_element_by_xpath('//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
+            counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
             numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
             for question in range(numberOfQuestions):
+                # Click on later on Bing wallpaper app popup
+                if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+                    browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+                    time.sleep(2)
+                    
                 browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
                 time.sleep(8)
                 # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
@@ -571,10 +607,10 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
             return
     time.sleep(3)
     correctAnswer = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
-    if browser.find_element_by_id("rqAnswerOption0").get_attribute("data-option") == correctAnswer:
-        browser.find_element_by_id("rqAnswerOption0").click()
+    if browser.find_element(By.ID, "rqAnswerOption0").get_attribute("data-option") == correctAnswer:
+        browser.find_element(By.ID, "rqAnswerOption0").click()
     else :
-        browser.find_element_by_id("rqAnswerOption1").click()
+        browser.find_element(By.ID, "rqAnswerOption1").click()
     time.sleep(10)
     browser.close()
     time.sleep(2)
@@ -583,24 +619,33 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
 
 def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     time.sleep(2)
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(15)
+    # Accept cookie popup
+    if isElementExists(browser, By.ID, 'bnp_container'):
+        browser.find_element(By.ID, 'bnp_btn_accept').click()
+        time.sleep(2)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
-    browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+    browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(5)
     for question in range(10):
+        # Click on later on Bing wallpaper app popup
+        if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
+            browser.find_element(By.ID, 'bnp_hfly_cta2').click()
+            time.sleep(2)
+        
         answerEncodeKey = browser.execute_script("return _G.IG")
 
-        answer1 = browser.find_element_by_id("rqAnswerOption0")
+        answer1 = browser.find_element(By.ID, "rqAnswerOption0")
         answer1Title = answer1.get_attribute('data-option')
         answer1Code = getAnswerCode(answerEncodeKey, answer1Title)
 
-        answer2 = browser.find_element_by_id("rqAnswerOption1")
+        answer2 = browser.find_element(By.ID, "rqAnswerOption1")
         answer2Title = answer2.get_attribute('data-option')
         answer2Code = getAnswerCode(answerEncodeKey, answer2Title)
 
@@ -620,7 +665,7 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def getDashboardData(browser: WebDriver) -> dict:
-    dashboard = findBetween(browser.find_element_by_xpath('/html/body').get_attribute('innerHTML'), "var dashboard = ", ";\n        appDataModule.constant(\"prefetchedDashboard\", dashboard);")
+    dashboard = findBetween(browser.find_element(By.XPATH, '/html/body').get_attribute('innerHTML'), "var dashboard = ", ";\n        appDataModule.constant(\"prefetchedDashboard\", dashboard);")
     dashboard = json.loads(dashboard)
     return dashboard
 
@@ -678,12 +723,12 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 browser.switch_to.window(window_name = browser.window_handles[0])
                 time.sleep(2)
             if child['promotionType'] == "quiz" and child['pointProgressMax'] >= 50 :
-                browser.find_element_by_xpath('//*[@id="rewards-dashboard-punchcard-details"]/div[2]/div[2]/div[7]/div[3]/div[1]/a').click()
+                browser.find_element(By.XPATH, '//*[@id="rewards-dashboard-punchcard-details"]/div[2]/div[2]/div[7]/div[3]/div[1]/a').click()
                 time.sleep(1)
                 browser.switch_to.window(window_name = browser.window_handles[1])
                 time.sleep(15)
                 try:
-                    browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+                    browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
                 except:
                     pass
                 time.sleep(5)
@@ -693,7 +738,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 numberOfQuestions -= AnswerdQuestions
                 for question in range(numberOfQuestions):
                     answer = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
-                    browser.find_element_by_xpath(f'//input[@value="{answer}"]').click()
+                    browser.find_element(By.XPATH, f'//input[@value="{answer}"]').click()
                     time.sleep(15)
                 time.sleep(5)
                 browser.close()
@@ -707,7 +752,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 time.sleep(1)
                 browser.switch_to.window(window_name = browser.window_handles[1])
                 time.sleep(8)
-                counter = str(browser.find_element_by_xpath('//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
+                counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
                 numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
                 for question in range(numberOfQuestions):
                     browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
@@ -745,7 +790,7 @@ def completePunchCards(browser: WebDriver):
     time.sleep(2)
 
 def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
     time.sleep(random.randint(13, 17))
@@ -755,7 +800,7 @@ def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
@@ -764,7 +809,7 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
         return
     CurrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
     if CurrentQuestionNumber == 1:
-        browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+        browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
@@ -774,10 +819,10 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
-                if browser.find_element_by_id("rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
+                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
                     answers.append("rqAnswerOption" + str(i))
             for answer in answers:
-                browser.find_element_by_id(answer).click()
+                browser.find_element(By.ID, answer).click()
                 time.sleep(5)
                 if not waitUntilQuestionRefresh(browser):
                     return
@@ -785,8 +830,8 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
         elif numberOfOptions == 4:
             correctOption = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
             for i in range(4):
-                if browser.find_element_by_id("rqAnswerOption" + str(i)).get_attribute("data-option") == correctOption:
-                    browser.find_element_by_id("rqAnswerOption" + str(i)).click()
+                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute("data-option") == correctOption:
+                    browser.find_element(By.ID, "rqAnswerOption" + str(i)).click()
                     time.sleep(5)
                     if not waitUntilQuestionRefresh(browser):
                         return
@@ -799,11 +844,11 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
-    counter = str(browser.find_element_by_xpath('//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
+    counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
     numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
     for question in range(numberOfQuestions):
         browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
@@ -816,24 +861,24 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
-    browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+    browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
     for question in range(10):
         answerEncodeKey = browser.execute_script("return _G.IG")
 
-        answer1 = browser.find_element_by_id("rqAnswerOption0")
+        answer1 = browser.find_element(By.ID, "rqAnswerOption0")
         answer1Title = answer1.get_attribute('data-option')
         answer1Code = getAnswerCode(answerEncodeKey, answer1Title)
 
-        answer2 = browser.find_element_by_id("rqAnswerOption1")
+        answer2 = browser.find_element(By.ID, "rqAnswerOption1")
         answer2Title = answer2.get_attribute('data-option')
         answer2Code = getAnswerCode(answerEncodeKey, answer2Title)
 
@@ -901,6 +946,14 @@ def getRemainingSearches(browser: WebDriver):
         targetMobile = counters['mobileSearch'][0]['pointProgressMax']
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
+
+def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
+    '''Returns True if given element exits else False'''
+    try:
+        browser.find_element(_by, element)
+    except NoSuchElementException:
+        return False
+    return True
 
 def validate_time(time: str):
     '''
