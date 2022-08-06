@@ -1198,12 +1198,13 @@ def main():
     ARGS = argument_parser()
     LANG, GEO, TZ = getCCodeLangAndOffset()
     # set time to launch the program if everyday is not set
-    if not ARGS.everyday:
-        answer = input('''If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter
-(\033[93manything other than time causes the script to start immediately\033[00m): ''')
-        run_on = validate_time(answer)
-    else:
-        run_on = ARGS.everyday
+#     if not ARGS.everyday:
+#         answer = input('''If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter
+# (\033[93manything other than time causes the script to start immediately\033[00m): ''')
+#         run_on = validate_time(answer)
+#     else:
+#         run_on = ARGS.everyday
+    run_on = None
     if run_on is not None:
         while True:
             if datetime.now().strftime("%H:%M") == run_on:
@@ -1222,7 +1223,7 @@ def main():
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
     print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
-    input('Press any key to close the program...')
+    # input('Press any key to close the program...')
     display.stop()
 
 if __name__ == '__main__':
