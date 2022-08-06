@@ -1,2 +1,2 @@
-13 8 * * * /usr/bin/sh /home/saltleemsr/src/Microsoft-Rewards-bot/clean_mem.sh
-14 8 * * * /home/saltleemsr/src/Microsoft-Rewards-bot/env/bin/python /home/saltleemsr/src/Microsoft-Rewards-bot/ms_rewards_farmer.py >> /home/saltleemsr/src/Microsoft-Rewards-bot/cron.log
+10 8 * * * /usr/bin/sh /home/saltleemsr/src/Microsoft-Rewards-bot/clean_mem.sh
+11 8 * * * /usr/bin/python3 /home/saltleemsr/src/Microsoft-Rewards-bot/ms_rewards_farmer.py >> /home/saltleemsr/src/Microsoft-Rewards-bot/cron.log
