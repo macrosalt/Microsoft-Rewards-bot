@@ -6,3 +6,4 @@ sudo apt install -y ./google-chrome-stable_current_amd64.deb
 sudo apt install -y chromium-chromedriver
 sudo apt-get -y install python3-pip
 pip3 install -r requirements.txt
+sudo touch accounts.json
