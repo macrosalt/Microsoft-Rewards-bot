@@ -8,7 +8,7 @@ import ipapi
 import os
 from random_word import RandomWords
 from func_timeout import func_set_timeout, FunctionTimedOut
-import warnings
+import subprocess
 import platform
 from argparse import ArgumentParser
 import sys
@@ -22,8 +22,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.53 Safari/537.36 Edg/103.0.1264.37'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.47'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.69 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -92,8 +92,8 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         elif browser.title == 'Your account has been temporarily suspended':
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            UpdateLogs()
-            CleanLogs()
+            updateLogs()
+            cleanLogs()
             raise Exception(prRed('[ERROR] Your account has been locked !'))
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
@@ -126,22 +126,22 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         if browser.title == "Your account has been temporarily suspended":
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            UpdateLogs()
-            CleanLogs()
+            updateLogs()
+            cleanLogs()
             raise Exception(prRed('[ERROR] Your account has been locked !'))
         elif browser.title == "Help us protect your account":
             prRed('[ERROR] Unusual activity detected !')
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
-            UpdateLogs()
-            CleanLogs()
+            updateLogs()
+            cleanLogs()
             input('Press any key to close...')
             os._exit(0)
         else:
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unknown error !'
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            UpdateLogs()
-            CleanLogs()
+            updateLogs()
+            cleanLogs()
             raise Exception(prRed('[ERROR] Unknown error !'))
     # Wait 5 seconds
     time.sleep(5)
@@ -188,8 +188,8 @@ def RewardsLogin(browser: WebDriver):
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
             LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A' 
             LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A' 
-            CleanLogs()
-            UpdateLogs()
+            cleanLogs()
+            updateLogs()
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             raise Exception(prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
         # Check whether Rewards is available in your region or not
@@ -262,7 +262,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 prRed('[LOGIN] Please complete the Security Check on ' + CURRENT_ACCOUNT)
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
-                UpdateLogs()
+                updateLogs()
                 exit()
     #Wait 5 seconds
     time.sleep(5)
@@ -808,7 +808,7 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
         resetTabs(browser)
         return
     CurrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
-    if CurrentQuestionNumber == 1:
+    if CurrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
         browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
@@ -861,24 +861,27 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
-    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
-    browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
+    CrrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
+    NumberOfQuestionsLeft = 10 - CrrentQuestionNumber + 1
+    if CrrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
+        browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
-    for question in range(10):
+    for question in range(NumberOfQuestionsLeft):
         answerEncodeKey = browser.execute_script("return _G.IG")
 
-        answer1 = browser.find_element(By.ID, "rqAnswerOption0")
+        answer1 = browser.find_element_by_id("rqAnswerOption0")
         answer1Title = answer1.get_attribute('data-option')
         answer1Code = getAnswerCode(answerEncodeKey, answer1Title)
 
-        answer2 = browser.find_element(By.ID, "rqAnswerOption1")
+        answer2 = browser.find_element_by_id("rqAnswerOption1")
         answer2Title = answer2.get_attribute('data-option')
         answer2Code = getAnswerCode(answerEncodeKey, answer2Title)
 
@@ -906,7 +909,7 @@ def completeMorePromotions(browser: WebDriver):
             if promotion['complete'] == False and promotion['pointProgressMax'] != 0:
                 if promotion['promotionType'] == "urlreward":
                     completeMorePromotionSearch(browser, i)
-                elif promotion['promotionType'] == "quiz" and promotion['pointProgress'] == 0:
+                elif promotion['promotionType'] == "quiz":
                     if promotion['pointProgressMax'] == 10:
                         completeMorePromotionABC(browser, i)
                     elif promotion['pointProgressMax'] == 30 or promotion['pointProgressMax'] == 40:
@@ -955,7 +958,7 @@ def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
         return False
     return True
 
-def validate_time(time: str):
+def validateTime(time: str):
     '''
     check the time format and return the time if it is valid, otherwise return None
     '''
@@ -966,7 +969,7 @@ def validate_time(time: str):
     else:
         return t
 
-def argument_parser():
+def argumentParser():
     '''
     getting args from command line (--everyday [time:(HH:MM)], --session, --headless)
     '''
@@ -988,8 +991,8 @@ def argument_parser():
                         required=False)
     args = parser.parse_args()
     if args.everyday:
-        if isinstance(validate_time(args.everyday), str):
-            args.everyday = validate_time(args.everyday)
+        if isinstance(validateTime(args.everyday), str):
+            args.everyday = validateTime(args.everyday)
         else:
             parser.error(f'"{args.everyday}" is not valid. Please use (HH:MM) format.')
     if len(sys.argv) > 1:
@@ -997,7 +1000,7 @@ def argument_parser():
             prBlue(f"[INFO] {arg} : {getattr(args, arg)}")
     return args
 
-def Logs():
+def logs():
     '''
     Read logs and check whether account farmed or not
     '''
@@ -1005,7 +1008,7 @@ def Logs():
     shared_items =[]
     try:
         # Read datas on 'logs_accounts.txt'
-        LOGS = json.load(open(f"logs_{filename}.txt", "r"))
+        LOGS = json.load(open(f"Logs_{filename}.txt", "r"))
         # sync accounts and logs file for new accounts or remove accounts from logs.
         for user in ACCOUNTS:
             shared_items.append(user['username'])
@@ -1032,7 +1035,7 @@ def Logs():
                 LOGS[account]['Punch cards'] = False
                 LOGS[account]['More promotions'] = False
                 LOGS[account]['PC searches'] = False 
-        UpdateLogs()               
+        updateLogs()               
         prGreen('\n[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
         prRed(f'\n[LOGS] "Logs_{filename}.txt" file not found.')
@@ -1045,19 +1048,32 @@ def Logs():
                                         "Punch cards": False,
                                         "More promotions": False,
                                         "PC searches": False}
-        UpdateLogs()
+        updateLogs()
         prGreen(f'[LOGS] "Logs_{filename}.txt" created.\n')
         
-def UpdateLogs():
+def updateLogs():
     global LOGS
     with open(f'Logs_{filename}.txt', 'w') as file:
         file.write(json.dumps(LOGS, indent = 4))
 
-def CleanLogs():
+def cleanLogs():
     del LOGS[CURRENT_ACCOUNT]["Daily"]
     del LOGS[CURRENT_ACCOUNT]["Punch cards"]
     del LOGS[CURRENT_ACCOUNT]["More promotions"]
     del LOGS[CURRENT_ACCOUNT]["PC searches"]
+
+def checkInternetConnection():
+    system = platform.system()
+    while True:
+        try:
+            if system == "Windows":
+                subprocess.check_output(["ping", "-n", "1", "8.8.8.8"], timeout=5)
+            elif system == "Linux":
+                subprocess.check_output(["ping", "-c", "1", "8.8.8.8"], timeout=5)
+            return
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            prRed("[ERROR] No internet connection.")
+            time.sleep(1)
 
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
@@ -1070,7 +1086,7 @@ def prBlue(prt):
 def prPurple(prt):
     print(f"\033[95m{prt}\033[00m")
 
-def Logo():
+def logo():
     prRed("""
     ███╗   ███╗███████╗    ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
     ████╗ ████║██╔════╝    ██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗
@@ -1097,7 +1113,7 @@ except FileNotFoundError:
     input()
     ACCOUNTS = json.load(open(account_path, "r"))
 
-def App():
+def farmer():
     '''
     fuction that runs other functions to farm.
     '''
@@ -1109,7 +1125,7 @@ def App():
                 continue
             if LOGS[CURRENT_ACCOUNT]["Last check"] != str(date.today()):
                 LOGS[CURRENT_ACCOUNT]["Last check"] = str(date.today())
-                UpdateLogs()
+                updateLogs()
             prYellow('********************' + CURRENT_ACCOUNT + '********************')
             if not LOGS[CURRENT_ACCOUNT]['PC searches']:
                 browser = browserSetup(False, PC_USER_AGENT)
@@ -1123,19 +1139,19 @@ def App():
                     print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
                     LOGS[CURRENT_ACCOUNT]['Daily'] = True
-                    UpdateLogs()
+                    updateLogs()
                     prGreen('[DAILY SET] Completed the Daily Set successfully !')
                 if not LOGS[CURRENT_ACCOUNT]['Punch cards']:
                     print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
                     completePunchCards(browser)
                     LOGS[CURRENT_ACCOUNT]['Punch cards'] = True
-                    UpdateLogs()
+                    updateLogs()
                     prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     print('[MORE PROMO]', 'Trying to complete More Promotions...')
                     completeMorePromotions(browser)
                     LOGS[CURRENT_ACCOUNT]['More promotions'] = True
-                    UpdateLogs()
+                    updateLogs()
                     prGreen('[MORE PROMO] Completed More Promotions successfully !')
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = True if remainingSearchesM != 0 else False
@@ -1144,7 +1160,7 @@ def App():
                     bingSearches(browser, remainingSearches)
                     prGreen('[BING] Finished Desktop and Edge Bing searches !')
                     LOGS[CURRENT_ACCOUNT]['PC searches'] = True
-                    UpdateLogs()
+                    updateLogs()
                     ERROR = False
                 browser.quit()
 
@@ -1170,56 +1186,60 @@ def App():
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
-            CleanLogs()
-            UpdateLogs()
+            cleanLogs()
+            updateLogs()
             
     except FunctionTimedOut:
         prRed('[ERROR] Time out raised.\n')
         ERROR = True
         browser.quit()
-        App()
+        farmer()
     except SessionNotCreatedException:
         prBlue('[Driver] Session not created.')
         prBlue('[Driver] Please download correct version of webdriver form link below:')
         prBlue('[Driver] https://chromedriver.chromium.org/downloads')
         input('Press any key to close...')
         exit()
+    except KeyboardInterrupt:
+        ERROR = True
+        browser.quit()
+        input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
+        farmer()
     except:
         print('\n')
         ERROR = True
         browser.quit()
-        App()
+        checkInternetConnection()
+        farmer()
 
 def main():
     global LANG, GEO, TZ, ARGS
-    # ignore DeprecationWarning: Using Selenium 4 instead of Selenium 3
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
     # show colors in terminal
     os.system('color')
-    Logo()
+    logo()
     # Get the arguments from the command line
-    ARGS = argument_parser()
+    ARGS = argumentParser()
     LANG, GEO, TZ = getCCodeLangAndOffset()
     # set time to launch the program if everyday is not set
     if not ARGS.everyday:
         answer = input('''If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter
 (\033[93manything other than time causes the script to start immediately\033[00m): ''')
-        run_on = validate_time(answer)
+        run_on = validateTime(answer)
     else:
         run_on = ARGS.everyday
     if run_on is not None:
         while True:
             if datetime.now().strftime("%H:%M") == run_on:
                 start = time.time()
-                Logs()
-                App()
+                logs()
+                farmer()
                 if ARGS.everyday is None:
                     break
             time.sleep(30)
     else:
         start = time.time()
-        Logs()
-        App()
+        logs()
+        farmer()
     end = time.time()
     delta = end - start
     hour, remain = divmod(delta, 3600)
