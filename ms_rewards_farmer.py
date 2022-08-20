@@ -83,7 +83,11 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     browser.get('https://login.live.com/')
     # Check if account is already logged in
     if ARGS.session:
-        if browser.title == 'Microsoft account | Home':
+        if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
+            time.sleep(2)
+            browser.find_element(By.ID, 'iNext').click()
+            time.sleep(5)
+        if browser.title == 'Microsoft account | Home' or isElementExists(browser, By.ID, 'navs_container'):
             prGreen('[LOGIN] Account already logged in !')
             RewardsLogin(browser)
             print('[LOGIN]', 'Ensuring login on Bing...')
@@ -119,6 +123,10 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             # Click Yes to stay signed in.
             browser.find_element(By.ID, 'idSIButton9').click()
         else:
+            if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
+                time.sleep(2)
+                browser.find_element(By.ID, 'iNext').click()
+                time.sleep(5)
             # Click No.
             browser.find_element(By.ID, 'idBtn_Back').click()
     except NoSuchElementException:
