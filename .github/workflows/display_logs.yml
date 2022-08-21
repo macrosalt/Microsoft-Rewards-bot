@@ -1,0 +1,12 @@
+name: Display all the logs
+on: [push]
+jobs:
+  Display-All-The-Logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Run display in the repository
+        run: |
+          cd ${{ github.workspace }}
+          bash cat_logs.sh 
