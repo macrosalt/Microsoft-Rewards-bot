@@ -6,7 +6,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Run display in the repository
+      - name: Display all the logs
         run: |
           cd ${{ github.workspace }}
           bash cat_logs.sh 
