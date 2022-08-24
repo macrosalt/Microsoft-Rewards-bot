@@ -119,14 +119,14 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Wait 5 seconds
     time.sleep(5)
     try:
+        if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
+            time.sleep(2)
+            browser.find_element(By.ID, 'iNext').click()
+            time.sleep(5)
         if ARGS.session:
             # Click Yes to stay signed in.
             browser.find_element(By.ID, 'idSIButton9').click()
         else:
-            if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
-                time.sleep(2)
-                browser.find_element(By.ID, 'iNext').click()
-                time.sleep(5)
             # Click No.
             browser.find_element(By.ID, 'idBtn_Back').click()
     except NoSuchElementException:
@@ -599,7 +599,6 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
                     
                 browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
                 time.sleep(8)
-                # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
             time.sleep(5)
             browser.close()
             time.sleep(2)
@@ -765,7 +764,6 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 for question in range(numberOfQuestions):
                     browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
                     time.sleep(10)
-                    # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
                 time.sleep(5)
                 browser.close()
                 time.sleep(2)
@@ -861,7 +859,6 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     for question in range(numberOfQuestions):
         browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
         time.sleep(8)
-        # browser.find_element_by_xpath('//*[@id="AnswerPane' + str(question) + '"]/div[1]/div[2]/div[4]/a/div/span/input').click()
     time.sleep(5)
     browser.close()
     time.sleep(2)
@@ -869,7 +866,7 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
-    browser.find_element_by_xpath('//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH, '//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[' + str(cardNumber) + ']/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
     time.sleep(8)
@@ -879,17 +876,17 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     CrrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
     NumberOfQuestionsLeft = 10 - CrrentQuestionNumber + 1
     if CrrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
-        browser.find_element_by_xpath('//*[@id="rqStartQuiz"]').click()
+        browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
     waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
     time.sleep(3)
     for question in range(NumberOfQuestionsLeft):
         answerEncodeKey = browser.execute_script("return _G.IG")
 
-        answer1 = browser.find_element_by_id("rqAnswerOption0")
+        answer1 = browser.find_element(By.ID, "rqAnswerOption0")
         answer1Title = answer1.get_attribute('data-option')
         answer1Code = getAnswerCode(answerEncodeKey, answer1Title)
 
-        answer2 = browser.find_element_by_id("rqAnswerOption1")
+        answer2 = browser.find_element(By.ID, "rqAnswerOption1")
         answer2Title = answer2.get_attribute('data-option')
         answer2Code = getAnswerCode(answerEncodeKey, answer2Title)
 
@@ -995,6 +992,10 @@ def argumentParser():
                         required=False)
     parser.add_argument('--session',
                         help='[Optional] Creates session for each account and use it.',
+                        action='store_true',
+                        required=False)
+    parser.add_argument('--error',
+                        help='[Optional] Display errors when app fails.',
                         action='store_true',
                         required=False)
     args = parser.parse_args()
@@ -1213,8 +1214,8 @@ def farmer():
         browser.quit()
         input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
         farmer()
-    except:
-        print('\n')
+    except Exception as e:
+        print(e, '\n') if ARGS.error else print('\n')
         ERROR = True
         browser.quit()
         checkInternetConnection()
