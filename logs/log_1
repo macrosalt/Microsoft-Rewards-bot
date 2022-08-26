@@ -1,22 +1,38 @@
 {
     "saltleemsr002@gmx.com": {
-        "Last check": "2022-08-24",
-        "Today's points": 300,
-        "Points": 11455
+        "Last check": "2022-08-25",
+        "Today's points": 0,
+        "Points": 0,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "saltleemsr001@gmx.com": {
-        "Last check": "2022-08-24",
-        "Today's points": 310,
-        "Points": 9265
+        "Last check": "",
+        "Today's points": 0,
+        "Points": 0,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "saltleemsr006@gmx.com": {
-        "Last check": "2022-08-24",
-        "Today's points": 290,
-        "Points": 4808
+        "Last check": "",
+        "Today's points": 0,
+        "Points": 0,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "saltleemsr005@gmx.com": {
-        "Last check": "2022-08-24",
-        "Today's points": 265,
-        "Points": 4013
+        "Last check": "",
+        "Today's points": 0,
+        "Points": 0,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
