@@ -925,6 +925,9 @@ def completeMorePromotions(browser: WebDriver):
                 else:
                     if promotion['pointProgressMax'] == 100 or promotion['pointProgressMax'] == 200:
                         completeMorePromotionSearch(browser, i)
+            if promotion['complete'] == False and promotion['pointProgressMax'] == 100 and promotion['promotionType'] == "" \
+                and promotion['destinationUrl'] == "https://rewards.microsoft.com":
+                completeMorePromotionSearch(browser, i)
         except:
             resetTabs(browser)
 
@@ -1228,6 +1231,8 @@ def farmer():
         browser.quit()
         checkInternetConnection()
         farmer()
+    else:
+        FINISHED_ACCOUNTS.clear()
 
 def main():
     global LANG, GEO, TZ, ARGS
