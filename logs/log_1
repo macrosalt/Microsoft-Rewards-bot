@@ -1,8 +1,8 @@
 {
     "saltleemsr002@gmx.com": {
-        "Last check": "Your account has been suspended",
-        "Today's points": "N/A",
-        "Points": "N/A"
+        "Last check": "Your account has been locked !",
+        "Today's points": 0,
+        "Points": 0
     },
     "saltleemsr001@gmx.com": {
         "Last check": "Your account has been suspended",
@@ -10,13 +10,13 @@
         "Points": "N/A"
     },
     "saltleemsr006@gmx.com": {
-        "Last check": "Your account has been suspended",
-        "Today's points": "N/A",
-        "Points": "N/A"
+        "Last check": "Your account has been locked !",
+        "Today's points": 0,
+        "Points": 0
     },
     "saltleemsr005@gmx.com": {
-        "Last check": "Your account has been suspended",
-        "Today's points": "N/A",
-        "Points": "N/A"
+        "Last check": "Your account has been locked !",
+        "Today's points": 0,
+        "Points": 0
     }
 }
