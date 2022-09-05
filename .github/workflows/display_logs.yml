@@ -9,4 +9,26 @@ jobs:
       - name: Display all the logs
         run: |
           cd ${{ github.workspace }}
-          bash cat_logs.sh 
+          bash .github/scripts/cat_logs.sh 
+
+  Eligible-Accounts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: Display all the logs
+        run: |
+          cd ${{ github.workspace }}
+          bash .github/scripts/cat_logs.sh
+
+  Illegal-Tries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: Display all the logs
+        run: |
+          cd ${{ github.workspace }}
+          bash .github/scripts/cat_logs.sh
