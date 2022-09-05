@@ -17,6 +17,8 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+        with:
+          python-version: '3.7' 
       - name: Display all the logs
         run: |
           cd ${{ github.workspace }}
@@ -28,6 +30,8 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+        with:
+          python-version: '3.7' 
       - name: Display all the logs
         run: |
           cd ${{ github.workspace }}
