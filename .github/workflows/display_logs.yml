@@ -20,4 +20,4 @@ jobs:
       - name: Display eligible accounts
         run: |
           cd ${{ github.workspace }}
-          bash .github/scripts/cat_eligible_accouts.sh
+          bash .github/scripts/cat_eligible_accounts.sh
