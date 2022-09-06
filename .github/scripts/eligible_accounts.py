@@ -1,17 +1,14 @@
-import json
-import os
+from common import read_logs_to
 
-point_bar = 9100
-log_prefix = "log"
+POINT_BAR = 9100
 
-log_dir = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../../logs"))
-files= os.listdir(log_dir)
-for file in files: 
-    if os.path.isdir(file) or not file.startswith(log_prefix):
-        continue
-    with open(log_dir+"/"+file) as input:
-        dict = json.load(input)
-        for key, val in dict.items():
-            if val["Points"] > point_bar:
+def get_eligible_accounts(obj):
+    '''
+    :input: LogFile
+    '''
+    json_obj = obj.json_obj
+    for key, val in json_obj.items():
+            if val["Points"] > POINT_BAR:
                 print(f'account: {key} -> points:{val["Points"]}')
-    
+
+read_logs_to(get_eligible_accounts)

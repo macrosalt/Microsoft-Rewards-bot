@@ -4,3 +4,4 @@
 chromedriver.exe
 env
 *.deb
+__pycache__

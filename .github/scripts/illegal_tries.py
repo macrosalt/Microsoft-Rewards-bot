@@ -1,16 +1,14 @@
-import json
-import os
+from common import read_logs_to
 
-log_prefix = "log"
-
-log_dir = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../../logs"))
-files= os.listdir(log_dir)
-for file in files: 
-    if os.path.isdir(file) or not file.startswith(log_prefix):
-        continue
-    with open(log_dir+"/"+file) as input:
-        dict = json.load(input)
-        for key, val in dict.items():
+def get_illegal_tries(obj):
+    '''
+    :input: LogFile
+    '''
+    filename = obj.file_name
+    json_obj = obj.json_obj
+    for key, val in json_obj.items():
             check_situation = val["Last check"]
             if len(check_situation) != 10 or check_situation[0] != "2":
-                print(f'account: {key} -> check:{check_situation} in {file}')
+                print(f'account: {key} -> check:{check_situation} in {filename}')
+
+read_logs_to(get_illegal_tries)
