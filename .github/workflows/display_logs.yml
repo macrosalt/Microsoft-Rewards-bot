@@ -16,8 +16,8 @@ jobs:
       - name: Display illegal tries
         run: |
           cd ${{ github.workspace }}
-          bash .github/scripts/cat_illegal_tries.sh
+          python3 .github/scripts/illegal_tries.py
       - name: Display eligible accounts
         run: |
           cd ${{ github.workspace }}
-          bash .github/scripts/cat_eligible_accounts.sh
+          python3 .github/scripts/eligible_accounts.py 
