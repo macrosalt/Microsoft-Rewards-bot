@@ -1,6 +1,6 @@
 from common import read_logs_to
 
-POINT_BAR = 9100
+POINT_BAR = 13000
 
 def get_eligible_accounts(obj):
     '''
