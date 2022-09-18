@@ -1,6 +1,6 @@
 {
     "phqvcavjs@outlook.com": {
-        "Last check": "2022-09-16",
+        "Last check": "2022-09-17",
         "Today's points": 370,
         "Points": 9556,
         "Daily": false,
@@ -29,6 +29,10 @@
     "mvcdqcvnl@outlook.com": {
         "Last check": "2022-09-16",
         "Today's points": 0,
-        "Points": 9381
+        "Points": 9381,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
