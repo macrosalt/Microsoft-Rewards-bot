@@ -6,7 +6,18 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.7' 
       - name: Display all the logs
         run: |
           cd ${{ github.workspace }}
-          bash cat_logs.sh 
+          bash .github/scripts/cat_logs.sh 
+      - name: Display illegal tries
+        run: |
+          cd ${{ github.workspace }}
+          python3 .github/scripts/illegal_tries.py
+      - name: Display eligible accounts
+        run: |
+          cd ${{ github.workspace }}
+          python3 .github/scripts/eligible_accounts.py 
