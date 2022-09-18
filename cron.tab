@@ -1,3 +1,5 @@
 10 8 * * * /usr/bin/sh /home/saltleemsr/src/Microsoft-Rewards-bot/clean_mem.sh
 11 8 * * * /usr/bin/python3 /home/saltleemsr/src/Microsoft-Rewards-bot/ms_rewards_farmer.py >> /home/saltleemsr/src/Microsoft-Rewards-bot/cron.log
 0 1 * * * bash /home/saltleemsr/src/Microsoft-Rewards-bot/upload_log.sh 0
+
+sudo apt-get --only-upgrade install google-chrome-stable
