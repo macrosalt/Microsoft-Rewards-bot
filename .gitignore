@@ -2,3 +2,5 @@
 *.txt
 .vscode
 chromedriver.exe
+env/
+__pycache__/
