@@ -26,6 +26,7 @@ ACCOUNT_REGION = {
     "saltleemsr052@outlook.com": "sg",
     "drbvwltl@outlook.com": "sg",
     "npmiygkue@outlook.com": "sg",
+    "yoptdvxc@outlook.com": "us",
 }
 
 class LogFile:
@@ -44,6 +45,9 @@ def get_account_region(account):
     if account in ACCOUNT_REGION:
         return ACCOUNT_REGION[account]
     return "us"
+
+def get_account_verified(account):
+    return account in ACCOUNT_REGION
 
 def read_logs_to(func):
     '''
