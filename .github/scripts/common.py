@@ -28,6 +28,7 @@ ACCOUNT_REGION = {
     "npmiygkue@outlook.com": "sg",
     "yoptdvxc@outlook.com": "us",
     "lkocnkmt@outlook.com": "us",
+    "htxfsqiw@outlook.com": "us",
 }
 
 class LogFile:
