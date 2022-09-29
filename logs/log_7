@@ -1,22 +1,26 @@
 {
     "vvquyzbpr@outlook.com": {
-        "Last check": "2022-09-27",
+        "Last check": "Your account has been locked !",
         "Today's points": 340,
         "Points": 13056
     },
     "wmgicmbqg@outlook.com": {
-        "Last check": "2022-09-27",
+        "Last check": "Your account has been locked !",
         "Today's points": 340,
         "Points": 12851
     },
     "hhuhzpmcj@outlook.com": {
-        "Last check": "2022-09-27",
+        "Last check": "Your account has been locked !",
         "Today's points": 340,
         "Points": 12401
     },
     "kezcohogh@outlook.com": {
-        "Last check": "2022-09-27",
+        "Last check": "Your account has been locked !",
         "Today's points": 340,
-        "Points": 12431
+        "Points": 12431,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
