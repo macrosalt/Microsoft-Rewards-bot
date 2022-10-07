@@ -10,9 +10,13 @@
         "Points": "N/A"
     },
     "mvcdqcvnl@outlook.com": {
-        "Last check": "2022-10-05",
+        "Last check": "Your account has been locked !",
         "Today's points": 376,
-        "Points": 14968
+        "Points": 14968,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "tlrybcwiy@outlook.com": {
         "Last check": "Your account has been suspended",
