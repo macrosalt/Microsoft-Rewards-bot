@@ -1,29 +1,33 @@
-import time
 import json
-from datetime import date, timedelta, datetime
-import requests
-import random
-import urllib.parse
-import ipapi
 import os
-from random_word import RandomWords
-from func_timeout import func_set_timeout, FunctionTimedOut
-import subprocess
 import platform
-from argparse import ArgumentParser
+import random
+import subprocess
 import sys
+import time
+import urllib.parse
+from argparse import ArgumentParser
+from datetime import date, datetime, timedelta
 
+import ipapi
+import requests
+from func_timeout import FunctionTimedOut, func_set_timeout
+from random_word import RandomWords
 from selenium import webdriver
+from selenium.common.exceptions import (ElementNotInteractableException,
+                                        NoAlertPresentException,
+                                        NoSuchElementException,
+                                        SessionNotCreatedException,
+                                        TimeoutException,
+                                        UnexpectedAlertPresentException)
 from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import (NoSuchElementException, TimeoutException, ElementNotInteractableException, 
-                                        UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.33'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.34'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.79 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
