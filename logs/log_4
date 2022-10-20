@@ -1,8 +1,12 @@
 {
     "ktlftboh@outlook.com": {
-        "Last check": "2022-10-18",
+        "Last check": "2022-10-20",
         "Today's points": 100,
-        "Points": 1179
+        "Points": 1179,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     },
     "oxutorhw@outlook.com": {
         "Last check": "2022-10-19",
