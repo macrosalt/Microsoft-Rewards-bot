@@ -22,8 +22,8 @@ from selenium.common.exceptions import (NoSuchElementException, TimeoutException
                                         UnexpectedAlertPresentException, NoAlertPresentException, SessionNotCreatedException)
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.47'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.69 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.37'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.79 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -235,6 +235,9 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     except:
         pass
     if isMobile:
+        # close bing app banner
+        if isElementExists(browser, By.ID, 'bnp_rich_div'):
+            browser.find_element(By.XPATH, '//*[@id="bnp_bop_close_icon"]/img').click()
         try:
             time.sleep(1)
             browser.find_element(By.ID, 'mHamburger').click()
@@ -678,10 +681,13 @@ def getDashboardData(browser: WebDriver) -> dict:
     return dashboard
 
 def completeDailySet(browser: WebDriver):
-    d = getDashboardData(browser)['dailySetPromotions']
+    print('[DAILY SET]', 'Trying to complete the Daily Set...')
+    d = getDashboardData(browser)
+    error = False
     todayDate = datetime.today().strftime('%m/%d/%Y')
     todayPack = []
-    for date, data in d.items():
+    streak = d["coachMarks"]["streaks"]["promotion"]["activityProgress"]
+    for date, data in d['dailySetPromotions'].items():
         if date == todayDate:
             todayPack = data
     for activity in todayPack:
@@ -712,7 +718,19 @@ def completeDailySet(browser: WebDriver):
                             print('[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
                             completeDailySetVariableActivity(browser, cardNumber)
         except:
+            error = True
             resetTabs(browser)
+    browser.refresh()
+    time.sleep(5)
+    current_streak = getDashboardData(browser)["coachMarks"]["streaks"]["promotion"]["activityProgress"]
+    if current_streak > streak:
+        prGreen(f"[DAILY SET] Completed the Daily Set successfully ! Streak increased to {current_streak}")
+    elif current_streak == streak and error == False:
+        prGreen("[DAILY SET] Completed the Daily Set successfully !")
+    else:
+        prYellow("[DAILY SET] Daily Set did not completed successfully ! Streak not increased")
+    LOGS[CURRENT_ACCOUNT]['Daily'] = True
+    updateLogs()      
 
 def getAccountPoints(browser: WebDriver) -> int:
     return getDashboardData(browser)['userStatus']['availablePoints']
@@ -774,6 +792,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 break
                 
 def completePunchCards(browser: WebDriver):
+    print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
         try:
@@ -795,6 +814,9 @@ def completePunchCards(browser: WebDriver):
     time.sleep(2)
     browser.get('https://rewards.microsoft.com/dashboard/')
     time.sleep(2)
+    LOGS[CURRENT_ACCOUNT]['Punch cards'] = True
+    updateLogs()
+    prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
 
 def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
     browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
@@ -907,6 +929,7 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     time.sleep(2)
 
 def completeMorePromotions(browser: WebDriver):
+    print('[MORE PROMO]', 'Trying to complete More Promotions...')
     morePromotions = getDashboardData(browser)['morePromotions']
     i = 0
     for promotion in morePromotions:
@@ -927,6 +950,9 @@ def completeMorePromotions(browser: WebDriver):
                         completeMorePromotionSearch(browser, i)
         except:
             resetTabs(browser)
+    LOGS[CURRENT_ACCOUNT]['More promotions'] = True
+    updateLogs()
+    prGreen('[MORE PROMO] Completed More Promotions successfully !')
 
 def getRemainingSearches(browser: WebDriver):
     dashboard = getDashboardData(browser)
@@ -1153,23 +1179,11 @@ def farmer():
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
                 browser.get('https://rewards.microsoft.com/dashboard')
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
-                    print('[DAILY SET]', 'Trying to complete the Daily Set...')
                     completeDailySet(browser)
-                    LOGS[CURRENT_ACCOUNT]['Daily'] = True
-                    updateLogs()
-                    prGreen('[DAILY SET] Completed the Daily Set successfully !')
                 if not LOGS[CURRENT_ACCOUNT]['Punch cards']:
-                    print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
                     completePunchCards(browser)
-                    LOGS[CURRENT_ACCOUNT]['Punch cards'] = True
-                    updateLogs()
-                    prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
-                    print('[MORE PROMO]', 'Trying to complete More Promotions...')
                     completeMorePromotions(browser)
-                    LOGS[CURRENT_ACCOUNT]['More promotions'] = True
-                    updateLogs()
-                    prGreen('[MORE PROMO] Completed More Promotions successfully !')
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = True if remainingSearchesM != 0 else False
                 if remainingSearches != 0:
