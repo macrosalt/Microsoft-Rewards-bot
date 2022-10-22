@@ -300,6 +300,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             time.sleep(1)
             POINTS_COUNTER = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
     except:
+        print("[WARN]", "Failure to load point counter")
+        return
         checkBingLogin(browser, isMobile)
 
 def waitUntilVisible(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
@@ -1230,8 +1232,8 @@ def farmer():
         FINISHED_ACCOUNTS.clear()
 
 def main():
-    display = Display(visible=0, size=(900, 800))
-    display.start()
+    # display = Display(visible=0, size=(900, 800))
+    # display.start()
 
     global LANG, GEO, TZ, ARGS
     # show colors in terminal
