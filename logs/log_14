@@ -1,6 +1,6 @@
 {
     "wlumdwqh@outlook.com": {
-        "Last check": "2022-10-21",
+        "Last check": "2022-10-22",
         "Today's points": 211,
         "Points": 664,
         "Daily": true,
@@ -30,9 +30,9 @@
         "Last check": "2022-10-20",
         "Today's points": 453,
         "Points": 463,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
-        "PC searches": true
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
