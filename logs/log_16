@@ -1,6 +1,6 @@
 {
     "coprnbbt@outlook.com": {
-        "Last check": "2022-10-21",
+        "Last check": "2022-10-22",
         "Today's points": 211,
         "Points": 664,
         "Daily": true,
@@ -11,16 +11,28 @@
     "vckoyirs@outlook.com": {
         "Last check": "2022-10-20",
         "Today's points": 100,
-        "Points": 899
+        "Points": 899,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "smcinqjj@outlook.com": {
         "Last check": "2022-10-20",
         "Today's points": 171,
-        "Points": 624
+        "Points": 624,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "bncpiwkk@outlook.com": {
         "Last check": "2022-10-20",
         "Today's points": 181,
-        "Points": 634
+        "Points": 634,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
