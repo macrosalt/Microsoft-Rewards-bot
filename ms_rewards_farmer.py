@@ -1232,8 +1232,8 @@ def farmer():
         FINISHED_ACCOUNTS.clear()
 
 def main():
-    # display = Display(visible=0, size=(900, 800))
-    # display.start()
+    display = Display(visible=0, size=(900, 800))
+    display.start()
 
     global LANG, GEO, TZ, ARGS
     # show colors in terminal
