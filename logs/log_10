@@ -1,8 +1,12 @@
 {
     "kymysbrn@outlook.com": {
-        "Last check": "2022-10-21",
+        "Last check": "2022-10-23",
         "Today's points": 100,
-        "Points": 919
+        "Points": 919,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     },
     "qgonwgko@outlook.com": {
         "Last check": "2022-10-22",
