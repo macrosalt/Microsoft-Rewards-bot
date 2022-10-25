@@ -20,15 +20,10 @@ LOG_TO_INSTANCE = {
     "14": "us53",
     "15": "us6",
     "16": "us61",
+    "17": "msr_free",
 }
 
 ACCOUNT_REGION = {
-    "saltleemsr052@outlook.com": "sg",
-    "drbvwltl@outlook.com": "sg",
-    "npmiygkue@outlook.com": "sg",
-    "yoptdvxc@outlook.com": "us",
-    "lkocnkmt@outlook.com": "us",
-    "htxfsqiw@outlook.com": "us",
 }
 
 class LogFile:
