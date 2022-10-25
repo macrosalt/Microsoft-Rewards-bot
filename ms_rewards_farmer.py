@@ -46,9 +46,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
     options = Options()
     if ARGS.session:
         if not isMobile:
-            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+"/Profiles/" + CURRENT_ACCOUNT, "PC")}')
+            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+f"/Profiles/{CURRENT_ACCOUNT}", "PC")}')
         else:
-            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+"/Profiles/" + CURRENT_ACCOUNT, "Mobile")}')
+            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+f"/Profiles/{CURRENT_ACCOUNT}", "Mobile")}')
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
@@ -224,7 +224,11 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     if ARGS.session:
         try:
             if not isMobile:
-                POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
+                try:
+                    POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
+                except ValueError:
+                    time.sleep(5)
+                    POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
             else:
                 browser.find_element(By.ID, 'mHamburger').click()
                 time.sleep(1)
@@ -287,6 +291,9 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         if not isMobile:
             try:
                 POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
+            except ValueError:
+                time.sleep(5)
+                POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
             except:
                 browser.find_element(By.ID, 'id_s').click()
                 time.sleep(15 if not FAST else 7)
