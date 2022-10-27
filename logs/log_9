@@ -1,22 +1,38 @@
 {
     "tpsgjuvw@outlook.com": {
-        "Last check": "2022-10-25",
+        "Last check": "2022-10-27",
         "Today's points": 120,
-        "Points": 2281
+        "Points": 2281,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     },
     "swxheehm@outlook.com": {
         "Last check": "2022-10-25",
         "Today's points": -345,
-        "Points": 1936
+        "Points": 1936,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "mlfyfjgw@outlook.com": {
         "Last check": "2022-10-25",
         "Today's points": 180,
-        "Points": 984
+        "Points": 984,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "qnxfhcwo@outlook.com": {
         "Last check": "2022-10-25",
         "Today's points": 416,
-        "Points": 854
+        "Points": 854,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
