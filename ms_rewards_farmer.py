@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 import urllib.parse
+from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
 
@@ -46,9 +47,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
     options = Options()
     if ARGS.session:
         if not isMobile:
-            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+f"/Profiles/{CURRENT_ACCOUNT}", "PC")}')
+            options.add_argument(rf'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/PC')
         else:
-            options.add_argument(rf'--user-data-dir={os.path.join(os.getcwd()+f"/Profiles/{CURRENT_ACCOUNT}", "Mobile")}')
+            options.add_argument(rf'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/Mobile')
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
@@ -227,7 +228,11 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 try:
                     POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
                 except ValueError:
-                    time.sleep(5)
+                    if isElementExists(browser, By.ID, 'id_s'):
+                        browser.find_element(By.ID, 'id_s').click()
+                        time.sleep(15)
+                        checkBingLogin(browser, isMobile)
+                    time.sleep(2)
                     POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
             else:
                 browser.find_element(By.ID, 'mHamburger').click()
@@ -291,13 +296,13 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         if not isMobile:
             try:
                 POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
-            except ValueError:
+            except:
+                if isElementExists(browser, By.ID, 'id_s'):
+                    browser.find_element(By.ID, 'id_s').click()
+                    time.sleep(15)
+                    checkBingLogin(browser, isMobile)
                 time.sleep(5)
                 POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
-            except:
-                browser.find_element(By.ID, 'id_s').click()
-                time.sleep(15 if not FAST else 7)
-                checkBingLogin(browser, isMobile)
         else:
             try:
                 browser.find_element(By.ID, 'mHamburger').click()
@@ -1062,7 +1067,7 @@ def logs():
     shared_items =[]
     try:
         # Read datas on 'logs_accounts.txt'
-        LOGS = json.load(open(f"Logs_{filename}.txt", "r"))
+        LOGS = json.load(open(f"{Path(__file__).parent}/Logs_{account_path.stem}.txt", "r"))
         # sync accounts and logs file for new accounts or remove accounts from logs.
         for user in ACCOUNTS:
             shared_items.append(user['username'])
@@ -1092,7 +1097,7 @@ def logs():
         updateLogs()               
         prGreen('\n[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
-        prRed(f'\n[LOGS] "Logs_{filename}.txt" file not found.')
+        prRed(f'\n[LOGS] "Logs_{account_path.stem}.txt" file not found.')
         LOGS = {}
         for account in ACCOUNTS:
             LOGS[account["username"]] = {"Last check": "",
@@ -1103,11 +1108,10 @@ def logs():
                                         "More promotions": False,
                                         "PC searches": False}
         updateLogs()
-        prGreen(f'[LOGS] "Logs_{filename}.txt" created.\n')
+        prGreen(f'[LOGS] "Logs_{account_path.stem}.txt" created.\n')
         
 def updateLogs():
-    global LOGS
-    with open(f'Logs_{filename}.txt', 'w') as file:
+    with open(f'{Path(__file__).parent}/Logs_{account_path.stem}.txt', 'w') as file:
         file.write(json.dumps(LOGS, indent = 4))
 
 def cleanLogs():
@@ -1151,8 +1155,7 @@ def logo():
     prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.1\n")
 
 try:
-    account_path = os.path.dirname(os.path.abspath(__file__)) + '/accounts.json'
-    filename, ext = os.path.splitext(os.path.basename(account_path))
+    account_path = Path(__file__).parent / 'accounts.json'
     ACCOUNTS = json.load(open(account_path, "r"))
 except FileNotFoundError:
     with open(account_path, 'w') as f:
@@ -1161,7 +1164,7 @@ except FileNotFoundError:
             "password": "Your Password"
         }], indent=4))
     prPurple(f"""
-[ACCOUNT] Accounts credential file "{filename}{ext}" created.
+[ACCOUNT] Accounts credential file "{account_path.name}" created.
 [ACCOUNT] Edit with your credentials and save, then press any key to continue...
     """)
     input()
@@ -1196,7 +1199,7 @@ def farmer():
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
-                MOBILE = True if remainingSearchesM != 0 else False
+                MOBILE = bool(remainingSearchesM)
                 if remainingSearches != 0:
                     print('[BING]', 'Starting Desktop and Edge Bing searches...')
                     bingSearches(browser, remainingSearches)
