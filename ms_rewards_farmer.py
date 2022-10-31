@@ -27,8 +27,8 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.37'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.79 Mobile Safari/537.36'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.24'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.91 Mobile Safari/537.36'
 
 POINTS_COUNTER = 0
 
@@ -47,19 +47,19 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
     options = Options()
     if ARGS.session:
         if not isMobile:
-            options.add_argument(rf'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/PC')
+            options.add_argument(f'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/PC')
         else:
-            options.add_argument(rf'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/Mobile')
+            options.add_argument(f'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/Mobile')
     options.add_argument("user-agent=" + user_agent)
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
-    prefs = {"profile.default_content_setting_values.geolocation" :2,
+    prefs = {"profile.default_content_setting_values.geolocation": 2,
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
             "webrtc.multiple_routes_enabled": False,
             "webrtc.nonproxied_udp_enabled" : False}
-    options.add_experimental_option("prefs",prefs)
+    options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     if ARGS.headless:
@@ -228,7 +228,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 try:
                     POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
                 except ValueError:
-                    if isElementExists(browser, By.ID, 'id_s'):
+                    if browser.find_element(By.ID, 'id_s').is_displayed():
                         browser.find_element(By.ID, 'id_s').click()
                         time.sleep(15)
                         checkBingLogin(browser, isMobile)
@@ -297,7 +297,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             try:
                 POINTS_COUNTER = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML'))
             except:
-                if isElementExists(browser, By.ID, 'id_s'):
+                if browser.find_element(By.ID, 'id_s').is_displayed():
                     browser.find_element(By.ID, 'id_s').click()
                     time.sleep(15)
                     checkBingLogin(browser, isMobile)
