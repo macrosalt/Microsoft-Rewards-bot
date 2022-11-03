@@ -250,7 +250,10 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     if isMobile:
         # close bing app banner
         if isElementExists(browser, By.ID, 'bnp_rich_div'):
-            browser.find_element(By.XPATH, '//*[@id="bnp_bop_close_icon"]/img').click()
+            try:
+                browser.find_element(By.XPATH, '//*[@id="bnp_bop_close_icon"]/img').click()
+            except NoSuchElementException:
+                pass
         try:
             time.sleep(1)
             browser.find_element(By.ID, 'mHamburger').click()
