@@ -28,7 +28,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.24'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.91 Mobile Safari/537.36'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36 EdgA/107.0.1418.28'
 
 POINTS_COUNTER = 0
 
@@ -1071,6 +1071,7 @@ def logs():
     try:
         # Read datas on 'logs_accounts.txt'
         LOGS = json.load(open(f"{Path(__file__).parent}/Logs_{account_path.stem}.txt", "r"))
+        LOGS.pop("Elapsed time", None)
         # sync accounts and logs file for new accounts or remove accounts from logs.
         for user in ACCOUNTS:
             shared_items.append(user['username'])
@@ -1295,6 +1296,8 @@ def main():
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
     print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
+    LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
+    updateLogs()
     input('Press any key to close the program...')
           
 if __name__ == '__main__':
