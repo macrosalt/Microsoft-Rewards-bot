@@ -9,4 +9,4 @@ git add ${LOG_NAME}
 git commit -m "[log]"$*""
 git push
 
-bash scripts/upgrade_browser.sh
+/bin/bash scripts/upgrade_browser.sh > browser.txt
