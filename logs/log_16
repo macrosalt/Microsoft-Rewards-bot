@@ -1,19 +1,15 @@
 {
     "coprnbbt@outlook.com": {
         "Last check": "2022-11-15",
-        "Today's points": 380,
-        "Points": 7568,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Today's points": 450,
+        "Points": 8018
     },
     "vckoyirs@outlook.com": {
-        "Last check": "2022-11-10",
+        "Last check": "2022-11-15",
         "Today's points": 380,
         "Points": 8003,
-        "Daily": false,
-        "Punch cards": false,
+        "Daily": true,
+        "Punch cards": true,
         "More promotions": false,
         "PC searches": false
     },
