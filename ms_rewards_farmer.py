@@ -9,6 +9,7 @@ import urllib.parse
 from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
+from notifiers import notify, get_notifier 
 
 import ipapi
 import requests
@@ -1021,14 +1022,12 @@ def validateTime(time: str):
         return t
 
 def argumentParser():
-    '''
-    getting args from command line (--everyday [time:(HH:MM)], --session, --headless)
-    '''
+    '''getting args from command line (--everyday [time:(HH:MM)], --session, --headless)'''
     parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1", 
-                                    allow_abbrev=False, 
-                                    usage="You may use execute the program with the default config or use arguments to configure available options.")
+                            allow_abbrev=False, 
+                            usage="You may use execute the program with the default config or use arguments to configure available options.")
     parser.add_argument('--everyday', 
-                        metavar=None,
+                        metavar='HH:MM',
                         help='[Optional] This argument takes an input as time in 24h format (HH:MM) to execute the program at the given time everyday.', 
                         type=str, 
                         required=False)
@@ -1047,6 +1046,12 @@ def argumentParser():
     parser.add_argument('--fast',
                         help="[Optional] Reduce delays where ever it's possible to make script faster.",
                         action='store_true',
+                        required=False)
+    parser.add_argument('--telegram',
+                        metavar=('<API_TOKEN>', '<CHAT_ID>'),
+                        nargs=2,
+                        help='[Optional] This argument takes token and chat id to send logs.', 
+                        type=str, 
                         required=False)
     args = parser.parse_args()
     if args.everyday:
@@ -1137,6 +1142,36 @@ def checkInternetConnection():
             prRed("[ERROR] No internet connection.")
             time.sleep(1)
 
+def createMessge():
+    today = date.today().strftime("%d/%m/%Y")
+    message = f'📅 Daily report {today}\n\n'
+    for index, value in enumerate(LOGS.items(), 1):
+        if value[1]['Last check'] == str(date.today()):
+            status = '✅ Farmed'
+            new_points = value[1]["Today's points"]
+            total_points = value[1]["Points"]
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Today's points: {new_points}\n🏅 Total points: {total_points}\n\n"        
+        elif value[1]['Last check'] == 'Your account has been suspended':
+            status = '❌ Suspended'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+        elif value[1]['Last check'] == 'Your account has been locked !':
+            status = '⚠️ Locked'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+        elif value[1]['Last check'] == 'Unusual activity detected !':
+            status = '⚠️ Unusual activity detected'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+        elif value[1]['Last check'] == 'Unknown error !':
+            status = '⛔️ Unknow error occured'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+        else:
+            status = '⛔️ Unknow error occured'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+    return message
+
+def sendReportToTelegeram(message):
+    t = get_notifier('telegram') 
+    t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+    
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
 def prGreen(prt):
@@ -1167,10 +1202,8 @@ except FileNotFoundError:
             "username": "Your Email",
             "password": "Your Password"
         }], indent=4))
-    prPurple(f"""
-[ACCOUNT] Accounts credential file "{account_path.name}" created.
-[ACCOUNT] Edit with your credentials and save, then press any key to continue...
-    """)
+    prPurple(f"[ACCOUNT] Accounts credential file '{account_path.name}' created."\
+            "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
     input()
     ACCOUNTS = json.load(open(account_path, "r"))
 
@@ -1261,6 +1294,9 @@ def farmer():
         checkInternetConnection()
         farmer()
     else:
+        if ARGS.telegram:
+            message = createMessge()
+            sendReportToTelegeram(message)
         FINISHED_ACCOUNTS.clear()
 
 def main():
@@ -1273,8 +1309,8 @@ def main():
     LANG, GEO, TZ = getCCodeLangAndOffset()
     # set time to launch the program if everyday is not set
     if not ARGS.everyday:
-        answer = input('''If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter
-(\033[93manything other than time causes the script to start immediately\033[00m): ''')
+        answer = input('If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter'\
+                '\n(\033[93manything other than time causes the script to start immediately\033[00m): ')
         run_on = validateTime(answer)
     else:
         run_on = ARGS.everyday
