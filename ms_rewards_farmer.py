@@ -150,6 +150,9 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
             updateLogs()
             cleanLogs()
+            if ARGS.telegram:
+                message = createMessge()
+                sendReportToTelegeram(message)
             input('Press any key to close...')
             os._exit(0)
         else:
@@ -1153,19 +1156,19 @@ def createMessge():
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Today's points: {new_points}\n🏅 Total points: {total_points}\n\n"        
         elif value[1]['Last check'] == 'Your account has been suspended':
             status = '❌ Suspended'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Your account has been locked !':
             status = '⚠️ Locked'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Unusual activity detected !':
             status = '⚠️ Unusual activity detected'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Unknown error !':
             status = '⛔️ Unknow error occured'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
             status = '⛔️ Unknow error occured'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n"        
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"   
     return message
 
 def sendReportToTelegeram(message):
@@ -1241,9 +1244,9 @@ def farmer():
                     print('[BING]', 'Starting Desktop and Edge Bing searches...')
                     bingSearches(browser, remainingSearches)
                     prGreen('[BING] Finished Desktop and Edge Bing searches !')
-                    LOGS[CURRENT_ACCOUNT]['PC searches'] = True
-                    updateLogs()
-                    ERROR = False
+                LOGS[CURRENT_ACCOUNT]['PC searches'] = True
+                updateLogs()
+                ERROR = False
                 browser.quit()
 
             if MOBILE:
