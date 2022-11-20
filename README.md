@@ -61,6 +61,7 @@
             <li><code>--everyday TIME</code> This argument takes time in 24h format (HH:MM) to run it everyday at the given time by leaving the program open.</li>
             <li><code>--fast</code> This argument reduces delays of script and make it faster (use this if you have high speed connection).</li>
             <li><code>--error</code> When you use this argument, app displays crash error in terminal when it fails.</li>
+            <li><code>--telegram TOKEN CHAT_ID</code> Use this argument to send logs to your telegram through your bot.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --everyday 14:30 --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled and it asks you to input a time if you want to run it at a specific time.</li>
