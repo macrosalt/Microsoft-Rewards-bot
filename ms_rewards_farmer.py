@@ -9,7 +9,7 @@ import urllib.parse
 from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
-from notifiers import notify, get_notifier 
+from notifiers import get_notifier 
 
 import ipapi
 import requests
@@ -44,8 +44,12 @@ FAST = False # When this variable set True then all possible delays reduced.
 # Define browser setup function
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
     # Create Chrome browser
-    from selenium.webdriver.chrome.options import Options
-    options = Options()
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.edge.options import Options as EdgeOptions
+    if ARGS.edge:
+        options = EdgeOptions()
+    else:
+        options = ChromeOptions()
     if ARGS.session:
         if not isMobile:
             options.add_argument(f'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/PC')
@@ -70,8 +74,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
     if platform.system() == 'Linux':
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-    chrome_browser_obj = webdriver.Chrome(options=options)
-    return chrome_browser_obj
+    if ARGS.edge:
+        browser = webdriver.Edge(options=options)
+    else:
+        browser = webdriver.Chrome(options=options)
+    return browser
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
@@ -106,6 +113,17 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             updateLogs()
             cleanLogs()
             raise Exception(prRed('[ERROR] Your account has been locked !'))
+        elif isElementExists(browser, By.ID, 'mectrl_headerPicture') or 'Sign In or Create' in browser.title:
+            if isElementExists(browser, By.ID, 'i0118'):
+                browser.find_element(By.ID, "i0118").send_keys(pwd)
+                time.sleep(2)
+                browser.find_element(By.ID, 'idSIButton9').click()
+                time.sleep(5)
+                prGreen('[LOGIN] Account logged in again !')
+                RewardsLogin(browser)
+                print('[LOGIN]', 'Ensuring login on Bing...')
+                checkBingLogin(browser, isMobile)
+                return
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter email
@@ -151,7 +169,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             updateLogs()
             cleanLogs()
             if ARGS.telegram:
-                message = createMessge()
+                message = createMessage()
                 sendReportToTelegeram(message)
             input('Press any key to close...')
             os._exit(0)
@@ -1025,7 +1043,7 @@ def validateTime(time: str):
         return t
 
 def argumentParser():
-    '''getting args from command line (--everyday [time:(HH:MM)], --session, --headless)'''
+    '''getting args from command line'''
     parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1", 
                             allow_abbrev=False, 
                             usage="You may use execute the program with the default config or use arguments to configure available options.")
@@ -1056,6 +1074,10 @@ def argumentParser():
                         help='[Optional] This argument takes token and chat id to send logs.', 
                         type=str, 
                         required=False)
+    parser.add_argument('--edge',
+                        help='[Optional] Use Microsoft Edge webdriver instead of Chrome.',
+                        action='store_true',
+                        required=False,)
     args = parser.parse_args()
     if args.everyday:
         if isinstance(validateTime(args.everyday), str):
@@ -1145,7 +1167,7 @@ def checkInternetConnection():
             prRed("[ERROR] No internet connection.")
             time.sleep(1)
 
-def createMessge():
+def createMessage():
     today = date.today().strftime("%d/%m/%Y")
     message = f'📅 Daily report {today}\n\n'
     for index, value in enumerate(LOGS.items(), 1):
@@ -1153,7 +1175,7 @@ def createMessge():
             status = '✅ Farmed'
             new_points = value[1]["Today's points"]
             total_points = value[1]["Points"]
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Today's points: {new_points}\n🏅 Total points: {total_points}\n\n"        
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Today's points: {new_points}\n🏅 Total points: {total_points}\n\n"
         elif value[1]['Last check'] == 'Your account has been suspended':
             status = '❌ Suspended'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
@@ -1167,8 +1189,10 @@ def createMessge():
             status = '⛔️ Unknow error occured'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
-            status = '⛔️ Unknow error occured'
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"   
+            status = f'Farmed on {value[1]["Last check"]}'
+            new_points = value[1]["Today's points"]
+            total_points = value[1]["Points"]
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n\n"   
     return message
 
 def sendReportToTelegeram(message):
@@ -1298,7 +1322,7 @@ def farmer():
         farmer()
     else:
         if ARGS.telegram:
-            message = createMessge()
+            message = createMessage()
             sendReportToTelegeram(message)
         FINISHED_ACCOUNTS.clear()
 
