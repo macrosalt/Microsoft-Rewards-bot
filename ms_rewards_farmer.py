@@ -1023,6 +1023,10 @@ def getRemainingSearches(browser: WebDriver):
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
 
+def getRedeemGoal(browser: WebDriver):
+    user_status = getDashboardData(browser)["userStatus"]
+    return (user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"])
+
 def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
     '''Returns True if given element exists else False'''
     try:
@@ -1255,7 +1259,8 @@ def farmer():
                 prGreen('[LOGIN] Logged-in successfully !')
                 startingPoints = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
-                browser.get('https://rewards.microsoft.com/dashboard')
+                browser.get('https://rewards.microsoft.com/')
+                redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     completeDailySet(browser)
                 if not LOGS[CURRENT_ACCOUNT]['Punch cards']:
@@ -1280,7 +1285,8 @@ def farmer():
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     startingPoints = POINTS_COUNTER
-                    browser.get('https://rewards.microsoft.com/dashboard')
+                    browser.get('https://rewards.microsoft.com/')
+                    redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
                     remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 if remainingSearchesM != 0:
                     print('[BING]', 'Starting Mobile Bing searches...')
@@ -1295,6 +1301,8 @@ def farmer():
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
+            if ARGS.telegram and redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
+                sendReportToTelegeram(f"🎁 {CURRENT_ACCOUNT} is ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
             cleanLogs()
             updateLogs()
             
