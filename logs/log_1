@@ -1,23 +1,27 @@
 {
     "gimfumsk@outlook.com": {
-        "Last check": "2022-12-12",
+        "Last check": "2022-12-14",
         "Today's points": 290,
         "Points": 4471,
         "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
+        "Punch cards": false,
+        "More promotions": false,
         "PC searches": false
     },
     "ookknadg@outlook.com": {
         "Last check": "2022-12-12",
         "Today's points": 155,
-        "Points": 3351
+        "Points": 3351,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "wotfvcat@outlook.com": {
         "Last check": "2022-12-12",
         "Today's points": 150,
         "Points": 6916,
-        "Daily": true,
+        "Daily": false,
         "Punch cards": false,
         "More promotions": false,
         "PC searches": false
