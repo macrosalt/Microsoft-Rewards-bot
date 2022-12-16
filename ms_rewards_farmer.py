@@ -1082,6 +1082,10 @@ def argumentParser():
                         help='[Optional] Use Microsoft Edge webdriver instead of Chrome.',
                         action='store_true',
                         required=False,)
+    parser.add_argument('--shutdown',
+                        help='[Optional] Shutdown the computer after the script is done.',
+                        action='store_true',
+                        required=False)
     args = parser.parse_args()
     if args.everyday:
         if isinstance(validateTime(args.everyday), str):
@@ -1302,7 +1306,11 @@ def farmer():
             LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
             if ARGS.telegram and redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
-                sendReportToTelegeram(f"🎁 {CURRENT_ACCOUNT} is ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
+                redeem_count = POINTS_COUNTER // redeem_goal_price
+                if redeem_count > 1:
+                    sendReportToTelegeram(f"🎁 {CURRENT_ACCOUNT} is ready to redeem {redeem_count} * {redeem_goal_title} for {redeem_goal_price} points.")
+                else:
+                    sendReportToTelegeram(f"🎁 {CURRENT_ACCOUNT} is ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
             cleanLogs()
             updateLogs()
             
@@ -1369,6 +1377,8 @@ def main():
     print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
+    if ARGS.shutdown:
+        os.system('shutdown /s /t 1')
     input('Press any key to close the program...')
           
 if __name__ == '__main__':
