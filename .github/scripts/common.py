@@ -21,7 +21,112 @@ LOG_TO_INSTANCE = {
     "15": "us6",
     "16": "us61",
     "17": "msr_free",
+    "18": "salt.li_free"
 }
+
+MACHINE_TO_ACCOUNT = {
+    #template
+    "": {           
+        "edge":"",
+        "chrome":"",
+        "firefox":"",
+        "yandex":"",
+        "opera":"",
+        "vivaldi":"",
+        "comodo_icedragon":"",
+        "slimbrowser":"",
+        "maxthon":"",
+        "waterfox":"",
+        "brave":"",
+        "seamonkey":"",
+        "lunascape":"",
+        "midori":"",
+        "ur":"",
+        "pale_moon":"",
+        "srware_iron":"",
+        "slimjet":"",
+        "avg":"",
+        "liebao":"",
+        "cent":"",
+        "theworld":"",
+    },
+    "macP_win1022H2": {           
+        "edge":"lysdgrmr@outlook.com",
+        "chrome":"ktlftboh@outlook.com",
+        "firefox":"smcinqjj@outlook.com",
+        "yandex":"bncpiwkk@outlook.com",
+        "opera":"glggvmgc@outlook.com",
+        "vivaldi":"gcxdrwqd@outlook.com",
+        "comodo_icedragon":"qcumuyjj@outlook.com",
+        "slimbrowser":"gimfumsk@outlook.com",
+        "maxthon":"ookknadg@outlook.com",
+        "waterfox":"pmceuitf@outlook.com",
+        "brave":"tpsgjuvw@outlook.com",
+        "seamonkey":"ynhudhwm@outlook.com",
+        "lunascape":"ztbsqsft@outlook.com",
+        "midori":"unfdhqgm@outlook.com",
+        "ur":"vckoyirs@outlook.com",
+        "pale_moon":"mlfyfjgw@outlook.com",
+        "srware_iron":"tlwesqjg@outlook.com ",
+        "slimjet":"oxutorhw@outlook.com",
+        "avg":"dcpnzssa@outlook.com",
+        "liebao":"ardjjelo@outlook.com",
+        "cent":"elftxvvs@outlook.com",
+        "theworld":"",
+    },
+    "miHyper_win1022H2": {           
+        "edge":"pyizsvhy@outlook.com",
+        "chrome":"fvevijqg@outlook.com",
+        "firefox":"",
+        "yandex":"huqafhdp@outlook.com",
+        "opera":"rjkiwmjl@outlook.com",
+        "vivaldi":"ejvkbmpr@outlook.com",
+        "comodo_icedragon":"wdkdqndc@outlook.com",
+        "slimbrowser":"bnhrqspr@outlook.com",
+        "maxthon":"coprnbbt@outlook.com",
+        "waterfox":"qnxwkvcs@outlook.com",
+        "brave":"joothsto@outlook.com",
+        "seamonkey":"wgdzzlnm@outlook.com",
+        "lunascape":"dicxdycq@outlook.com",
+        "midori":"pjysssqw@outlook.com",
+        "ur":"vqkufecw@outlook.com",
+        "pale_moon":"",
+        "srware_iron":"fudxyrsc@outlook.com",
+        "slimjet":"spxbtglt@outlook.com",
+        "avg":"lfsqfgnp@outlook.com",
+        "liebao":"rtwumktx@outlook.com",
+        "cent":"nipexfsj@outlook.com",
+        "theworld":"nhywkmfn@outlook.com",
+    },
+    "mac_origin": {           
+        "chrome":"ymizpwly@outlook.com",
+        "chrome2":"wotfvcat@outlook.com",
+        "safari":"jmbltatj@outlook.com",
+        "brave":"febgcblg@outlook.com",
+    },
+}
+
+MACHINE_PRIORITY = {
+    "macP_win1022H2": 1,
+    "miHyper_win1022H2": 2,
+    "mac_origin": 3,
+}
+
+ACCOUNT_TO_MACHINE = {}
+
+def init_account_to_machine_for_once():
+    if len(ACCOUNT_TO_MACHINE) != 0:
+        return
+    for machine, browser_to_account in MACHINE_TO_ACCOUNT.items():
+        if len(machine) == 0:
+            continue
+        for browser, account in browser_to_account.items():
+            ACCOUNT_TO_MACHINE[account] = {
+                "browser": browser,
+                "machine": machine,
+            }
+
+
 
 ACCOUNT_REGION = {
 }
@@ -43,8 +148,26 @@ def get_account_region(account):
         return ACCOUNT_REGION[account]
     return "us"
 
-def get_account_verified(account):
-    return account in ACCOUNT_REGION
+def get_account_machine(account):
+    init_account_to_machine_for_once()
+    if account not in ACCOUNT_TO_MACHINE:
+        return ""
+    account_info = ACCOUNT_TO_MACHINE[account]
+    return f'{account_info["browser"]} on {account_info["machine"]}'
+
+def get_account_priority(account):
+    init_account_to_machine_for_once()
+    if account not in ACCOUNT_TO_MACHINE:
+        return 0
+    machine = ACCOUNT_TO_MACHINE[account]["machine"]
+    if len(machine) == 0:
+        print("[ERROR]", "account:", account, "has invalid 'machine' field configured in ACCOUNT_TO_MACHINE")
+        return 0
+    
+    if machine not in MACHINE_PRIORITY:
+        print("[ERROR]", "machine:", machine, "is not configured in MACHINE_PRIORITY")
+        return 0
+    return MACHINE_PRIORITY[machine]
 
 def read_logs_to(func):
     '''
