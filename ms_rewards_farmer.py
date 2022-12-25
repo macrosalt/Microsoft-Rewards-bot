@@ -252,7 +252,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 except ValueError:
                     if browser.find_element(By.ID, 'id_s').is_displayed():
                         browser.find_element(By.ID, 'id_s').click()
-                        time.sleep(15)
+                        time.sleep(15 if not FAST else 7)
                         checkBingLogin(browser, isMobile)
                     time.sleep(2)
                     POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
@@ -324,7 +324,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             except:
                 if browser.find_element(By.ID, 'id_s').is_displayed():
                     browser.find_element(By.ID, 'id_s').click()
-                    time.sleep(15)
+                    time.sleep(15 if not FAST else 7)
                     checkBingLogin(browser, isMobile)
                 time.sleep(5)
                 POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
@@ -459,8 +459,8 @@ def getAnswerCode(key: str, string: str) -> str:
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
-    R = RandomWords()
-    search_terms = R.get_random_words(limit = numberOfSearches)
+    r = RandomWords()
+    search_terms = r.get_random_words(limit = numberOfSearches)
     if search_terms == None:
         search_terms = getGoogleTrends(numberOfSearches)
     for word in search_terms:
@@ -528,7 +528,7 @@ def completePromotionalItems(browser: WebDriver):
             browser.find_element(By.XPATH, '//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
             browser.switch_to.window(window_name = browser.window_handles[1])
-            time.sleep(8)
+            time.sleep(8 if not FAST else 5)
             browser.close()
             time.sleep(2)
             browser.switch_to.window(window_name = browser.window_handles[0])
@@ -582,11 +582,11 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
         browser.find_element(By.ID, 'bnp_btn_accept').click()
         time.sleep(2)
     browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
     numberOfOptions = browser.execute_script("return _w.rewardsQuizRenderInfo.numberOfOptions")
-    for question in range(numberOfQuestions):
+    for _ in range(numberOfQuestions):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
@@ -627,7 +627,7 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
     browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(8)
+    time.sleep(8 if not FAST else 5)
     # Accept cookie popup
     if isElementExists(browser, By.ID, 'bnp_container'):
         browser.find_element(By.ID, 'bnp_btn_accept').click()
@@ -686,9 +686,9 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
         resetTabs(browser)
         return
     browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
     time.sleep(5)
-    for question in range(10):
+    for _ in range(10):
         # Click on later on Bing wallpaper app popup
         if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
             browser.find_element(By.ID, 'bnp_hfly_cta2').click()
@@ -781,7 +781,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 browser.execute_script("document.getElementsByClassName('offer-cta')[0].click()")
                 time.sleep(1)
                 browser.switch_to.window(window_name = browser.window_handles[1])
-                time.sleep(random.randint(13, 17))
+                time.sleep(random.randint(5, 8)) if FAST else time.sleep(random.randint(13, 17))
                 browser.close()
                 time.sleep(2)
                 browser.switch_to.window(window_name = browser.window_handles[0])
@@ -796,14 +796,14 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 except:
                     pass
                 time.sleep(5)
-                waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]', 10)
+                waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]', 10 if not FAST else 5)
                 numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
                 AnswerdQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.CorrectlyAnsweredQuestionCount")
                 numberOfQuestions -= AnswerdQuestions
                 for question in range(numberOfQuestions):
                     answer = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
                     browser.find_element(By.XPATH, f'//input[@value="{answer}"]').click()
-                    time.sleep(15)
+                    time.sleep(15 if not FAST else 7)
                 time.sleep(5)
                 browser.close()
                 time.sleep(2)
@@ -820,7 +820,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
                 numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
                 for question in range(numberOfQuestions):
                     browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-                    time.sleep(10)
+                    time.sleep(10 if not FAST else 5)
                 time.sleep(5)
                 browser.close()
                 time.sleep(2)
@@ -877,12 +877,12 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
     CurrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
     if CurrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
         browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
     Questions = numberOfQuestions - CurrentQuestionNumber + 1
     numberOfOptions = browser.execute_script("return _w.rewardsQuizRenderInfo.numberOfOptions")
-    for question in range(Questions):
+    for _ in range(Questions):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
@@ -938,9 +938,9 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     NumberOfQuestionsLeft = 10 - CrrentQuestionNumber + 1
     if CrrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
         browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
     time.sleep(3)
-    for question in range(NumberOfQuestionsLeft):
+    for _ in range(NumberOfQuestionsLeft):
         answerEncodeKey = browser.execute_script("return _G.IG")
 
         answer1 = browser.find_element(By.ID, "rqAnswerOption0")
