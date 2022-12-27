@@ -10,6 +10,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
 from notifiers import get_notifier 
+import copy
 
 import ipapi
 import requests
@@ -40,6 +41,7 @@ MOBILE = True # A flag for when the account has mobile bing search, it is useful
 CURRENT_ACCOUNT = None # save current account into this variable when farming.
 LOGS = {} # Dictionary of accounts to write in 'logs_accounts.txt'.
 FAST = False # When this variable set True then all possible delays reduced.
+BASE_URL = "https://rewards.bing.com"
 
 # Define browser setup function
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
@@ -209,7 +211,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
 
 def RewardsLogin(browser: WebDriver):
     #Login into Rewards
-    browser.get('https://rewards.microsoft.com/dashboard')
+    browser.get(BASE_URL)
     try:
         time.sleep(10 if not FAST else 5)
         browser.find_element(By.ID, 'raf-signin-link-id').click()
@@ -445,9 +447,9 @@ def resetTabs(browser: WebDriver):
 
         browser.switch_to.window(curr)
         time.sleep(0.5)
-        browser.get('https://rewards.microsoft.com/')
+        browser.get(BASE_URL)
     except:
-        browser.get('https://rewards.microsoft.com/')
+        browser.get(BASE_URL)
 
 def getAnswerCode(key: str, string: str) -> str:
 	t = 0
@@ -524,7 +526,7 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
 def completePromotionalItems(browser: WebDriver):
     try:
         item = getDashboardData(browser)["promotionalItem"]
-        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == "https://rewards.microsoft.com/":
+        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == BASE_URL:
             browser.find_element(By.XPATH, '//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
             browser.switch_to.window(window_name = browser.window_handles[1])
@@ -850,7 +852,7 @@ def completePunchCards(browser: WebDriver):
         except:
             resetTabs(browser)
     time.sleep(2)
-    browser.get('https://rewards.microsoft.com/dashboard/')
+    browser.get(BASE_URL)
     time.sleep(2)
     LOGS[CURRENT_ACCOUNT]['Punch cards'] = True
     updateLogs()
@@ -987,7 +989,7 @@ def completeMorePromotions(browser: WebDriver):
                     if promotion['pointProgressMax'] == 100 or promotion['pointProgressMax'] == 200:
                         completeMorePromotionSearch(browser, i)
             if promotion['complete'] == False and promotion['pointProgressMax'] == 100 and promotion['promotionType'] == "" \
-                and promotion['destinationUrl'] == "https://rewards.microsoft.com":
+                and promotion['destinationUrl'] == BASE_URL:
                 completeMorePromotionSearch(browser, i)
         except:
             resetTabs(browser)
@@ -1153,14 +1155,19 @@ def logs():
         prGreen(f'[LOGS] "Logs_{account_path.stem}.txt" created.\n')
         
 def updateLogs():
+    logs = copy.deepcopy(LOGS)
+    for account in logs:
+        if account == "Elapsed time": continue
+        logs[account].pop("Redeem goal title", None)
+        logs[account].pop("Redeem goal price", None)
     with open(f'{Path(__file__).parent}/Logs_{account_path.stem}.txt', 'w') as file:
-        file.write(json.dumps(LOGS, indent = 4))
+        file.write(json.dumps(logs, indent = 4))
 
 def cleanLogs():
-    del LOGS[CURRENT_ACCOUNT]["Daily"]
-    del LOGS[CURRENT_ACCOUNT]["Punch cards"]
-    del LOGS[CURRENT_ACCOUNT]["More promotions"]
-    del LOGS[CURRENT_ACCOUNT]["PC searches"]
+    LOGS[CURRENT_ACCOUNT].pop("Daily", None)
+    LOGS[CURRENT_ACCOUNT].pop("Punch cards", None)
+    LOGS[CURRENT_ACCOUNT].pop("More promotions", None)
+    LOGS[CURRENT_ACCOUNT].pop("PC searches", None)
 
 def checkInternetConnection():
     system = platform.system()
@@ -1183,7 +1190,17 @@ def createMessage():
             status = '✅ Farmed'
             new_points = value[1]["Today's points"]
             total_points = value[1]["Points"]
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Today's points: {new_points}\n🏅 Total points: {total_points}\n\n"
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
+            redeem_title = value[1].get("Redeem goal title", None)
+            if redeem_title:
+                redeem_price = value[1].get("Redeem goal price")
+                redeem_count = total_points // redeem_price
+                if redeem_count > 1:
+                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price} ({redeem_count}x)\n\n"
+                else:
+                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price}\n\n"
+            else:   
+                message += "\n"
         elif value[1]['Last check'] == 'Your account has been suspended':
             status = '❌ Suspended'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
@@ -1200,7 +1217,17 @@ def createMessage():
             status = f'Farmed on {value[1]["Last check"]}'
             new_points = value[1]["Today's points"]
             total_points = value[1]["Points"]
-            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n\n"   
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
+            redeem_title = value[1].get("Redeem goal title", None)
+            if redeem_title:
+                redeem_price = value[1].get("Redeem goal price")
+                redeem_count = total_points // redeem_price
+                if redeem_count > 1:
+                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price} ({redeem_count}x)\n\n"
+                else:
+                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price}\n\n"
+            else:   
+                message += "\n"
     return message
 
 def sendReportToTelegeram(message):
@@ -1263,7 +1290,7 @@ def farmer():
                 prGreen('[LOGIN] Logged-in successfully !')
                 startingPoints = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
-                browser.get('https://rewards.microsoft.com/')
+                browser.get(BASE_URL)
                 redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     completeDailySet(browser)
@@ -1289,7 +1316,7 @@ def farmer():
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     startingPoints = POINTS_COUNTER
-                    browser.get('https://rewards.microsoft.com/')
+                    browser.get(BASE_URL)
                     redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
                     remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 if remainingSearchesM != 0:
@@ -1305,12 +1332,11 @@ def farmer():
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
-            if ARGS.telegram and redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
-                redeem_count = POINTS_COUNTER // redeem_goal_price
-                if redeem_count > 1:
-                    sendReportToTelegeram(f"🎁 {CURRENT_ACCOUNT} is ready to redeem {redeem_count} * {redeem_goal_title} for {redeem_goal_price} points.")
-                else:
-                    sendReportToTelegeram(f"🎁 {CURRENT_ACCOUNT} is ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
+            if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
+                prGreen(f"[POINTS] Account ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
+                if ARGS.telegram:
+                    LOGS[CURRENT_ACCOUNT]["Redeem goal title"] = redeem_goal_title
+                    LOGS[CURRENT_ACCOUNT]["Redeem goal price"] = redeem_goal_price
             cleanLogs()
             updateLogs()
             
