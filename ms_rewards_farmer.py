@@ -9,7 +9,7 @@ import urllib.parse
 from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
-from notifiers import get_notifier 
+from notifiers import get_notifier
 import copy
 
 import ipapi
@@ -170,9 +170,9 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
             updateLogs()
             cleanLogs()
-            if ARGS.telegram:
+            if ARGS.telegram or ARGS.discord:
                 message = createMessage()
-                sendReportToTelegeram(message)
+                sendReportToMessenger(message)
             input('Press any key to close...')
             os._exit(0)
         else:
@@ -1077,8 +1077,14 @@ def argumentParser():
     parser.add_argument('--telegram',
                         metavar=('<API_TOKEN>', '<CHAT_ID>'),
                         nargs=2,
-                        help='[Optional] This argument takes token and chat id to send logs.', 
+                        help='[Optional] This argument takes token and chat id to send logs to Telegram.', 
                         type=str, 
+                        required=False)
+    parser.add_argument('--discord',
+                        metavar='<WEBHOOK_URL>',
+                        nargs=1,
+                        help='[Optional] This argument takes webhook url to send logs to Discord.',
+                        type=str,
                         required=False)
     parser.add_argument('--edge',
                         help='[Optional] Use Microsoft Edge webdriver instead of Chrome.',
@@ -1155,13 +1161,14 @@ def logs():
         prGreen(f'[LOGS] "Logs_{account_path.stem}.txt" created.\n')
         
 def updateLogs():
-    logs = copy.deepcopy(LOGS)
-    for account in logs:
-        if account == "Elapsed time": continue
-        logs[account].pop("Redeem goal title", None)
-        logs[account].pop("Redeem goal price", None)
+    _logs = copy.deepcopy(LOGS)
+    for account in _logs:
+        if account == "Elapsed time":
+            continue
+        _logs[account].pop("Redeem goal title", None)
+        _logs[account].pop("Redeem goal price", None)
     with open(f'{Path(__file__).parent}/Logs_{account_path.stem}.txt', 'w') as file:
-        file.write(json.dumps(logs, indent = 4))
+        file.write(json.dumps(_logs, indent = 4))
 
 def cleanLogs():
     LOGS[CURRENT_ACCOUNT].pop("Daily", None)
@@ -1186,20 +1193,23 @@ def createMessage():
     today = date.today().strftime("%d/%m/%Y")
     message = f'📅 Daily report {today}\n\n'
     for index, value in enumerate(LOGS.items(), 1):
+        redeem_message = None
+        if value[1].get("Redeem goal title", None):
+            redeem_title = value[1].get("Redeem goal title", None)
+            redeem_price = value[1].get("Redeem goal price")
+            redeem_count = total_points // redeem_price
+            if redeem_count > 1:
+                redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
+            else:
+                redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points\n\n"
         if value[1]['Last check'] == str(date.today()):
             status = '✅ Farmed'
             new_points = value[1]["Today's points"]
             total_points = value[1]["Points"]
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
-            redeem_title = value[1].get("Redeem goal title", None)
-            if redeem_title:
-                redeem_price = value[1].get("Redeem goal price")
-                redeem_count = total_points // redeem_price
-                if redeem_count > 1:
-                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price} ({redeem_count}x)\n\n"
-                else:
-                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price}\n\n"
-            else:   
+            if redeem_message:
+                message += redeem_message
+            else:
                 message += "\n"
         elif value[1]['Last check'] == 'Your account has been suspended':
             status = '❌ Suspended'
@@ -1218,21 +1228,24 @@ def createMessage():
             new_points = value[1]["Today's points"]
             total_points = value[1]["Points"]
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
-            redeem_title = value[1].get("Redeem goal title", None)
-            if redeem_title:
-                redeem_price = value[1].get("Redeem goal price")
-                redeem_count = total_points // redeem_price
-                if redeem_count > 1:
-                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price} ({redeem_count}x)\n\n"
-                else:
-                    message += f"🎁 Ready to redeem: {redeem_title} for {redeem_price}\n\n"
-            else:   
+            if redeem_message:
+                message += redeem_message
+            else:
                 message += "\n"
     return message
 
-def sendReportToTelegeram(message):
-    t = get_notifier('telegram') 
-    t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+def sendReportToMessenger(message):
+    if ARGS.telegram:
+        t = get_notifier('telegram') 
+        t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+    if ARGS.discord:
+        content = {"username": "⭐️ Microsoft Rewards Bot ⭐️", "content": message}
+        webhook = ARGS.discord[0]
+        response = requests.post(webhook, json=content)
+        if response.status_code == 204:
+            prGreen("[LOGS] Report sent to Discord.\n")
+        else:
+            prRed("[ERROR] Could not send report to Discord.\n")
     
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
@@ -1334,7 +1347,7 @@ def farmer():
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
             if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
                 prGreen(f"[POINTS] Account ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
-                if ARGS.telegram:
+                if ARGS.telegram or ARGS.discord:
                     LOGS[CURRENT_ACCOUNT]["Redeem goal title"] = redeem_goal_title
                     LOGS[CURRENT_ACCOUNT]["Redeem goal price"] = redeem_goal_price
             cleanLogs()
@@ -1363,9 +1376,9 @@ def farmer():
         checkInternetConnection()
         farmer()
     else:
-        if ARGS.telegram:
+        if ARGS.telegram or ARGS.discord:
             message = createMessage()
-            sendReportToTelegeram(message)
+            sendReportToMessenger(message)
         FINISHED_ACCOUNTS.clear()
 
 def main():
