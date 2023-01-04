@@ -848,7 +848,7 @@ def completePunchCards(browser: WebDriver):
                     new_url = 'https://account.microsoft.com/rewards/dashboard/'
                     userCode = path[:4]
                     dest = new_url + userCode + path.split(userCode)[1]
-                completePunchCard(browser, dest, punchCard['childPromotions'])
+                completePunchCard(browser, url, punchCard['childPromotions'])
         except:
             resetTabs(browser)
     time.sleep(2)
