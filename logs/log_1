@@ -27,8 +27,12 @@
         "PC searches": false
     },
     "wyrbksov@outlook.com": {
-        "Last check": "2023-01-02",
+        "Last check": "2023-01-04",
         "Today's points": 195,
-        "Points": 8981
+        "Points": 8981,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": false,
+        "PC searches": false
     }
 }
