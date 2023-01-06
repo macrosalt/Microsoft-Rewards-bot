@@ -153,7 +153,7 @@ def get_account_machine(account):
     if account not in ACCOUNT_TO_MACHINE:
         return ""
     account_info = ACCOUNT_TO_MACHINE[account]
-    return f'{account_info["browser"]} on {account_info["machine"]}'
+    return f'[{account_info["machine"]}][{account_info["browser"]}]'
 
 def get_account_priority(account):
     init_account_to_machine_for_once()
