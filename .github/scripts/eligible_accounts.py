@@ -33,7 +33,7 @@ def get_eligible_accounts(obj):
                     continue
                 machine = get_account_machine(key)
                 append_ele_to_dict_of_list(priority_print, priority,
-                f'{machine}account: {key} -> points:{val["Points"]} from {location}| {region}')
+                f'{machine} account: {key} -> points:{val["Points"]} from {location}| {region}')
 
 def print_logs_in_priority():
     for priority in sorted(priority_print.keys()):
