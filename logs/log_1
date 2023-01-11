@@ -9,11 +9,11 @@
         "PC searches": false
     },
     "ookknadg@outlook.com": {
-        "Last check": "2023-01-09",
+        "Last check": "2023-01-11",
         "Today's points": 155,
         "Points": 3351,
-        "Daily": true,
-        "Punch cards": true,
+        "Daily": false,
+        "Punch cards": false,
         "More promotions": false,
         "PC searches": false
     },
@@ -27,8 +27,8 @@
         "PC searches": false
     },
     "wyrbksov@outlook.com": {
-        "Last check": "2023-01-08",
-        "Today's points": 285,
-        "Points": 10513
+        "Last check": "2023-01-10",
+        "Today's points": 335,
+        "Points": 10953
     }
 }
