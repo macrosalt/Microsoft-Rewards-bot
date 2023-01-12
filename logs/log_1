@@ -10,25 +10,21 @@
     },
     "ookknadg@outlook.com": {
         "Last check": "2023-01-11",
-        "Today's points": 155,
-        "Points": 3351,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Today's points": 466,
+        "Points": 4383
     },
     "wotfvcat@outlook.com": {
-        "Last check": "2022-12-12",
+        "Last check": "2023-01-12",
         "Today's points": 150,
         "Points": 6916,
-        "Daily": false,
-        "Punch cards": false,
+        "Daily": true,
+        "Punch cards": true,
         "More promotions": false,
         "PC searches": false
     },
     "wyrbksov@outlook.com": {
-        "Last check": "2023-01-10",
-        "Today's points": 335,
-        "Points": 10953
+        "Last check": "2023-01-11",
+        "Today's points": 105,
+        "Points": 11253
     }
 }
