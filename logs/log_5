@@ -1,22 +1,26 @@
 {
     "wdkdqndc@outlook.com": {
-        "Last check": "2023-01-17",
-        "Today's points": 340,
-        "Points": 4614
+        "Last check": "2023-01-18",
+        "Today's points": 335,
+        "Points": 4949
     },
     "ynhudhwm@outlook.com": {
-        "Last check": "2023-01-17",
-        "Today's points": 345,
-        "Points": 4934
+        "Last check": "2023-01-18",
+        "Today's points": 335,
+        "Points": 5269
     },
     "huqafhdp@outlook.com": {
-        "Last check": "2023-01-17",
-        "Today's points": 20,
-        "Points": 17559
+        "Last check": "2023-01-18",
+        "Today's points": 335,
+        "Points": 17894
     },
     "onygjfpd@outlook.com": {
-        "Last check": "2023-01-17",
+        "Last check": "Your account has been locked !",
         "Today's points": 345,
-        "Points": 6518
+        "Points": 6518,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
