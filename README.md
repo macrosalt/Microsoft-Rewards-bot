@@ -59,8 +59,10 @@
           <ul>
             <li><code>--headless</code> You can use this argument to run the script in headless mode.</li>
             <li><code>--session</code> Use this argument to create session for each account.</li>
-            <li><code>--everyday TIME</code> This argument takes time in 24h format (HH:MM) to run it everyday at the given time by leaving the program open.</li>
+            <li><code>--start-on TIME</code> This argument takes time in 24h format (HH:MM) to run it at the given time.</li>
+            <li><code>--everyday</code> This argument makes the the script to stay open and start it again next day at time you start.</li>
             <li><code>--fast</code> This argument reduces delays of script and make it faster (use this if you have high speed connection).</li>
+            <li><code>--account-browser ACCOUNT</code> This argument opens session for given account if it's already exist else returns error.</li>  
             <li><code>--error</code> When you use this argument, app displays crash error in terminal when it fails.</li>
             <li><code>--telegram TOKEN CHAT_ID</code> Use this argument to send logs to your telegram through your bot.</li>
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through webhook.</li>
