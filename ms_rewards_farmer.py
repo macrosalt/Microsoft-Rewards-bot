@@ -52,7 +52,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
         options = EdgeOptions()
     else:
         options = ChromeOptions()
-    if ARGS.session:
+    if ARGS.session or ARGS.account_browser:
         if not isMobile:
             options.add_argument(f'--user-data-dir={Path(__file__).parent}/Profiles/{CURRENT_ACCOUNT}/PC')
         else:
@@ -66,10 +66,12 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
             "webrtc.multiple_routes_enabled": False,
             "webrtc.nonproxied_udp_enabled" : False}
+    if ARGS.account_browser:
+        prefs["detach"] = True
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    if ARGS.headless:
+    if ARGS.headless and ARGS.account_browser is None:
         options.add_argument("--headless")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
@@ -1037,26 +1039,42 @@ def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
         return False
     return True
 
-def validateTime(time: str):
-    '''
-    check the time format and return the time if it is valid, otherwise return None
-    '''
-    try:
-        t = datetime.strptime(time, "%H:%M").strftime("%H:%M")
-    except ValueError:
-        return None
+def accountBrowser(chosen_account: str):
+    """Setup browser for chosen account"""
+    global CURRENT_ACCOUNT
+    for account in ACCOUNTS:
+        if account["username"].lower() == chosen_account.lower():
+            CURRENT_ACCOUNT = account["username"]
+            break
     else:
-        return t
+        return None
+    browserSetup(False, PC_USER_AGENT)
 
 def argumentParser():
     '''getting args from command line'''
+    
+    def isValidTime(time: str):
+        '''check the time format and return the time if it is valid, otherwise return parser error'''
+        try:
+            t = datetime.strptime(time, "%H:%M").strftime("%H:%M")
+        except ValueError:
+            parser.error("Invalid time format, use HH:MM")
+        else:
+            return t
+    
+    def isSessionExist(session: str):
+        '''check if the session is valid and return the session if it is valid, otherwise return parser error'''
+        if Path(f"{Path(__file__).parent}/Profiles/{session}").exists():
+            return session
+        else:
+            parser.error(f"Session not found for {session}")
+    
     parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1", 
                             allow_abbrev=False, 
                             usage="You may use execute the program with the default config or use arguments to configure available options.")
     parser.add_argument('--everyday', 
-                        metavar='HH:MM',
-                        help='[Optional] This argument takes an input as time in 24h format (HH:MM) to execute the program at the given time everyday.', 
-                        type=str, 
+                        action='store_true',
+                        help='[Optional] This argument will make the script run everyday at the time you start.', 
                         required=False)
     parser.add_argument('--headless',
                         help='[Optional] Enable headless browser.',
@@ -1094,18 +1112,23 @@ def argumentParser():
                         help='[Optional] Shutdown the computer after the script is done.',
                         action='store_true',
                         required=False)
+    parser.add_argument('--account-browser',
+                        nargs=1,
+                        type=isSessionExist,
+                        help='[Optional] Open browser session for chosen account.',
+                        required=False)
+    parser.add_argument('--start-at',
+                        metavar='<HH:MM>',
+                        nargs=1,
+                        type=isValidTime,
+                        )
     args = parser.parse_args()
-    if args.everyday:
-        if isinstance(validateTime(args.everyday), str):
-            args.everyday = validateTime(args.everyday)
-        else:
-            parser.error(f'"{args.everyday}" is not valid. Please use (HH:MM) format.')
     if args.fast:
         global FAST
         FAST = True
     if len(sys.argv) > 1:
         for arg in vars(args):
-            prBlue(f"[INFO] {arg} : {getattr(args, arg)}")
+            prBlue(f"[INFO] {arg}: {getattr(args, arg)}")
     return args
 
 def logs():
@@ -1283,9 +1306,7 @@ except FileNotFoundError:
     ACCOUNTS = json.load(open(account_path, "r"))
 
 def farmer():
-    '''
-    fuction that runs other functions to farm.
-    '''
+    '''fuction that runs other functions to farm.'''
     global ERROR, MOBILE, CURRENT_ACCOUNT
     try:
         for account in ACCOUNTS:
@@ -1386,23 +1407,27 @@ def main():
     # show colors in terminal
     os.system('color')
     logo()
-    # Get the arguments from the command line
     ARGS = argumentParser()
     LANG, GEO, TZ = getCCodeLangAndOffset()
-    # set time to launch the program if everyday is not set
-    if not ARGS.everyday:
-        answer = input('If you want to run the program at a specific time, type your desired time in 24h format (HH:MM) else press Enter'\
-                '\n(\033[93manything other than time causes the script to start immediately\033[00m): ')
-        run_on = validateTime(answer)
-    else:
-        run_on = ARGS.everyday
-    if run_on is not None:
+    if ARGS.account_browser:
+        prBlue(f"\n[INFO] Opening session for {ARGS.account_browser[0]}")
+        accountBrowser(ARGS.account_browser[0])
+        input("Press Enter to close when you finished...")
+        return None
+    run_at = None
+    if ARGS.start_at:
+        run_at = ARGS.start_at[0]
+    elif ARGS.everyday and ARGS.start_at is None:
+        run_at = datetime.now().strftime("%H:%M")
+        prBlue(f"\n[INFO] Starting everyday at {run_at}.")
+    if run_at is not None:
+        prBlue(f"\n[INFO] Farmer will start at {run_at}")
         while True:
-            if datetime.now().strftime("%H:%M") == run_on:
+            if datetime.now().strftime("%H:%M") == run_at:
                 start = time.time()
                 logs()
                 farmer()
-                if ARGS.everyday is None:
+                if not ARGS.everyday:
                     break
             time.sleep(30)
     else:
@@ -1413,7 +1438,8 @@ def main():
     delta = end - start
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
-    print(f"The farmer takes : {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
+    print(f"The farmer takes: {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
+    print(f"Farmer completed on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
     if ARGS.shutdown:
