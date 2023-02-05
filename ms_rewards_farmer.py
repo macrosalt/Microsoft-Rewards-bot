@@ -1214,6 +1214,7 @@ def checkInternetConnection():
 
 def createMessage():
     today = date.today().strftime("%d/%m/%Y")
+    total_earned = 0
     message = f'📅 Daily report {today}\n\n'
     for index, value in enumerate(LOGS.items(), 1):
         redeem_message = None
@@ -1228,6 +1229,7 @@ def createMessage():
         if value[1]['Last check'] == str(date.today()):
             status = '✅ Farmed'
             new_points = value[1]["Today's points"]
+            total_earned += new_points
             total_points = value[1]["Points"]
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
             if redeem_message:
@@ -1249,26 +1251,40 @@ def createMessage():
         else:
             status = f'Farmed on {value[1]["Last check"]}'
             new_points = value[1]["Today's points"]
+            total_earned += new_points
             total_points = value[1]["Points"]
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
             if redeem_message:
                 message += redeem_message
             else:
                 message += "\n"
+    message += f"💵 Total earned points: {total_earned} (${total_earned/1300:0.02f}) (€{total_earned/1500:0.02f})"
     return message
 
 def sendReportToMessenger(message):
     if ARGS.telegram:
-        t = get_notifier('telegram') 
-        t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+        sendToTelegram(message)
     if ARGS.discord:
+        sendToDiscord(message)
+
+def sendToTelegram(message):
+    t = get_notifier('telegram') 
+    t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+    
+def sendToDiscord(message):
+    webhook_url = ARGS.discord[0]
+    if len(message) > 2000:
+        messages = [message[i:i+2000] for i in range(0, len(message), 2000)]
+        for ms in messages:
+            content = {"username": "⭐️ Microsoft Rewards Bot ⭐️", "content": ms}
+            response = requests.post(webhook_url, json=content)
+    else:
         content = {"username": "⭐️ Microsoft Rewards Bot ⭐️", "content": message}
-        webhook = ARGS.discord[0]
-        response = requests.post(webhook, json=content)
-        if response.status_code == 204:
-            prGreen("[LOGS] Report sent to Discord.\n")
-        else:
-            prRed("[ERROR] Could not send report to Discord.\n")
+        response = requests.post(webhook_url, json=content) 
+    if response.status_code == 204:
+        prGreen("[LOGS] Report sent to Discord.\n")
+    else:
+        prRed("[ERROR] Could not send report to Discord.\n")
     
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
