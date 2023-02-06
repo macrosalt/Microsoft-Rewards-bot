@@ -1069,9 +1069,11 @@ def argumentParser():
         else:
             parser.error(f"Session not found for {session}")
     
-    parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1", 
-                            allow_abbrev=False, 
-                            usage="You may use execute the program with the default config or use arguments to configure available options.")
+    parser = ArgumentParser(
+        description="Microsoft Rewards Farmer V2.1", 
+        allow_abbrev=False, 
+        usage="You may use execute the program with the default config or use arguments to configure available options."
+    )
     parser.add_argument('--everyday', 
                         action='store_true',
                         help='[Optional] This argument will make the script run everyday at the time you start.', 
@@ -1109,8 +1111,11 @@ def argumentParser():
                         action='store_true',
                         required=False,)
     parser.add_argument('--shutdown',
-                        help='[Optional] Shutdown the computer after the script is done.',
-                        action='store_true',
+                        metavar=('<TIME (SECONDS)>'),
+                        help='[Optional] You can pass time in seconds to shutdown the computer after the script is done, if time not provided default is 10.',
+                        nargs="?",
+                        type=int,
+                        const=10,
                         required=False)
     parser.add_argument('--account-browser',
                         nargs=1,
@@ -1459,7 +1464,7 @@ def main():
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
     if ARGS.shutdown:
-        os.system('shutdown /s /t 1')
+        os.system(f'shutdown /s /t {ARGS.shutdown}')
     input('Press any key to close the program...')
           
 if __name__ == '__main__':
