@@ -67,7 +67,7 @@
             <li><code>--telegram TOKEN CHAT_ID</code> Use this argument to send logs to your telegram through your bot.</li>
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through webhook.</li>
             <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.<a href="https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"> Download Microsoft Edge web driver.</a></li>
-            <li><code>--shutdown</code> Shutdown computer after farm.</li>
+            <li><code>--shutdown TIME</code> Shutdown computer after farm. If the time is given, the system will turn off after the given time, otherwise it will turn off after 10 seconds.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --everyday 14:30 --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled and it asks you to input a time if you want to run it at a specific time.</li>
@@ -82,6 +82,7 @@
   <li>Complete automatically the daily set</li>
   <li>Complete automatically punch cards</li>
   <li>Complete automatically the others promotions</li>
+  <li>Complete MSN shopping game quiz</li>
   <li>Headless Mode</li>
   <li>Multi-Account Management</li>
   <li>Modified to be undetectable as bot</li>
