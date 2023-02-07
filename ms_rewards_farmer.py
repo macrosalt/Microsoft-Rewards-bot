@@ -10,6 +10,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
 from notifiers import get_notifier
+from typing import Union, List
 import copy
 
 import ipapi
@@ -17,12 +18,15 @@ import requests
 from func_timeout import FunctionTimedOut, func_set_timeout
 from random_word import RandomWords
 from selenium import webdriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import (ElementNotInteractableException,
                                         NoAlertPresentException,
                                         NoSuchElementException,
                                         SessionNotCreatedException,
                                         TimeoutException,
-                                        UnexpectedAlertPresentException)
+                                        UnexpectedAlertPresentException,
+                                        JavascriptException,
+                                        ElementNotVisibleException)
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -999,6 +1003,122 @@ def completeMorePromotions(browser: WebDriver):
     updateLogs()
     prGreen('[MORE PROMO] Completed More Promotions successfully !')
 
+def completeMSNShoppingGame(browser: WebDriver):
+
+    def expandShadowElement(element, index: int = None) -> Union[List[WebElement], WebElement]:
+        """Returns childrens of shadow element"""
+        if index is not None:
+            shadow_root = WebDriverWait(browser, 45).until(
+                ec.visibility_of(browser.execute_script('return arguments[0].shadowRoot.children', element)[index])
+            )
+        else:
+            # wait to visible one element then get the list
+            WebDriverWait(browser, 45).until(
+                ec.visibility_of(browser.execute_script('return arguments[0].shadowRoot.children', element)[0])
+            )
+            shadow_root = browser.execute_script('return arguments[0].shadowRoot.children', element)
+        return shadow_root
+
+    def getChildren(element) -> List[WebElement]:
+        children = browser.execute_script('return arguments[0].children', element)
+        return children
+    
+    def getSignInState() -> WebElement:
+        """check wheather user is signed in or not and return the button to sign in"""
+        script_to_user_pref_container = 'document.getElementsByTagName("shopping-page-base")[0]\
+            .shadowRoot.children[0].children[1].children[0]\
+            .shadowRoot.children[0].shadowRoot.children[0]\
+            .getElementsByClassName("user-pref-container")[0]'
+        WebDriverWait(browser, 60).until(ec.visibility_of(
+            browser.execute_script(f'return {script_to_user_pref_container}')
+            )
+        )
+        button = WebDriverWait(browser, 60).until(ec.visibility_of(
+                browser.execute_script(
+                    f'return {script_to_user_pref_container}.\
+                    children[0].children[0].shadowRoot.children[0].\
+                    getElementsByClassName("me-control")[0]'
+                )
+            )
+        )
+        return button
+        
+    def signIn() -> None:
+        sign_in_button = getSignInState()
+        sign_in_button.click()
+        print("[MSN GAME] Signing in...")
+        time.sleep(5)
+        waitUntilVisible(browser, By.ID, 'newSessionLink', 10)
+        browser.find_element(By.ID, 'newSessionLink').click()
+        waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST else 30)
+        expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
+        getSignInState()
+    
+    def getGamingCard() -> WebElement:
+        shopping_page_base_childs = expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
+        shopping_homepage = shopping_page_base_childs.find_element(By.TAG_NAME, 'shopping-homepage')
+        msft_feed_layout = expandShadowElement(shopping_homepage, 0).find_element(By.TAG_NAME, 'msft-feed-layout')
+        msn_shopping_game_pane = expandShadowElement(msft_feed_layout)
+        for element in msn_shopping_game_pane:
+            if element.get_attribute("gamestate") == "active":
+                return element
+    
+    def clickCorrectAnswer() -> None:
+        options_container = expandShadowElement(gaming_card, 1)
+        options_elements = getChildren(getChildren(options_container)[1])
+        # click on the correct answer in options_elements
+        correct_answer = options_elements[int(gaming_card.get_attribute("_correctAnswerIndex"))]
+        # hover to show the select button
+        correct_answer.click()
+        time.sleep(1)
+        # click 'select' button
+        select_button = correct_answer.find_element(By.CLASS_NAME, 'shopping-select-overlay-button')
+        WebDriverWait(browser, 5).until(ec.element_to_be_clickable(select_button))
+        select_button.click()
+    
+    def clickPlayAgain() -> None:
+        time.sleep(random.randint(4, 6))
+        options_container = expandShadowElement(gaming_card)[1]
+        getChildren(options_container)[0].find_element(By.TAG_NAME, 'button').click()
+    
+    try:
+        tries = 0
+        print("[MSN GAME] Trying to complete MSN shopping game...")
+        print("[MSN GAME] Checking if user is signed in ...")
+        while tries <= 4:
+            tries += 1
+            browser.get("https://www.msn.com/en-us/shopping")
+            waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST else 30)
+            time.sleep(15 if not FAST else 8)
+            try:
+                sign_in_button = getSignInState()
+            except:
+                if tries == 4:
+                    raise ElementNotVisibleException("Sign in button did not show up")
+            else:
+                break
+        time.sleep(5)
+        if "Sign in" in sign_in_button.text:
+            signIn()
+        gaming_card = getGamingCard()
+        print("[MSN GAME] Answering questions ...")
+        for _ in range(10):
+            try:
+                clickCorrectAnswer()
+                clickPlayAgain()
+                time.sleep(random.randint(5, 7))
+            except (NoSuchElementException, JavascriptException):
+                break
+    except:
+        prYellow("[MSN GAME] Failed to complete MSN shopping game !")
+        resetTabs(browser)
+    else:
+        prGreen("[MSN GAME] Completed MSN shopping game successfully !")
+        browser.get(BASE_URL)
+    finally:
+        LOGS[CURRENT_ACCOUNT]["MSN shopping game"] = True
+        updateLogs()
+
 def getRemainingSearches(browser: WebDriver):
     dashboard = getDashboardData(browser)
     searchPoints = 1
@@ -1137,9 +1257,7 @@ def argumentParser():
     return args
 
 def logs():
-    '''
-    Read logs and check whether account farmed or not
-    '''
+    '''Read logs and check whether account farmed or not'''
     global LOGS
     shared_items =[]
     try:
@@ -1164,13 +1282,22 @@ def logs():
                 FINISHED_ACCOUNTS.append(account)
             elif LOGS[account]['Last check'] == 'Your account has been suspended':
                 FINISHED_ACCOUNTS.append(account)
-            elif LOGS[account]['Last check'] == str(date.today()) and list(LOGS[account].keys()) == ['Last check', "Today's points", 'Points',
-                                                                                                     'Daily', 'Punch cards', 'More promotions', 'PC searches']:
+            elif LOGS[account]['Last check'] == str(date.today()) and list(LOGS[account].keys()) == [
+                'Last check',
+                "Today's points",
+                'Points',
+                'Daily',
+                'Punch cards',
+                'More promotions',
+                'MSN shopping game',
+                'PC searches'
+            ]:
                 continue
             else:
                 LOGS[account]['Daily'] = False
                 LOGS[account]['Punch cards'] = False
                 LOGS[account]['More promotions'] = False
+                LOGS[account]['MSN shopping game'] = False
                 LOGS[account]['PC searches'] = False 
         updateLogs()               
         prGreen('\n[LOGS] Logs loaded successfully.\n')
@@ -1184,6 +1311,7 @@ def logs():
                                         "Daily": False,
                                         "Punch cards": False,
                                         "More promotions": False,
+                                        "MSN shopping game": False,
                                         "PC searches": False}
         updateLogs()
         prGreen(f'[LOGS] "Logs_{account_path.stem}.txt" created.\n')
@@ -1202,6 +1330,7 @@ def cleanLogs():
     LOGS[CURRENT_ACCOUNT].pop("Daily", None)
     LOGS[CURRENT_ACCOUNT].pop("Punch cards", None)
     LOGS[CURRENT_ACCOUNT].pop("More promotions", None)
+    LOGS[CURRENT_ACCOUNT].pop("MSN shopping game", None)
     LOGS[CURRENT_ACCOUNT].pop("PC searches", None)
 
 def checkInternetConnection():
@@ -1353,6 +1482,8 @@ def farmer():
                     completePunchCards(browser)
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
+                if not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
+                    completeMSNShoppingGame(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = bool(remainingSearchesM)
                 if remainingSearches != 0:
