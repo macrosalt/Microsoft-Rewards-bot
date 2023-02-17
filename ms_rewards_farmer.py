@@ -1247,6 +1247,11 @@ def argumentParser():
                         nargs=1,
                         type=isValidTime,
                         )
+    parser.add_argument('--autoexit',
+                        help='[Optional] Automatically exit the script once it has completed.',
+                        action='store_true',
+                        required=False)
+
     args = parser.parse_args()
     if args.fast:
         global FAST
@@ -1594,6 +1599,8 @@ def main():
     print(f"Farmer completed on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
+    if ARGS.autoexit:
+        os._exit(0)
     if ARGS.shutdown:
         os.system(f'shutdown /s /t {ARGS.shutdown}')
     input('Press any key to close the program...')
