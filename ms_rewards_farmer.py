@@ -33,8 +33,8 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36 Edg/109.0.1518.61'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36 EdgA/109.0.1518.53'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.46'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Mobile Safari/537.36 EdgA/110.0.1587.41'
 
 POINTS_COUNTER = 0
 
@@ -220,7 +220,12 @@ def RewardsLogin(browser: WebDriver):
     browser.get(BASE_URL)
     try:
         time.sleep(10 if not FAST else 5)
-        browser.find_element(By.ID, 'raf-signin-link-id').click()
+        # click on sign up button if needed
+        if isElementExists(browser, By.ID, "start-earning-rewards-link"):
+            browser.find_element(By.ID, "start-earning-rewards-link").click()
+            time.sleep(5)
+            browser.refresh()
+            time.sleep(5)
     except:
         pass
     time.sleep(10 if not FAST else 5)
@@ -240,7 +245,7 @@ def RewardsLogin(browser: WebDriver):
         elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == 'Microsoft Rewards is not available in this country or region.':
             prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
             input('[ERROR] Press any key to close...')
-            os._exit()
+            os._exit(0)
     except NoSuchElementException:
         pass
 
@@ -454,8 +459,10 @@ def resetTabs(browser: WebDriver):
         browser.switch_to.window(curr)
         time.sleep(0.5)
         browser.get(BASE_URL)
+        waitUntilVisible(browser, By.ID, 'app-host', 30)
     except:
         browser.get(BASE_URL)
+        waitUntilVisible(browser, By.ID, 'app-host', 30)
 
 def getAnswerCode(key: str, string: str) -> str:
 	t = 0
@@ -1475,6 +1482,7 @@ def farmer():
                 startingPoints = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
                 browser.get(BASE_URL)
+                waitUntilVisible(browser, By.ID, 'app-host', 30)
                 redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     completeDailySet(browser)
@@ -1503,6 +1511,7 @@ def farmer():
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     startingPoints = POINTS_COUNTER
                     browser.get(BASE_URL)
+                    waitUntilVisible(browser, By.ID, 'app-host', 30)
                     redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
                     remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 if remainingSearchesM != 0:
