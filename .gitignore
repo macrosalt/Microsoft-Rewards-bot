@@ -3,3 +3,4 @@
 .vscode
 chromedriver.exe
 Profiles
+__pycache__
