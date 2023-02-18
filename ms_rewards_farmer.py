@@ -1608,10 +1608,10 @@ def main():
     print(f"Farmer completed on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
-    if ARGS.autoexit:
-        os._exit(0)
     if ARGS.shutdown:
         os.system(f'shutdown /s /t {ARGS.shutdown}')
+    if ARGS.autoexit:
+        os._exit(0)
     input('Press any key to close the program...')
           
 if __name__ == '__main__':
