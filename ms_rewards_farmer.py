@@ -109,6 +109,15 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             time.sleep(2)
             browser.find_element(By.ID, 'iNext').click()
             time.sleep(5)
+        if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
+            time.sleep(2)
+            browser.find_element(By.ID, 'iLooksGood').click()
+            time.sleep(5)
+        # Click No thanks on break free from password question
+        if isElementExists(browser, By.ID, "setupAppDesc"):
+            time.sleep(2)
+            browser.find_element(By.ID, "iCancel").click()
+            time.sleep(5)
         if browser.title == 'Microsoft account | Home' or isElementExists(browser, By.ID, 'navs_container'):
             prGreen('[LOGIN] Account already logged in !')
             RewardsLogin(browser)
@@ -155,6 +164,15 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             time.sleep(2)
             browser.find_element(By.ID, 'iNext').click()
+            time.sleep(5)
+        if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
+            time.sleep(2)
+            browser.find_element(By.ID, 'iLooksGood').click()
+            time.sleep(5)
+        # Click No thanks on break free from password question
+        if isElementExists(browser, By.ID, "setupAppDesc"):
+            time.sleep(2)
+            browser.find_element(By.ID, "iCancel").click()
             time.sleep(5)
         if ARGS.session:
             # Click Yes to stay signed in.
@@ -1310,7 +1328,9 @@ def logs():
                 LOGS[account]['Punch cards'] = False
                 LOGS[account]['More promotions'] = False
                 LOGS[account]['MSN shopping game'] = False
-                LOGS[account]['PC searches'] = False 
+                LOGS[account]['PC searches'] = False
+            if not isinstance(account["log"]["Points"], int):
+                LOGS[account]["Points"] = 0
         updateLogs()               
         prGreen('\n[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
@@ -1530,7 +1550,10 @@ def farmer():
             prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
             
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
+            if LOGS[CURRENT_ACCOUNT]["Points"] > 0 and POINTS_COUNTER >= LOGS[CURRENT_ACCOUNT]["Points"] :
+                LOGS[CURRENT_ACCOUNT]["Today's points"] = POINTS_COUNTER - LOGS[CURRENT_ACCOUNT]["Points"]
+            else:
+                LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
             LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
             if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
                 prGreen(f"[POINTS] Account ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
