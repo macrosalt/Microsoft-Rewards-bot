@@ -1329,7 +1329,7 @@ def logs():
                 LOGS[account]['More promotions'] = False
                 LOGS[account]['MSN shopping game'] = False
                 LOGS[account]['PC searches'] = False
-            if not isinstance(account["log"]["Points"], int):
+            if not isinstance(LOGS[account]["Points"], int):
                 LOGS[account]["Points"] = 0
         updateLogs()               
         prGreen('\n[LOGS] Logs loaded successfully.\n')
