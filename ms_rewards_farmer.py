@@ -493,9 +493,16 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
     global POINTS_COUNTER
     i = 0
     r = RandomWords()
-    search_terms = r.get_random_words(limit = numberOfSearches)
-    if search_terms == None:
+    try:
+        search_terms = r.get_random_words(limit = numberOfSearches)
+    except Exception:
         search_terms = getGoogleTrends(numberOfSearches)
+        if len(search_terms) == 0:
+            prRed('[ERROR] No search terms found, account skipped.')
+            finishedAccount()
+            cleanLogs()
+            updateLogs()
+            raise Exception()
     for word in search_terms:
         i += 1
         print('[BING]', str(i) + "/" + str(numberOfSearches))
@@ -1365,6 +1372,18 @@ def cleanLogs():
     LOGS[CURRENT_ACCOUNT].pop("MSN shopping game", None)
     LOGS[CURRENT_ACCOUNT].pop("PC searches", None)
 
+def finishedAccount():
+    New_points = POINTS_COUNTER - STARTING_POINTS
+    prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
+    prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
+    
+    FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+    if LOGS[CURRENT_ACCOUNT]["Points"] > 0 and POINTS_COUNTER >= LOGS[CURRENT_ACCOUNT]["Points"] :
+        LOGS[CURRENT_ACCOUNT]["Today's points"] = POINTS_COUNTER - LOGS[CURRENT_ACCOUNT]["Points"]
+    else:
+        LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
+    LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
+
 def checkInternetConnection():
     system = platform.system()
     while True:
@@ -1489,7 +1508,7 @@ except FileNotFoundError:
 
 def farmer():
     '''fuction that runs other functions to farm.'''
-    global ERROR, MOBILE, CURRENT_ACCOUNT
+    global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS
     try:
         for account in ACCOUNTS:
             CURRENT_ACCOUNT = account['username']
@@ -1504,7 +1523,7 @@ def farmer():
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'])
                 prGreen('[LOGIN] Logged-in successfully !')
-                startingPoints = POINTS_COUNTER
+                STARTING_POINTS = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) + ' points on your account !')
                 browser.get(BASE_URL)
                 waitUntilVisible(browser, By.ID, 'app-host', 30)
@@ -1534,7 +1553,7 @@ def farmer():
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
-                    startingPoints = POINTS_COUNTER
+                    STARTING_POINTS = POINTS_COUNTER
                     browser.get(BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
                     redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
@@ -1545,16 +1564,6 @@ def farmer():
                 prGreen('[BING] Finished Mobile Bing searches !')
                 browser.quit()
                 
-            New_points = POINTS_COUNTER - startingPoints
-            prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
-            prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
-            
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            if LOGS[CURRENT_ACCOUNT]["Points"] > 0 and POINTS_COUNTER >= LOGS[CURRENT_ACCOUNT]["Points"] :
-                LOGS[CURRENT_ACCOUNT]["Today's points"] = POINTS_COUNTER - LOGS[CURRENT_ACCOUNT]["Points"]
-            else:
-                LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
-            LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
             if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
                 prGreen(f"[POINTS] Account ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
                 if ARGS.telegram or ARGS.discord:
