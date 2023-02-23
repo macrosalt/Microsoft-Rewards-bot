@@ -1569,6 +1569,7 @@ def farmer():
                 if ARGS.telegram or ARGS.discord:
                     LOGS[CURRENT_ACCOUNT]["Redeem goal title"] = redeem_goal_title
                     LOGS[CURRENT_ACCOUNT]["Redeem goal price"] = redeem_goal_price
+            finishedAccount()
             cleanLogs()
             updateLogs()
             
