@@ -1,6 +1,6 @@
 {
     "tlwesqjg@outlook.com": {
-        "Last check": "2023-02-21",
+        "Last check": "2023-02-22",
         "Today's points": 375,
         "Points": 28082,
         "Daily": false,
@@ -20,11 +20,19 @@
     "cthinvmh@outlook.com": {
         "Last check": "2023-02-21",
         "Today's points": -4295,
-        "Points": 9067
+        "Points": 9067,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "vhldgkyv@outlook.com": {
         "Last check": "2023-02-21",
         "Today's points": 13155,
-        "Points": 22222
+        "Points": 22222,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
