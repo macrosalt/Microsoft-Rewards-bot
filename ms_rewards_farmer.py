@@ -80,7 +80,8 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             "webrtc.nonproxied_udp_enabled" : False}
     if ARGS.account_browser:
         prefs["detach"] = True
-    if ARGS.use_proxy and proxy is not None:
+    if proxy is not None:
+        print(proxy)
         if isProxyWorking(proxy):
             options.add_argument(f'--proxy-server={proxy}')
         else:
