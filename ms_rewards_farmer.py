@@ -47,8 +47,16 @@ LOGS = {} # Dictionary of accounts to write in 'logs_accounts.txt'.
 FAST = False # When this variable set True then all possible delays reduced.
 BASE_URL = "https://rewards.bing.com"
 
-# Define browser setup function
-def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
+
+def isProxyWorking(proxy: str) -> bool:
+    '''Check if proxy is working or not'''
+    try:
+        requests.get("https://www.google.com/", proxies={"https": proxy}, timeout=5)
+        return True
+    except:
+        return False
+
+def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
     # Create Chrome browser
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
@@ -72,6 +80,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT) -> WebDriver:
             "webrtc.nonproxied_udp_enabled" : False}
     if ARGS.account_browser:
         prefs["detach"] = True
+    if ARGS.use_proxy and proxy is not None:
+        if isProxyWorking(proxy):
+            options.add_argument(f'--proxy-server={proxy}')
+        else:
+            prYellow(f"[PROXY] Your entered proxy is not working, continuing without proxy.")
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -161,6 +174,14 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Wait 5 seconds
     time.sleep(5)
     try:
+        if browser.title == "":
+            time.sleep(10)
+            wait = WebDriverWait(browser, 10)
+            wait.until(ec.presence_of_element_located((By.TAG_NAME, "body")))
+            wait.until(ec.presence_of_all_elements_located)
+            wait.until(ec.title_contains(""))
+            wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "html[lang]")))
+            wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             time.sleep(2)
             browser.find_element(By.ID, 'iNext').click()
@@ -1055,7 +1076,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         children = browser.execute_script('return arguments[0].children', element)
         return children
     
-    def getSignInState() -> WebElement:
+    def getSignInButton() -> WebElement:
         """check wheather user is signed in or not and return the button to sign in"""
         script_to_user_pref_container = 'document.getElementsByTagName("shopping-page-base")[0]\
             .shadowRoot.children[0].children[1].children[0]\
@@ -1076,7 +1097,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         return button
         
     def signIn() -> None:
-        sign_in_button = getSignInState()
+        sign_in_button = getSignInButton()
         sign_in_button.click()
         print("[MSN GAME] Signing in...")
         time.sleep(5)
@@ -1084,9 +1105,9 @@ def completeMSNShoppingGame(browser: WebDriver):
         browser.find_element(By.ID, 'newSessionLink').click()
         waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST else 30)
         expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
-        getSignInState()
+        getSignInButton()
     
-    def getGamingCard() -> WebElement:
+    def getGamingCard() -> Union[WebElement, bool]:
         shopping_page_base_childs = expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         shopping_homepage = shopping_page_base_childs.find_element(By.TAG_NAME, 'shopping-homepage')
         msft_feed_layout = expandShadowElement(shopping_homepage, 0).find_element(By.TAG_NAME, 'msft-feed-layout')
@@ -1094,6 +1115,8 @@ def completeMSNShoppingGame(browser: WebDriver):
         for element in msn_shopping_game_pane:
             if element.get_attribute("gamestate") == "active":
                 return element
+        else:
+            return False
     
     def clickCorrectAnswer() -> None:
         options_container = expandShadowElement(gaming_card, 1)
@@ -1123,7 +1146,7 @@ def completeMSNShoppingGame(browser: WebDriver):
             waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST else 30)
             time.sleep(15 if not FAST else 8)
             try:
-                sign_in_button = getSignInState()
+                sign_in_button = getSignInButton()
             except:
                 if tries == 4:
                     raise ElementNotVisibleException("Sign in button did not show up")
@@ -1133,6 +1156,19 @@ def completeMSNShoppingGame(browser: WebDriver):
         if "Sign in" in sign_in_button.text:
             signIn()
         gaming_card = getGamingCard()
+        scrolls = 0
+        while not gaming_card and scrolls <= 5:
+            scrolls += 1
+            print(f"Locating gaming card - scrolling ({scrolls}/5)")
+            browser.execute_script("window.scrollBy(0, 300);")
+            time.sleep(10 if not FAST else 5)
+            gaming_card = getGamingCard()
+            if gaming_card:
+                browser.execute_script("arguments[0].scrollIntoView();", gaming_card)
+                print("[MSN GAME] Gaming card found")
+                time.sleep(random.randint(7, 10))
+            if scrolls == 5 and not gaming_card:
+                raise NoSuchElementException("Gaming card not found")
         print("[MSN GAME] Answering questions ...")
         for _ in range(10):
             try:
@@ -1141,13 +1177,14 @@ def completeMSNShoppingGame(browser: WebDriver):
                 time.sleep(random.randint(5, 7))
             except (NoSuchElementException, JavascriptException):
                 break
+    except NoSuchElementException:
+        prYellow("[MSN GAME] Failed to locate MSN shopping game !")
     except:
         prYellow("[MSN GAME] Failed to complete MSN shopping game !")
-        resetTabs(browser)
     else:
         prGreen("[MSN GAME] Completed MSN shopping game successfully !")
-        browser.get(BASE_URL)
     finally:
+        browser.get(BASE_URL)
         LOGS[CURRENT_ACCOUNT]["MSN shopping game"] = True
         updateLogs()
 
@@ -1519,7 +1556,7 @@ def farmer():
                 updateLogs()
             prYellow('********************' + CURRENT_ACCOUNT + '********************')
             if not LOGS[CURRENT_ACCOUNT]['PC searches']:
-                browser = browserSetup(False, PC_USER_AGENT)
+                browser = browserSetup(False, PC_USER_AGENT, account.get('proxy', None))
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'])
                 prGreen('[LOGIN] Logged-in successfully !')
@@ -1548,8 +1585,8 @@ def farmer():
                 browser.quit()
 
             if MOBILE:
-                browser = browserSetup(True, account.get('mobile_user_agent', MOBILE_USER_AGENT))
-                print('[LOGIN]', 'Logging-in...')
+                browser = browserSetup(True, account.get('mobile_user_agent', MOBILE_USER_AGENT, account.get('proxy', None)))
+                print('[LOGIN]', 'Logging-in mobile...')
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
