@@ -1628,6 +1628,11 @@ def farmer():
         input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
         farmer()
     except Exception as e:
+        if "executable needs to be in PATH" in str(e):
+            prRed('[ERROR] WebDriver not found.\n')
+            prRed(str(e))
+            input("Press Enter to close...")
+            os._exit(0)
         print(e, '\n') if ARGS.error else print('\n')
         ERROR = True
         browser.quit()
@@ -1686,4 +1691,8 @@ def main():
     input('Press any key to close the program...')
           
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        prRed(str(e))
+        input("press enter to close...")
