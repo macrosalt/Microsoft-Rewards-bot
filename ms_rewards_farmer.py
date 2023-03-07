@@ -1266,62 +1266,58 @@ def argumentParser():
     )
     parser.add_argument('--everyday', 
                         action='store_true',
-                        help='[Optional] This argument will make the script run everyday at the time you start.', 
+                        help='This argument will make the script run everyday at the time you start.', 
                         required=False)
     parser.add_argument('--headless',
-                        help='[Optional] Enable headless browser.',
+                        help='Enable headless browser.',
                         action = 'store_true',
                         required=False)
     parser.add_argument('--session',
-                        help='[Optional] Creates session for each account and use it.',
+                        help='Creates session for each account and use it.',
                         action='store_true',
                         required=False)
     parser.add_argument('--error',
-                        help='[Optional] Display errors when app fails.',
+                        help='Display errors when app fails.',
                         action='store_true',
                         required=False)
     parser.add_argument('--fast',
-                        help="[Optional] Reduce delays where ever it's possible to make script faster.",
+                        help="Reduce delays where ever it's possible to make script faster.",
                         action='store_true',
                         required=False)
     parser.add_argument('--telegram',
                         metavar=('<API_TOKEN>', '<CHAT_ID>'),
                         nargs=2,
-                        help='[Optional] This argument takes token and chat id to send logs to Telegram.', 
+                        help='This argument takes token and chat id to send logs to Telegram.', 
                         type=str, 
                         required=False)
     parser.add_argument('--discord',
                         metavar='<WEBHOOK_URL>',
                         nargs=1,
-                        help='[Optional] This argument takes webhook url to send logs to Discord.',
+                        help='This argument takes webhook url to send logs to Discord.',
                         type=str,
                         required=False)
     parser.add_argument('--edge',
-                        help='[Optional] Use Microsoft Edge webdriver instead of Chrome.',
+                        help='Use Microsoft Edge webdriver instead of Chrome.',
                         action='store_true',
                         required=False,)
-    parser.add_argument('--shutdown',
-                        metavar=('<TIME (SECONDS)>'),
-                        help='[Optional] You can pass time in seconds to shutdown the computer after the script is done, if time not provided default is 10.',
-                        nargs="?",
-                        type=int,
-                        const=10,
-                        required=False)
     parser.add_argument('--account-browser',
                         nargs=1,
                         type=isSessionExist,
-                        help='[Optional] Open browser session for chosen account.',
+                        help='Open browser session for chosen account.',
                         required=False)
     parser.add_argument('--start-at',
                         metavar='<HH:MM>',
+                        help='Start the script at the specified time in 24h format (HH:MM).',
                         nargs=1,
                         type=isValidTime,
                         )
-    parser.add_argument('--autoexit',
-                        help='[Optional] Automatically exit the script once it has completed.',
-                        action='store_true',
-                        required=False)
-
+    parser.add_argument(
+        "--on-finish",
+        help="Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit",
+        choices=["shutdown", "sleep", "hibernate", "exit"],
+        required=False,
+        metavar="ACTION"
+    )
     args = parser.parse_args()
     if args.fast:
         global FAST
@@ -1684,11 +1680,23 @@ def main():
     print(f"Farmer completed on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
-    if ARGS.shutdown:
-        os.system(f'shutdown /s /t {ARGS.shutdown}')
-    if ARGS.autoexit:
-        os._exit(0)
-    input('Press any key to close the program...')
+    if ARGS.on_finish:
+        plat = platform.system()
+        if ARGS.on_finish == "shutdown":
+            os.system("shutdown /s /t 10")
+        elif ARGS.on_finish == "sleep":
+            if plat == "Windows":
+                os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+            elif plat == "Linux":
+                os.system("systemctl suspend")
+        elif ARGS.on_finish == "hibernate":
+            if plat == "Windows":
+                os.system("shutdown /h")
+            elif plat == "Linux":
+                os.system("systemctl hibernate")
+        elif ARGS.on_finish == "exit":
+            os._exit(0)
+    input('Press enter to close the program...')
           
 if __name__ == '__main__':
     try:
