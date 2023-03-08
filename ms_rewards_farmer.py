@@ -1427,9 +1427,11 @@ def checkInternetConnection():
             elif system == "Linux":
                 subprocess.check_output(["ping", "-c", "1", "8.8.8.8"], timeout=5)
             return
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        except(subprocess.TimeoutExpired):
             prRed("[ERROR] No internet connection.")
             time.sleep(1)
+        except:
+            return
 
 def createMessage():
     today = date.today().strftime("%d/%m/%Y")
@@ -1677,7 +1679,7 @@ def main():
     hour, remain = divmod(delta, 3600)
     min, sec = divmod(remain, 60)
     print(f"The farmer takes: {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
-    print(f"Farmer completed on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
+    print(f"Farmer finished on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
     updateLogs()
     if ARGS.on_finish:
