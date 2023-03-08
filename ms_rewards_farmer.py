@@ -517,14 +517,20 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
     r = RandomWords()
     try:
         search_terms = r.get_random_words(limit = numberOfSearches)
+        if search_terms is None:
+            raise Exception
     except Exception:
         search_terms = getGoogleTrends(numberOfSearches)
         if len(search_terms) == 0:
-            prRed('[ERROR] No search terms found, account skipped.')
-            finishedAccount()
-            cleanLogs()
-            updateLogs()
-            raise Exception()
+            try:
+                words = open(f"{Path.cwd().resolve()}/searchwords.txt", "r").read().splitlines()
+                search_terms = random.sample(words, numberOfSearches)
+            except:
+                prRed('[ERROR] No search terms found, account skipped.')
+                finishedAccount()
+                cleanLogs()
+                updateLogs()
+                raise Exception()
     for word in search_terms:
         i += 1
         print('[BING]', str(i) + "/" + str(numberOfSearches))
