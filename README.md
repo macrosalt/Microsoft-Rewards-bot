@@ -50,16 +50,19 @@
         <li>or if you have brew : <pre>brew cask install chromedriver</pre></li>
       </ul>
     </ul></li>
-    <li>Edit the accounts.json.sample with your accounts credentials and rename it by removing .sample at the end<br/>
-    If you want to add more than one account, the syntax is the following (<code>mobile_user_agent</code> is optional): <pre>[{
+    <li>Edit the accounts.json.sample with your accounts credentials and rename it by removing <code>.sample</code> at the end.<br/>
+    If you want to add more than one account, the syntax is the following (<code>mobile_user_agent</code> is optional).
+    Remove <code>mobile_user_agent</code> from your account if you don't know how to use it:<pre>[{
         "username": "Your Email",
         "password": "Your Password",
-        "mobile_user_agent": "your preferred mobile user agent"
+        "mobile_user_agent": "your preferred mobile user agent",
+        "proxy": "HTTP proxy"
     },
     {
         "username": "Your Email 2",
         "password": "Your Password 2",
-        "mobile_user_agent": "your preferred mobile user agent"
+        "mobile_user_agent": "your preferred mobile user agent",
+        "proxy": "HTTP proxy"
 }]</pre></li>
     <li>Due to limits of Ipapi sometimes it returns error and it causes bot stops. So you can define default language and location to prevent it from 
       <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/479b2d4b25761d245dc6b3519627162a44d8f85b/ms_rewards_farmer.py#L367">here</a>.</li>
@@ -105,6 +108,7 @@
   <li>You can assign custom user-agent for mobile like above example</li>
   <li>Set clock to start it at specific time</li>
   <li>For Bing search it uses random word at first try and if api failed then it uses google trends</li>
+  <li>Support HTTP proxy</li>
 </ul>
 </p>
 <h2 align="center">⚠️CAUTION!⚠️</h2>
