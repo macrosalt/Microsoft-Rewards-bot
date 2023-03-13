@@ -1650,8 +1650,9 @@ def farmer():
 
 def main():
     global LANG, GEO, TZ, ARGS
-    # show colors in terminal
-    os.system('color')
+    if not platform.system() == "Linux":
+        # show colors in terminal
+        os.system('color')
     logo()
     ARGS = argumentParser()
     LANG, GEO, TZ = getCCodeLangAndOffset()
@@ -1703,7 +1704,7 @@ def main():
             elif plat == "Linux":
                 os.system("systemctl hibernate")
         elif ARGS.on_finish == "exit":
-            os._exit(0)
+            return
     input('Press enter to close the program...')
           
 if __name__ == '__main__':
