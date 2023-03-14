@@ -35,7 +35,8 @@
 </details>
 
 <h2 align="center">Installation</h2>
-<p allign="center">You can also find this repository on <a href="https://gitlab.com/farshadzargary1997/Microsoft-Rewards-bot">Gitlab</a>.</p>
+<p allign="center">You can also find this repository on <a href="https://gitlab.com/farshadzargary1997/Microsoft-Rewards-bot">Gitlab</a>.
+You can use the simple installation guide made for Windows 10/11 devices who plan on using Chrome/Chromedriver, <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/master/setup.md">here</a>.</p>
 <p align="center">
   <ul>
     <li>Install requirements with the following command : <pre>pip install -r requirements.txt</pre></li>
