@@ -301,7 +301,7 @@ def RewardsLogin(browser: WebDriver):
 
 @func_set_timeout(300)
 def checkBingLogin(browser: WebDriver, isMobile: bool = False):
-    global POINTS_COUNTER
+    global POINTS_COUNTER # pylint: disable=global-statement
     # Access Bing.com
     browser.get('https://bing.com/')
     # Wait 15 seconds
@@ -536,7 +536,7 @@ def getAnswerCode(key: str, string: str) -> str:
 
 
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
-    global POINTS_COUNTER
+    global POINTS_COUNTER # pylint: disable=global-statement
     i = 0
     r = RandomWords()
     try:
@@ -1308,7 +1308,7 @@ def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
 
 def accountBrowser(chosen_account: str):
     """Setup browser for chosen account"""
-    global CURRENT_ACCOUNT
+    global CURRENT_ACCOUNT # pylint: disable=global-statement
     for account in ACCOUNTS:
         if account["username"].lower() == chosen_account.lower():
             CURRENT_ACCOUNT = account["username"]
@@ -1407,7 +1407,7 @@ def argumentParser():
     args = parser.parse_args()
 
     if args.superfast or args.fast:
-        global SUPER_FAST, FAST
+        global SUPER_FAST, FAST # pylint: disable=global-statement
         SUPER_FAST = args.superfast
         if args.fast and not args.superfast:
             FAST = True
@@ -1419,7 +1419,7 @@ def argumentParser():
 
 def logs():
     """Read logs and check whether account farmed or not"""
-    global LOGS
+    global LOGS # pylint: disable=global-statement
     shared_items = []
     try:
         # Read datas on 'logs_accounts.txt'
@@ -1787,7 +1787,7 @@ except FileNotFoundError:
 
 def farmer():
     """function that runs other functions to farm."""
-    global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS
+    global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS # pylint: disable=global-statement
     try:
         for account in ACCOUNTS:
             CURRENT_ACCOUNT = account['username']
@@ -1888,7 +1888,7 @@ def farmer():
 
 
 def main():
-    global LANG, GEO, TZ, ARGS
+    global LANG, GEO, TZ, ARGS  # pylint: disable=global-statement
     if not platform.system() == "Linux":
         # show colors in terminal
         os.system('color')
