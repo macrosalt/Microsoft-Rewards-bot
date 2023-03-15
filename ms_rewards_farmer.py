@@ -11,7 +11,6 @@ from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Union, List
-
 import ipapi
 import requests
 from func_timeout import FunctionTimedOut, func_set_timeout
@@ -31,6 +30,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
+import tkinter as tk
+from tkinter import messagebox, ttk
+from math import ceil
 
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.46'
@@ -1401,6 +1403,10 @@ def argumentParser():
                         required=False,
                         metavar="ACTION"
                         )
+    parser.add_argument("--calculator",
+                        help="MS Rewards Calculator",
+                        action='store_true',
+                        required=False)
 
     args = parser.parse_args()
 
@@ -1408,7 +1414,7 @@ def argumentParser():
         global SUPER_FAST, FAST
         SUPER_FAST = True if args.superfast else False
         FAST = True if args.fast and not args.superfast else False
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 and not args.calculator:
         for arg in vars(args):
             prBlue(f"[INFO] {arg}: {getattr(args, arg)}")
     return args
@@ -1636,6 +1642,137 @@ def logo():
     prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.1\n")
 
 
+def tkinter_calculator():
+    microsoft = 4750  # price of microsoft/xbox gift cards
+    non_microsoft = 6750  # price of 3rd party gift cards
+    points = 242  # estimated daily points (in australia: 242)
+
+    # Create a new Tkinter window
+    window = tk.Tk()
+    window.title("RewardStimator - Microsoft Rewards Bot Estimator")
+    window.geometry("500x250")
+    window.resizable(False, False)
+
+    # Add a title label
+    title_label = ttk.Label(window, text="RewardStimator", font=("Helvetica", 16))
+    title_label.pack(pady=10)
+
+    # Create a frame for the form fields
+    form_frame = ttk.Frame(window)
+    form_frame.pack(pady=10)
+
+    def validate_float_input(value):
+        # only allow numbers
+        for i in range(len(value)):
+            if value[i] not in '0123456789.':
+                return False
+
+        # only allow 1 full stop
+        if value.count(".") > 1:
+            return False
+
+        if "." in value:
+            if len(value.split(".", 1)[1]) > 2:
+                return False
+
+        return True
+
+    def validate_numeric_input(value):
+        for i in range(len(value)):
+            if value[i] not in '0123456789':
+                return False
+
+        if not value == "":  # disables inputs higher than 100 lol
+            if (int(value) > 100) or (int(value) <= 0):
+                return False
+
+        return True
+
+    # Add a label for the price field
+    price_label = ttk.Label(form_frame, text="Price:")
+    price_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+    # Add an entry widget for the price field
+    price_entry = ttk.Entry(form_frame, width=20, validate="key")
+    price_entry.grid(row=0, column=1, padx=5, pady=5)
+    price_entry.configure(validatecommand=(price_entry.register(validate_float_input), '%P'))
+
+    # Add a label for the accounts field
+    accounts_label = ttk.Label(form_frame, text="Accounts:")
+    accounts_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+    # Add an entry widget for the accounts field
+    accounts_entry = ttk.Entry(form_frame, width=20, validate="key")
+    accounts_entry.grid(row=1, column=1, padx=5, pady=5)
+    accounts_entry.configure(validatecommand=(accounts_entry.register(validate_numeric_input), '%P'))
+
+    # Add a label for the balance field
+    balance_label = ttk.Label(form_frame, text="Current Balance (default 0):")
+    balance_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+
+    # Add an entry widget for the balance field
+    balance_entry = ttk.Entry(form_frame, width=20, validate="key")
+    balance_entry.grid(row=2, column=1, padx=5, pady=5)
+    balance_entry.configure(validatecommand=(balance_entry.register(validate_float_input), '%P'))
+
+    # Add a label for the associated field
+    associated_label = ttk.Label(form_frame, text="Microsoft Associated Gift Card:")
+    associated_label.grid(row=3, column=0, padx=5, pady=5, sticky="w")
+
+    # Add radio buttons for the associated field
+    associated_var = tk.BooleanVar()
+    yes_radio = ttk.Radiobutton(form_frame, text="Yes", variable=associated_var, value=True)
+    no_radio = ttk.Radiobutton(form_frame, text="No", variable=associated_var, value=False)
+    yes_radio.grid(row=3, column=1, padx=5, pady=0, sticky="w")
+    no_radio.grid(row=3, column=1, padx=5, pady=0, sticky="e")
+
+    # Function to submit the form
+    def submit():
+        price = price_entry.get()
+        accounts = accounts_entry.get()
+        balance = balance_entry.get()
+        associated = associated_var.get()
+
+        # Validate form data
+        if not price or not accounts:
+            messagebox.showerror("Error", "Please fill in all fields.")
+            return
+
+        try:
+            price = float(price)
+            accounts = int(accounts)
+            balance = float(balance) if balance != "" else 0
+        except ValueError:
+            messagebox.showerror("Critical Error, now closing...")
+            exit("Error (ValueError)")
+
+        non = '' if associated else 'Non-'
+        cards_required = ceil((price - balance) / 5)
+        cr_per_acc = ceil(cards_required / accounts)  # cards per account
+        excess = (cr_per_acc * accounts * 5) - price + balance
+        elapsed_time = ceil(((microsoft if associated else non_microsoft) / points) * cr_per_acc)
+
+        if cards_required <= 0:
+            messagebox.showerror("Error", "Current balance is higher or equal to price.")
+            return
+
+        if accounts >= 15:
+            messagebox.showerror("Reality check",
+                                 f"You can't actually reasonably run {accounts} accounts mate.")
+            return
+
+        messagebox.showinfo("RewardStimator Result", f""
+                            f"Total $5 {non}Microsoft gift cards required: {cards_required}"
+                            f"\n{non}Microsoft gift cards required per account: {cr_per_acc}"
+                            f"\nExcess: ${excess:.2f}"
+                            f"\nEstimated elapsed elapsed_time: ~{elapsed_time} days\n")
+
+    submit_button = ttk.Button(window, text="Submit", command=submit)
+    submit_button.pack(pady=10)
+
+    window.mainloop()
+
+
 try:
     account_path = Path(__file__).parent / 'accounts.json'
     ACCOUNTS = json.load(open(account_path, "r"))
@@ -1760,6 +1897,12 @@ def main():
         os.system('color')
     logo()
     ARGS = argumentParser()
+
+    # MS REWARD CALCULATOR
+    if ARGS.calculator:
+        tkinter_calculator()
+        return exit(0)
+
     LANG, GEO, TZ = getCCodeLangAndOffset()
     if ARGS.account_browser:
         prBlue(f"\n[INFO] Opening session for {ARGS.account_browser[0]}")
