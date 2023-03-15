@@ -76,14 +76,17 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--start-at TIME</code> This argument takes time in 24h format (HH:MM) to run it at the given time.</li>
             <li><code>--everyday</code> This argument makes the the script to stay open and start it again next day at time you start.</li>
             <li><code>--fast</code> This argument reduces delays of script and make it faster (use this if you have high speed connection).</li>
+            <li><code>--superfast</code> This argument is faster than fast (use this if you have a very high speed and reliable connection).</li>
             <li><code>--account-browser ACCOUNT</code> This argument opens session for given account if it's already exist else returns error.</li>  
             <li><code>--error</code> When you use this argument, app displays crash error in terminal when it fails.</li>
             <li><code>--telegram TOKEN CHAT_ID</code> Use this argument to send logs to your telegram through your bot.</li>
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through webhook.</li>
             <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.<a href="https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"> Download Microsoft Edge web driver.</a></li>
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit</li>
+            <li><code>--calculator</code> Open GUI calculator which is used to calculate how long it will take to earn a certain amount of money.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --everyday 14:30 --fast --session</code> You don't need to use all of arguments.</li>
-          </ul>
+            <li>Running Rewards Calculator is easy as running <code>python ms_rewards_farmer.py --calculator</code></li>
+            </ul>
         <li>Run the script normally that session and headless disabled.</li>
       </ul>
    </ul>
@@ -109,6 +112,7 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
   <li>Set clock to start it at specific time</li>
   <li>For Bing search it uses random word at first try and if api failed then it uses google trends</li>
   <li>Support HTTP proxy</li>
+  <li>Rewards Calculator</li>
 </ul>
 </p>
 <h2 align="center">⚠️CAUTION!⚠️</h2>
