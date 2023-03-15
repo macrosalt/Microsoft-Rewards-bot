@@ -529,7 +529,7 @@ def resetTabs(browser: WebDriver):
 
 def getAnswerCode(key: str, string: str) -> str:
     t = 0
-    for i in range(len(string)):
+    for i in enumerate(string):
         t += ord(string[i])
     t += int(key[-2:], 16)
     return str(t)
@@ -613,16 +613,14 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
             time.sleep(1)
             points = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
     except Exception as E:
-        print(E if ERROR else "")
-        pass
+        print(E)
     return points
 
 
 def completePromotionalItems(browser: WebDriver):
     try:
         item = getDashboardData(browser)["promotionalItem"]
-        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item[
-            "destinationUrl"] == BASE_URL:
+        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] is False and item["destinationUrl"] == BASE_URL:
             browser.find_element(By.XPATH, '//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
             browser.switch_to.window(window_name=browser.window_handles[1])
@@ -847,7 +845,7 @@ def completeDailySet(browser: WebDriver):
             todayPack = data
     for activity in todayPack:
         try:
-            if activity['complete'] == False:
+            if not activity['complete']:
                 cardNumber = int(activity['offerId'][-1:])
                 if activity['promotionType'] == "urlreward":
                     print('[DAILY SET]', 'Completing search of card ' + str(cardNumber))
@@ -856,8 +854,7 @@ def completeDailySet(browser: WebDriver):
                     if activity['pointProgressMax'] == 50 and activity['pointProgress'] == 0:
                         print('[DAILY SET]', 'Completing This or That of card ' + str(cardNumber))
                         completeDailySetThisOrThat(browser, cardNumber)
-                    elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity[
-                        'pointProgress'] == 0:
+                    elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity['pointProgress'] == 0:
                         print('[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
                         completeDailySetQuiz(browser, cardNumber)
                     elif activity['pointProgressMax'] == 10 and activity['pointProgress'] == 0:
@@ -892,7 +889,7 @@ def getAccountPoints(browser: WebDriver) -> int:
 def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
     browser.get(url)
     for child in childPromotions:
-        if child['complete'] == False:
+        if not child['complete']:
             if child['promotionType'] == "urlreward":
                 browser.execute_script("document.getElementsByClassName('offer-cta')[0].click()")
                 time.sleep(1)
@@ -958,9 +955,7 @@ def completePunchCards(browser: WebDriver):
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
         try:
-            if punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and \
-                    punchCard['parentPromotion']['complete'] == False and punchCard['parentPromotion'][
-                'pointProgressMax'] != 0:
+            if punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and punchCard['parentPromotion']['complete'] is False and punchCard['parentPromotion']['pointProgressMax'] != 0:
                 url = punchCard['parentPromotion']['attributes']['destination']
                 if browser.current_url.startswith('https://rewards.'):
                     path = url.replace('https://rewards.microsoft.com', '')
@@ -1111,7 +1106,7 @@ def completeMorePromotions(browser: WebDriver):
     for promotion in morePromotions:
         try:
             i += 1
-            if promotion['complete'] == False and promotion['pointProgressMax'] != 0:
+            if promotion['complete'] is False and promotion['pointProgressMax'] != 0:
                 if promotion['promotionType'] == "urlreward":
                     completeMorePromotionSearch(browser, i)
                 elif promotion['promotionType'] == "quiz":
@@ -1124,7 +1119,7 @@ def completeMorePromotions(browser: WebDriver):
                 else:
                     if promotion['pointProgressMax'] == 100 or promotion['pointProgressMax'] == 200:
                         completeMorePromotionSearch(browser, i)
-            if promotion['complete'] == False and promotion['pointProgressMax'] == 100 and promotion[
+            if promotion['complete'] is False and promotion['pointProgressMax'] == 100 and promotion[
                 'promotionType'] == "" \
                     and promotion['destinationUrl'] == BASE_URL:
                 completeMorePromotionSearch(browser, i)
@@ -1136,6 +1131,7 @@ def completeMorePromotions(browser: WebDriver):
 
 
 def completeMSNShoppingGame(browser: WebDriver):
+    """Complete MSN Shopping Game"""
     def expandShadowElement(element, index: int = None) -> Union[List[WebElement], WebElement]:
         """Returns childrens of shadow element"""
         if index is not None:
@@ -1325,10 +1321,10 @@ def accountBrowser(chosen_account: str):
 def argumentParser():
     """getting args from command line"""
 
-    def isValidTime(time: str):
+    def isValidTime(validtime: str):
         """check the time format and return the time if it is valid, otherwise return parser error"""
         try:
-            t = datetime.strptime(time, "%H:%M").strftime("%H:%M")
+            t = datetime.strptime(validtime, "%H:%M").strftime("%H:%M")
         except ValueError:
             parser.error("Invalid time format, use HH:MM")
         else:
@@ -1412,8 +1408,9 @@ def argumentParser():
 
     if args.superfast or args.fast:
         global SUPER_FAST, FAST
-        SUPER_FAST = True if args.superfast else False
-        FAST = True if args.fast and not args.superfast else False
+        SUPER_FAST = args.superfast
+        if args.fast and not args.superfast:
+            FAST = True
     if len(sys.argv) > 1 and not args.calculator:
         for arg in vars(args):
             prBlue(f"[INFO] {arg}: {getattr(args, arg)}")
@@ -1682,7 +1679,7 @@ def tkinter_calculator():
             if value[i] not in '0123456789':
                 return False
 
-        if not value == "":  # disables inputs higher than 100 lol
+        if not value == "": 
             if (int(value) > 100) or (int(value) <= 0):
                 return False
 
@@ -1772,7 +1769,6 @@ def tkinter_calculator():
 
     window.mainloop()
 
-
 try:
     account_path = Path(__file__).parent / 'accounts.json'
     ACCOUNTS = json.load(open(account_path, "r"))
@@ -1789,7 +1785,7 @@ except FileNotFoundError:
 
 
 def farmer():
-    """fuction that runs other functions to farm."""
+    """function that runs other functions to farm."""
     global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS
     try:
         for account in ACCOUNTS:
@@ -1933,7 +1929,7 @@ def main():
     delta = end - start
     hour, remain = divmod(delta, 3600)
     minutes, sec = divmod(remain, 60)
-    print(f"The farmer takes: {hour:02.0f}:{minutes:02.0f}:{sec:02.0f}")
+    print(f"Farmer finished in: {hour:02.0f}:{minutes:02.0f}:{sec:02.0f}")
     print(f"Farmer finished on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     LOGS["Elapsed time"] = f"{hour:02.0f}:{minutes:02.0f}:{sec:02.0f}"
     updateLogs()
