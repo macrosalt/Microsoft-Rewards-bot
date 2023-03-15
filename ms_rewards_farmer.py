@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import platform
@@ -6,19 +7,17 @@ import subprocess
 import sys
 import time
 import urllib.parse
-from pathlib import Path
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
-from notifiers import get_notifier
+from pathlib import Path
 from typing import Union, List
-import copy
 
 import ipapi
 import requests
 from func_timeout import FunctionTimedOut, func_set_timeout
+from notifiers import get_notifier
 from random_word import RandomWords
 from selenium import webdriver
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import (ElementNotInteractableException,
                                         NoAlertPresentException,
                                         NoSuchElementException,
@@ -29,6 +28,7 @@ from selenium.common.exceptions import (ElementNotInteractableException,
                                         ElementNotVisibleException)
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -39,22 +39,24 @@ MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.3
 POINTS_COUNTER = 0
 
 # Global variables
-FINISHED_ACCOUNTS = [] # added accounts when finished or those have same date as today date in LOGS at beginning.
-ERROR = True # A flag for when error occurred.
-MOBILE = True # A flag for when the account has mobile bing search, it is useful for accounts level 1 to pass mobile.
-CURRENT_ACCOUNT = None # save current account into this variable when farming.
-LOGS = {} # Dictionary of accounts to write in 'logs_accounts.txt'.
-FAST = False # When this variable set True then all possible delays reduced.
+FINISHED_ACCOUNTS = []  # added accounts when finished or those have same date as today date in LOGS at beginning.
+ERROR = True  # A flag for when error occurred.
+MOBILE = True  # A flag for when the account has mobile bing search, it is useful for accounts level 1 to pass mobile.
+CURRENT_ACCOUNT = None  # save current account into this variable when farming.
+LOGS = {}  # Dictionary of accounts to write in 'logs_accounts.txt'.
+FAST = False  # When this variable set True then all possible delays reduced.
+SUPER_FAST = False  # fast but super
 BASE_URL = "https://rewards.bing.com"
 
 
 def isProxyWorking(proxy: str) -> bool:
-    '''Check if proxy is working or not'''
+    """Check if proxy is working or not"""
     try:
         requests.get("https://www.google.com/", proxies={"https": proxy}, timeout=5)
         return True
     except:
         return False
+
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
     # Create Chrome browser
@@ -73,11 +75,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_argument('lang=' + LANG.split("-")[0])
     options.add_argument('--disable-blink-features=AutomationControlled')
     prefs = {"profile.default_content_setting_values.geolocation": 2,
-            "credentials_enable_service": False,
-            "profile.password_manager_enabled": False,
-            "webrtc.ip_handling_policy": "disable_non_proxied_udp",
-            "webrtc.multiple_routes_enabled": False,
-            "webrtc.nonproxied_udp_enabled" : False}
+             "credentials_enable_service": False,
+             "profile.password_manager_enabled": False,
+             "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+             "webrtc.multiple_routes_enabled": False,
+             "webrtc.nonproxied_udp_enabled": False}
     if ARGS.account_browser:
         prefs["detach"] = True
     if proxy is not None:
@@ -101,6 +103,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     else:
         browser = webdriver.Chrome(options=options)
     return browser
+
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
@@ -163,7 +166,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Click next
     browser.find_element(By.ID, 'idSIButton9').click()
     # Wait 2 seconds
-    time.sleep(5 if not FAST else 2)
+    time.sleep(5 if not FAST and not SUPER_FAST else 1.5)
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter password
@@ -176,7 +179,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     time.sleep(5)
     try:
         if browser.title == "":
-            time.sleep(10)
+            time.sleep(10 if not FAST and not SUPER_FAST else 3)
             wait = WebDriverWait(browser, 10)
             wait.until(ec.presence_of_element_located((By.TAG_NAME, "body")))
             wait.until(ec.presence_of_all_elements_located)
@@ -204,7 +207,8 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             browser.find_element(By.ID, 'idBtn_Back').click()
     except NoSuchElementException:
         # Check for if account has been locked.
-        if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME, "serviceAbusePageContainer  PageContainer"):
+        if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME,
+                                                                                             "serviceAbusePageContainer  PageContainer"):
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             updateLogs()
@@ -213,7 +217,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         elif browser.title == "Help us protect your account":
             prRed('[ERROR] Unusual activity detected !')
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)       
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             updateLogs()
             cleanLogs()
             if ARGS.telegram or ARGS.discord:
@@ -248,18 +252,19 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     except (NoSuchElementException, ElementNotInteractableException) as e:
         pass
     print('[LOGIN]', 'Logged-in !')
-     # Check Microsoft Rewards
+    # Check Microsoft Rewards
     print('[LOGIN] Logging into Microsoft Rewards...')
     RewardsLogin(browser)
     # Check Login
     print('[LOGIN]', 'Ensuring login on Bing...')
     checkBingLogin(browser, isMobile)
 
+
 def RewardsLogin(browser: WebDriver):
-    #Login into Rewards
+    # Login into Rewards
     browser.get(BASE_URL)
     try:
-        time.sleep(10 if not FAST else 5)
+        time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
         # click on sign up button if needed
         if isElementExists(browser, By.ID, "start-earning-rewards-link"):
             browser.find_element(By.ID, "start-earning-rewards-link").click()
@@ -268,34 +273,37 @@ def RewardsLogin(browser: WebDriver):
             time.sleep(5)
     except:
         pass
-    time.sleep(10 if not FAST else 5)
+    time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
     # Check for ErrorMessage
     try:
         browser.find_element(By.ID, 'error').is_displayed()
         # Check wheter account suspended or not
-        if browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
+        if browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute(
+                'innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
-            LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A' 
-            LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A' 
+            LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A'
+            LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A'
             cleanLogs()
             updateLogs()
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             raise Exception(prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
         # Check whether Rewards is available in your region or not
-        elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute('innerHTML') == 'Microsoft Rewards is not available in this country or region.':
+        elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute(
+                'innerHTML') == 'Microsoft Rewards is not available in this country or region.':
             prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
             input('[ERROR] Press any key to close...')
             os._exit(0)
     except NoSuchElementException:
         pass
 
+
 @func_set_timeout(300)
 def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     global POINTS_COUNTER
-    #Access Bing.com
+    # Access Bing.com
     browser.get('https://bing.com/')
     # Wait 15 seconds
-    time.sleep(15 if not FAST else 5)
+    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
     # try to get points at first if account already logged in
     if ARGS.session:
         try:
@@ -305,10 +313,11 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 except ValueError:
                     if browser.find_element(By.ID, 'id_s').is_displayed():
                         browser.find_element(By.ID, 'id_s').click()
-                        time.sleep(15 if not FAST else 7)
+                        time.sleep(15 if not FAST and not SUPER_FAST else 7 if not SUPER_FAST else 3)
                         checkBingLogin(browser, isMobile)
                     time.sleep(2)
-                    POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
+                    POINTS_COUNTER = int(
+                        browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
             else:
                 browser.find_element(By.ID, 'mHamburger').click()
                 time.sleep(1)
@@ -317,7 +326,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             pass
         else:
             return None
-    #Accept Cookies
+    # Accept Cookies
     try:
         browser.find_element(By.ID, 'bnp_btn_accept').click()
     except:
@@ -363,13 +372,13 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
                 updateLogs()
                 exit()
-    #Wait 5 seconds
+    # Wait 5 seconds
     time.sleep(5)
     # Refresh page
     browser.get('https://bing.com/')
     # Wait 15 seconds
-    time.sleep(15 if not FAST else 5)
-    #Update Counter
+    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
+    # Update Counter
     try:
         if not isMobile:
             try:
@@ -377,7 +386,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             except:
                 if browser.find_element(By.ID, 'id_s').is_displayed():
                     browser.find_element(By.ID, 'id_s').click()
-                    time.sleep(15 if not FAST else 7)
+                    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
+
                     checkBingLogin(browser, isMobile)
                 time.sleep(5)
                 POINTS_COUNTER = int(browser.find_element(By.ID, "id_rc").get_attribute("innerHTML").replace(",", ""))
@@ -398,11 +408,14 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     except:
         checkBingLogin(browser, isMobile)
 
+
 def waitUntilVisible(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
     WebDriverWait(browser, time_to_wait).until(ec.visibility_of_element_located((by_, selector)))
 
+
 def waitUntilClickable(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
     WebDriverWait(browser, time_to_wait).until(ec.element_to_be_clickable((by_, selector)))
+
 
 def waitUntilQuestionRefresh(browser: WebDriver):
     tries = 0
@@ -424,6 +437,7 @@ def waitUntilQuestionRefresh(browser: WebDriver):
                 else:
                     return False
 
+
 def waitUntilQuizLoads(browser: WebDriver):
     tries = 0
     refreshCount = 0
@@ -444,6 +458,7 @@ def waitUntilQuizLoads(browser: WebDriver):
                 else:
                     return False
 
+
 def findBetween(s: str, first: str, last: str) -> str:
     try:
         start = s.index(first) + len(first)
@@ -452,38 +467,43 @@ def findBetween(s: str, first: str, last: str) -> str:
     except ValueError:
         return ""
 
+
 def getCCodeLangAndOffset() -> tuple:
     try:
         nfo = ipapi.location()
         lang = nfo['languages'].split(',')[0]
         geo = nfo['country']
         tz = str(round(int(nfo['utc_offset']) / 100 * 60))
-        return(lang, geo, tz)
+        return (lang, geo, tz)
     # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
     except:
-        return('en-US', 'US', '-480')
+        return ('en-US', 'US', '-480')
+
 
 def getGoogleTrends(numberOfwords: int) -> list:
     search_terms = []
     i = 0
-    while len(search_terms) < numberOfwords :
+    while len(search_terms) < numberOfwords:
         i += 1
-        r = requests.get('https://trends.google.com/trends/api/dailytrends?hl=' + LANG + '&ed=' + str((date.today() - timedelta(days = i)).strftime('%Y%m%d')) + '&geo=' + GEO + '&ns=15')
+        r = requests.get('https://trends.google.com/trends/api/dailytrends?hl=' + LANG + '&ed=' + str(
+            (date.today() - timedelta(days=i)).strftime('%Y%m%d')) + '&geo=' + GEO + '&ns=15')
         google_trends = json.loads(r.text[6:])
         for topic in google_trends['default']['trendingSearchesDays'][0]['trendingSearches']:
             search_terms.append(topic['title']['query'].lower())
             for related_topic in topic['relatedQueries']:
                 search_terms.append(related_topic['query'].lower())
         search_terms = list(set(search_terms))
-    del search_terms[numberOfwords:(len(search_terms)+1)]
+    del search_terms[numberOfwords:(len(search_terms) + 1)]
     return search_terms
+
 
 def getRelatedTerms(word: str) -> list:
     try:
-        r = requests.get('https://api.bing.com/osjson.aspx?query=' + word, headers = {'User-agent': PC_USER_AGENT})
+        r = requests.get('https://api.bing.com/osjson.aspx?query=' + word, headers={'User-agent': PC_USER_AGENT})
         return r.json()[1]
     except:
         return []
+
 
 def resetTabs(browser: WebDriver):
     try:
@@ -504,19 +524,21 @@ def resetTabs(browser: WebDriver):
         browser.get(BASE_URL)
         waitUntilVisible(browser, By.ID, 'app-host', 30)
 
+
 def getAnswerCode(key: str, string: str) -> str:
-	t = 0
-	for i in range(len(string)):
-		t += ord(string[i])
-	t += int(key[-2:], 16)
-	return str(t)
+    t = 0
+    for i in range(len(string)):
+        t += ord(string[i])
+    t += int(key[-2:], 16)
+    return str(t)
+
 
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
     global POINTS_COUNTER
     i = 0
     r = RandomWords()
     try:
-        search_terms = r.get_random_words(limit = numberOfSearches)
+        search_terms = r.get_random_words(limit=numberOfSearches)
         if search_terms is None:
             raise Exception
     except Exception:
@@ -535,9 +557,9 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
         i += 1
         print('[BING]', str(i) + "/" + str(numberOfSearches))
         points = bingSearch(browser, word, isMobile)
-        if points <= POINTS_COUNTER :
+        if points <= POINTS_COUNTER:
             relatedTerms = getRelatedTerms(word)
-            for term in relatedTerms :
+            for term in relatedTerms:
                 points = bingSearch(browser, term, isMobile)
                 if points >= POINTS_COUNTER:
                     break
@@ -545,6 +567,7 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
             POINTS_COUNTER = points
         else:
             break
+
 
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     try:
@@ -560,12 +583,14 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
     if FAST:
         searchbar.send_keys(word)
         time.sleep(1)
+    if SUPER_FAST:
+        searchbar.send_keys(word)
     else:
         for char in word:
             searchbar.send_keys(char)
             time.sleep(0.33)
     searchbar.submit()
-    time.sleep(random.randint(12, 24) if not FAST else random.randint(6, 9))
+    time.sleep(random.randint(12, 24) if not FAST and not SUPER_FAST else random.randint(6, 9) if not SUPER_FAST else 3)
     points = 0
     try:
         if not isMobile:
@@ -574,53 +599,58 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
             except ValueError:
                 points = int(browser.find_element(By.ID, 'id_rc').get_attribute('innerHTML').replace(",", ""))
         else:
-            try :
+            try:
                 browser.find_element(By.ID, 'mHamburger').click()
             except UnexpectedAlertPresentException:
-                try :
+                try:
                     browser.switch_to.alert.accept()
                     time.sleep(1)
                     browser.find_element(By.ID, 'mHamburger').click()
-                except NoAlertPresentException :
+                except NoAlertPresentException:
                     pass
             time.sleep(1)
             points = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
-    except:
+    except Exception as E:
+        print(E if ERROR else "")
         pass
     return points
+
 
 def completePromotionalItems(browser: WebDriver):
     try:
         item = getDashboardData(browser)["promotionalItem"]
-        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item["destinationUrl"] == BASE_URL:
+        if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] == False and item[
+            "destinationUrl"] == BASE_URL:
             browser.find_element(By.XPATH, '//*[@id="promo-item"]/section/div/div/div/a').click()
             time.sleep(1)
-            browser.switch_to.window(window_name = browser.window_handles[1])
-            time.sleep(8 if not FAST else 5)
+            browser.switch_to.window(window_name=browser.window_handles[1])
+            time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
             browser.close()
             time.sleep(2)
-            browser.switch_to.window(window_name = browser.window_handles[0])
+            browser.switch_to.window(window_name=browser.window_handles[0])
             time.sleep(2)
     except:
         pass
+
 
 def completeDailySetSearch(browser: WebDriver, cardNumber: int):
     time.sleep(5)
     browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
-    browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(random.randint(13, 17) if not FAST else random.randint(6, 9))
+    browser.switch_to.window(window_name=browser.window_handles[1])
+    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
     browser.close()
     time.sleep(2)
-    browser.switch_to.window(window_name = browser.window_handles[0])
+    browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
+
 
 def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
     time.sleep(5)
     browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
-    browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(8 if not FAST else 5)
+    browser.switch_to.window(window_name=browser.window_handles[1])
+    time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
     # Accept cookie popup
     if isElementExists(browser, By.ID, 'bnp_container'):
         browser.find_element(By.ID, 'bnp_btn_accept').click()
@@ -630,18 +660,20 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
         browser.find_element(By.ID, 'bnp_hfly_cta2').click()
         time.sleep(2)
     browser.find_element(By.ID, "btoption" + str(random.randint(0, 1))).click()
-    time.sleep(random.randint(10, 15) if not FAST else 7)
+    time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2)
     browser.close()
     time.sleep(2)
-    browser.switch_to.window(window_name = browser.window_handles[0])
+    browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
+
 
 def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
     time.sleep(5)
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[{str(cardNumber)}]/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[{str(cardNumber)}]/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
     time.sleep(3)
-    browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(12 if not FAST else random.randint(5, 8))
+    browser.switch_to.window(window_name=browser.window_handles[1])
+    time.sleep(12 if not FAST and not SUPER_FAST else random.randint(5, 8) if not SUPER_FAST else 3)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
@@ -650,7 +682,7 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
         browser.find_element(By.ID, 'bnp_btn_accept').click()
         time.sleep(2)
     browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST and not SUPER_FAST else 5)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
     numberOfOptions = browser.execute_script("return _w.rewardsQuizRenderInfo.numberOfOptions")
@@ -658,7 +690,8 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
-                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
+                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute(
+                        "iscorrectoption").lower() == "true":
                     answers.append("rqAnswerOption" + str(i))
             for answer in answers:
                 # Click on later on Bing wallpaper app popup
@@ -687,33 +720,37 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
     time.sleep(5)
     browser.close()
     time.sleep(2)
-    browser.switch_to.window(window_name = browser.window_handles[0])
+    browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
+
 
 def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
     time.sleep(2)
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
-    browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(8 if not FAST else 5)
+    browser.switch_to.window(window_name=browser.window_handles[1])
+    time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
     # Accept cookie popup
     if isElementExists(browser, By.ID, 'bnp_container'):
         browser.find_element(By.ID, 'bnp_btn_accept').click()
         time.sleep(2)
-    try :
+    try:
         browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
         waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 3)
     except (NoSuchElementException, TimeoutException):
         try:
-            counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
+            counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[
+                      :-1][1:]
             numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
             for question in range(numberOfQuestions):
                 # Click on later on Bing wallpaper app popup
                 if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
                     browser.find_element(By.ID, 'bnp_hfly_cta2').click()
                     time.sleep(2)
-                    
-                browser.execute_script(f'document.evaluate("//*[@id=\'QuestionPane{str(question)}\']/div[1]/div[2]/a[{str(random.randint(1, 3))}]/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
+
+                browser.execute_script(
+                    f'document.evaluate("//*[@id=\'QuestionPane{str(question)}\']/div[1]/div[2]/a[{str(random.randint(1, 3))}]/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
                 time.sleep(8)
             time.sleep(5)
             browser.close()
@@ -725,27 +762,29 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
             time.sleep(random.randint(5, 9))
             browser.close()
             time.sleep(2)
-            browser.switch_to.window(window_name = browser.window_handles[0])
+            browser.switch_to.window(window_name=browser.window_handles[0])
             time.sleep(2)
             return
     time.sleep(3)
     correctAnswer = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
     if browser.find_element(By.ID, "rqAnswerOption0").get_attribute("data-option") == correctAnswer:
         browser.find_element(By.ID, "rqAnswerOption0").click()
-    else :
+    else:
         browser.find_element(By.ID, "rqAnswerOption1").click()
     time.sleep(10)
     browser.close()
     time.sleep(2)
-    browser.switch_to.window(window_name = browser.window_handles[0])
+    browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
+
 
 def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     time.sleep(2)
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
-    time.sleep(15 if not FAST else random.randint(5, 8))
+    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
     # Accept cookie popup
     if isElementExists(browser, By.ID, 'bnp_container'):
         browser.find_element(By.ID, 'bnp_btn_accept').click()
@@ -754,14 +793,14 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
         resetTabs(browser)
         return
     browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
     time.sleep(5)
     for _ in range(10):
         # Click on later on Bing wallpaper app popup
         if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
             browser.find_element(By.ID, 'bnp_hfly_cta2').click()
             time.sleep(2)
-        
+
         answerEncodeKey = browser.execute_script("return _G.IG")
 
         answer1 = browser.find_element(By.ID, "rqAnswerOption0")
@@ -776,10 +815,10 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
 
         if (answer1Code == correctAnswerCode):
             answer1.click()
-            time.sleep(15 if not FAST else 7)
+            time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
         elif (answer2Code == correctAnswerCode):
             answer2.click()
-            time.sleep(15 if not FAST else 7)
+            time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
 
     time.sleep(5)
     browser.close()
@@ -787,10 +826,13 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
+
 def getDashboardData(browser: WebDriver) -> dict:
-    dashboard = findBetween(browser.find_element(By.XPATH, '/html/body').get_attribute('innerHTML'), "var dashboard = ", ";\n        appDataModule.constant(\"prefetchedDashboard\", dashboard);")
+    dashboard = findBetween(browser.find_element(By.XPATH, '/html/body').get_attribute('innerHTML'), "var dashboard = ",
+                            ";\n        appDataModule.constant(\"prefetchedDashboard\", dashboard);")
     dashboard = json.loads(dashboard)
     return dashboard
+
 
 def completeDailySet(browser: WebDriver):
     print('[DAILY SET]', 'Trying to complete the Daily Set...')
@@ -812,11 +854,13 @@ def completeDailySet(browser: WebDriver):
                     if activity['pointProgressMax'] == 50 and activity['pointProgress'] == 0:
                         print('[DAILY SET]', 'Completing This or That of card ' + str(cardNumber))
                         completeDailySetThisOrThat(browser, cardNumber)
-                    elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity['pointProgress'] == 0:
+                    elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity[
+                        'pointProgress'] == 0:
                         print('[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
                         completeDailySetQuiz(browser, cardNumber)
                     elif activity['pointProgressMax'] == 10 and activity['pointProgress'] == 0:
-                        searchUrl = urllib.parse.unquote(urllib.parse.parse_qs(urllib.parse.urlparse(activity['destinationUrl']).query)['ru'][0])
+                        searchUrl = urllib.parse.unquote(
+                            urllib.parse.parse_qs(urllib.parse.urlparse(activity['destinationUrl']).query)['ru'][0])
                         searchUrlQueries = urllib.parse.parse_qs(urllib.parse.urlparse(searchUrl).query)
                         filters = {}
                         for filter in searchUrlQueries['filters'][0].split(" "):
@@ -836,10 +880,12 @@ def completeDailySet(browser: WebDriver):
     else:
         prYellow("[DAILY SET] Daily Set did not completed successfully ! Streak not increased")
     LOGS[CURRENT_ACCOUNT]['Daily'] = True
-    updateLogs()      
+    updateLogs()
+
 
 def getAccountPoints(browser: WebDriver) -> int:
     return getDashboardData(browser)['userStatus']['availablePoints']
+
 
 def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
     browser.get(url)
@@ -848,30 +894,32 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
             if child['promotionType'] == "urlreward":
                 browser.execute_script("document.getElementsByClassName('offer-cta')[0].click()")
                 time.sleep(1)
-                browser.switch_to.window(window_name = browser.window_handles[1])
-                time.sleep(random.randint(5, 8)) if FAST else time.sleep(random.randint(13, 17))
+                browser.switch_to.window(window_name=browser.window_handles[1])
+                time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
                 browser.close()
                 time.sleep(2)
-                browser.switch_to.window(window_name = browser.window_handles[0])
+                browser.switch_to.window(window_name=browser.window_handles[0])
                 time.sleep(2)
-            if child['promotionType'] == "quiz" and child['pointProgressMax'] >= 50 :
-                browser.find_element(By.XPATH, '//*[@id="rewards-dashboard-punchcard-details"]/div[2]/div[2]/div[7]/div[3]/div[1]/a').click()
+            if child['promotionType'] == "quiz" and child['pointProgressMax'] >= 50:
+                browser.find_element(By.XPATH,
+                                     '//*[@id="rewards-dashboard-punchcard-details"]/div[2]/div[2]/div[7]/div[3]/div[1]/a').click()
                 time.sleep(1)
-                browser.switch_to.window(window_name = browser.window_handles[1])
+                browser.switch_to.window(window_name=browser.window_handles[1])
                 time.sleep(15)
                 try:
                     browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
                 except:
                     pass
                 time.sleep(5)
-                waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]', 10 if not FAST else 5)
+                waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]', 15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
                 numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
-                AnswerdQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.CorrectlyAnsweredQuestionCount")
+                AnswerdQuestions = browser.execute_script(
+                    "return _w.rewardsQuizRenderInfo.CorrectlyAnsweredQuestionCount")
                 numberOfQuestions -= AnswerdQuestions
                 for question in range(numberOfQuestions):
                     answer = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
                     browser.find_element(By.XPATH, f'//input[@value="{answer}"]').click()
-                    time.sleep(15 if not FAST else 7)
+                    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
                 time.sleep(5)
                 browser.close()
                 time.sleep(2)
@@ -882,27 +930,35 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
             elif child['promotionType'] == "quiz" and child['pointProgressMax'] < 50:
                 browser.execute_script("document.getElementsByClassName('offer-cta')[0].click()")
                 time.sleep(1)
-                browser.switch_to.window(window_name = browser.window_handles[1])
+                browser.switch_to.window(window_name=browser.window_handles[1])
                 time.sleep(8)
-                counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
+                counter = str(
+                    browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][
+                          1:]
                 numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
                 for question in range(numberOfQuestions):
-                    browser.execute_script('document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a[' + str(random.randint(1, 3)) + ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-                    time.sleep(10 if not FAST else 5)
+                    browser.execute_script(
+                        'document.evaluate("//*[@id=\'QuestionPane' + str(question) + '\']/div[1]/div[2]/a['
+                        + str(random.randint(1, 3)) +
+                        ']/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
+                    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
                 time.sleep(5)
                 browser.close()
                 time.sleep(2)
-                browser.switch_to.window(window_name = browser.window_handles[0])
+                browser.switch_to.window(window_name=browser.window_handles[0])
                 time.sleep(2)
                 browser.refresh()
                 break
-                
+
+
 def completePunchCards(browser: WebDriver):
     print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
         try:
-            if punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and punchCard['parentPromotion']['complete'] == False and punchCard['parentPromotion']['pointProgressMax'] != 0:
+            if punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and \
+                    punchCard['parentPromotion']['complete'] == False and punchCard['parentPromotion'][
+                'pointProgressMax'] != 0:
                 url = punchCard['parentPromotion']['attributes']['destination']
                 if browser.current_url.startswith('https://rewards.'):
                     path = url.replace('https://rewards.microsoft.com', '')
@@ -910,7 +966,7 @@ def completePunchCards(browser: WebDriver):
                     userCode = path[11:15]
                     dest = new_url + userCode + path.split(userCode)[1]
                 else:
-                    path = url.replace('https://account.microsoft.com/rewards/dashboard/','')
+                    path = url.replace('https://account.microsoft.com/rewards/dashboard/', '')
                     new_url = 'https://account.microsoft.com/rewards/dashboard/'
                     userCode = path[:4]
                     dest = new_url + userCode + path.split(userCode)[1]
@@ -924,28 +980,32 @@ def completePunchCards(browser: WebDriver):
     updateLogs()
     prGreen('[PUNCH CARDS] Completed the Punch Cards successfully !')
 
-def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
-    time.sleep(1)
-    browser.switch_to.window(window_name = browser.window_handles[1])
-    time.sleep(random.randint(13, 17) if not FAST else random.randint(5, 8))
-    browser.close()
-    time.sleep(2)
-    browser.switch_to.window(window_name = browser.window_handles[0])
-    time.sleep(2)
 
-def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
-    time.sleep(8 if not FAST else 5)
+    time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
+    browser.close()
+    time.sleep(2)
+    browser.switch_to.window(window_name=browser.window_handles[0])
+    time.sleep(2)
+
+
+def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    time.sleep(1)
+    browser.switch_to.window(window_name=browser.window_handles[1])
+    time.sleep(10 if not FAST and not SUPER_FAST else 7 if not SUPER_FAST else 3.5)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
     CurrentQuestionNumber = browser.execute_script("return _w.rewardsQuizRenderInfo.currentQuestionNumber")
     if CurrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
         browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
     time.sleep(3)
     numberOfQuestions = browser.execute_script("return _w.rewardsQuizRenderInfo.maxQuestions")
     Questions = numberOfQuestions - CurrentQuestionNumber + 1
@@ -954,7 +1014,8 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
         if numberOfOptions == 8:
             answers = []
             for i in range(8):
-                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute("iscorrectoption").lower() == "true":
+                if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute(
+                        "iscorrectoption").lower() == "true":
                     answers.append("rqAnswerOption" + str(i))
             for answer in answers:
                 browser.find_element(By.ID, answer).click()
@@ -978,27 +1039,32 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
+
 def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
-    time.sleep(8 if not FAST else 5)
+    time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
     counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[:-1][1:]
     numberOfQuestions = max([int(s) for s in counter.split() if s.isdigit()])
     for question in range(numberOfQuestions):
-        browser.execute_script(f'document.evaluate("//*[@id=\'QuestionPane{str(question)}\']/div[1]/div[2]/a[{str(random.randint(1, 3))}]/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-        time.sleep(8 if not FAST else 5)
+        browser.execute_script(
+            f'document.evaluate("//*[@id=\'QuestionPane{str(question)}\']/div[1]/div[2]/a[{str(random.randint(1, 3))}]/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
+        time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
     time.sleep(5)
     browser.close()
     time.sleep(2)
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
 
+
 def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
-    browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+    browser.find_element(By.XPATH,
+                         f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
     browser.switch_to.window(window_name=browser.window_handles[1])
-    time.sleep(8 if not FAST else 5)
+    time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
     if not waitUntilQuizLoads(browser):
         resetTabs(browser)
         return
@@ -1006,7 +1072,7 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
     NumberOfQuestionsLeft = 10 - CrrentQuestionNumber + 1
     if CrrentQuestionNumber == 1 and isElementExists(browser, By.XPATH, '//*[@id="rqStartQuiz"]'):
         browser.find_element(By.XPATH, '//*[@id="rqStartQuiz"]').click()
-    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST else 5)
+    waitUntilVisible(browser, By.XPATH, '//*[@id="currentQuestionContainer"]/div/div[1]', 10 if not FAST and not SUPER_FAST else 7 if not SUPER_FAST else 5)
     time.sleep(3)
     for _ in range(NumberOfQuestionsLeft):
         answerEncodeKey = browser.execute_script("return _G.IG")
@@ -1023,16 +1089,18 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
 
         if (answer1Code == correctAnswerCode):
             answer1.click()
-            time.sleep(8 if not FAST else 5)
+            time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
+
         elif (answer2Code == correctAnswerCode):
             answer2.click()
-            time.sleep(8 if not FAST else 5)
+            time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
 
     time.sleep(5)
     browser.close()
     time.sleep(2)
     browser.switch_to.window(window_name=browser.window_handles[0])
     time.sleep(2)
+
 
 def completeMorePromotions(browser: WebDriver):
     print('[MORE PROMO]', 'Trying to complete More Promotions...')
@@ -1054,8 +1122,9 @@ def completeMorePromotions(browser: WebDriver):
                 else:
                     if promotion['pointProgressMax'] == 100 or promotion['pointProgressMax'] == 200:
                         completeMorePromotionSearch(browser, i)
-            if promotion['complete'] == False and promotion['pointProgressMax'] == 100 and promotion['promotionType'] == "" \
-                and promotion['destinationUrl'] == BASE_URL:
+            if promotion['complete'] == False and promotion['pointProgressMax'] == 100 and promotion[
+                'promotionType'] == "" \
+                    and promotion['destinationUrl'] == BASE_URL:
                 completeMorePromotionSearch(browser, i)
         except:
             resetTabs(browser)
@@ -1063,8 +1132,8 @@ def completeMorePromotions(browser: WebDriver):
     updateLogs()
     prGreen('[MORE PROMO] Completed More Promotions successfully !')
 
-def completeMSNShoppingGame(browser: WebDriver):
 
+def completeMSNShoppingGame(browser: WebDriver):
     def expandShadowElement(element, index: int = None) -> Union[List[WebElement], WebElement]:
         """Returns childrens of shadow element"""
         if index is not None:
@@ -1082,7 +1151,7 @@ def completeMSNShoppingGame(browser: WebDriver):
     def getChildren(element) -> List[WebElement]:
         children = browser.execute_script('return arguments[0].children', element)
         return children
-    
+
     def getSignInButton() -> WebElement:
         """check wheather user is signed in or not and return the button to sign in"""
         script_to_user_pref_container = 'document.getElementsByTagName("shopping-page-base")[0]\
@@ -1091,18 +1160,18 @@ def completeMSNShoppingGame(browser: WebDriver):
             .getElementsByClassName("user-pref-container")[0]'
         WebDriverWait(browser, 60).until(ec.visibility_of(
             browser.execute_script(f'return {script_to_user_pref_container}')
-            )
+        )
         )
         button = WebDriverWait(browser, 60).until(ec.visibility_of(
-                browser.execute_script(
-                    f'return {script_to_user_pref_container}.\
+            browser.execute_script(
+                f'return {script_to_user_pref_container}.\
                     children[0].children[0].shadowRoot.children[0].\
                     getElementsByClassName("me-control")[0]'
-                )
             )
         )
+        )
         return button
-        
+
     def signIn() -> None:
         sign_in_button = getSignInButton()
         sign_in_button.click()
@@ -1110,10 +1179,10 @@ def completeMSNShoppingGame(browser: WebDriver):
         time.sleep(5)
         waitUntilVisible(browser, By.ID, 'newSessionLink', 10)
         browser.find_element(By.ID, 'newSessionLink').click()
-        waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST else 30)
+        waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST and not SUPER_FAST else 30 if not SUPER_FAST else 5)
         expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         getSignInButton()
-    
+
     def getGamingCard() -> Union[WebElement, bool]:
         shopping_page_base_childs = expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         shopping_homepage = shopping_page_base_childs.find_element(By.TAG_NAME, 'shopping-homepage')
@@ -1124,7 +1193,7 @@ def completeMSNShoppingGame(browser: WebDriver):
                 return element
         else:
             return False
-    
+
     def clickCorrectAnswer() -> None:
         options_container = expandShadowElement(gaming_card, 1)
         options_elements = getChildren(getChildren(options_container)[1])
@@ -1137,12 +1206,12 @@ def completeMSNShoppingGame(browser: WebDriver):
         select_button = correct_answer.find_element(By.CLASS_NAME, 'shopping-select-overlay-button')
         WebDriverWait(browser, 5).until(ec.element_to_be_clickable(select_button))
         select_button.click()
-    
+
     def clickPlayAgain() -> None:
         time.sleep(random.randint(4, 6))
         options_container = expandShadowElement(gaming_card)[1]
         getChildren(options_container)[0].find_element(By.TAG_NAME, 'button').click()
-    
+
     try:
         tries = 0
         print("[MSN GAME] Trying to complete MSN shopping game...")
@@ -1150,8 +1219,8 @@ def completeMSNShoppingGame(browser: WebDriver):
         while tries <= 4:
             tries += 1
             browser.get("https://www.msn.com/en-us/shopping")
-            waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 60 if not FAST else 30)
-            time.sleep(15 if not FAST else 8)
+            waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 45 if not FAST and not SUPER_FAST else 30 if not SUPER_FAST else 5)
+            time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
             try:
                 sign_in_button = getSignInButton()
             except:
@@ -1168,12 +1237,12 @@ def completeMSNShoppingGame(browser: WebDriver):
             scrolls += 1
             print(f"Locating gaming card - scrolling ({scrolls}/5)")
             browser.execute_script("window.scrollBy(0, 300);")
-            time.sleep(10 if not FAST else 5)
+            time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2)
             gaming_card = getGamingCard()
             if gaming_card:
                 browser.execute_script("arguments[0].scrollIntoView();", gaming_card)
                 print("[MSN GAME] Gaming card found")
-                time.sleep(random.randint(7, 10))
+                time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2)
             if scrolls == 5 and not gaming_card:
                 raise NoSuchElementException("Gaming card not found")
         print("[MSN GAME] Answering questions ...")
@@ -1181,7 +1250,7 @@ def completeMSNShoppingGame(browser: WebDriver):
             try:
                 clickCorrectAnswer()
                 clickPlayAgain()
-                time.sleep(random.randint(5, 7))
+                time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2)
             except (NoSuchElementException, JavascriptException):
                 break
     except NoSuchElementException:
@@ -1195,6 +1264,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         LOGS[CURRENT_ACCOUNT]["MSN shopping game"] = True
         updateLogs()
 
+
 def getRemainingSearches(browser: WebDriver):
     dashboard = getDashboardData(browser)
     searchPoints = 1
@@ -1203,17 +1273,17 @@ def getRemainingSearches(browser: WebDriver):
         return 0, 0
     progressDesktop = counters['pcSearch'][0]['pointProgress'] + counters['pcSearch'][1]['pointProgress']
     targetDesktop = counters['pcSearch'][0]['pointProgressMax'] + counters['pcSearch'][1]['pointProgressMax']
-    if targetDesktop == 33 :
-        #Level 1 EU
+    if targetDesktop == 33:
+        # Level 1 EU
         searchPoints = 3
-    elif targetDesktop == 55 :
-        #Level 1 US
+    elif targetDesktop == 55:
+        # Level 1 US
         searchPoints = 5
-    elif targetDesktop == 102 :
-        #Level 2 EU
+    elif targetDesktop == 102:
+        # Level 2 EU
         searchPoints = 3
-    elif targetDesktop >= 170 :
-        #Level 2 US
+    elif targetDesktop >= 170:
+        # Level 2 US
         searchPoints = 5
     remainingDesktop = int((targetDesktop - progressDesktop) / searchPoints)
     remainingMobile = 0
@@ -1223,17 +1293,20 @@ def getRemainingSearches(browser: WebDriver):
         remainingMobile = int((targetMobile - progressMobile) / searchPoints)
     return remainingDesktop, remainingMobile
 
+
 def getRedeemGoal(browser: WebDriver):
     user_status = getDashboardData(browser)["userStatus"]
     return (user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"])
 
+
 def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
-    '''Returns True if given element exists else False'''
+    """Returns True if given element exists else False"""
     try:
         browser.find_element(_by, element)
     except NoSuchElementException:
         return False
     return True
+
 
 def accountBrowser(chosen_account: str):
     """Setup browser for chosen account"""
@@ -1246,37 +1319,38 @@ def accountBrowser(chosen_account: str):
         return None
     browserSetup(False, PC_USER_AGENT)
 
+
 def argumentParser():
-    '''getting args from command line'''
-    
+    """getting args from command line"""
+
     def isValidTime(time: str):
-        '''check the time format and return the time if it is valid, otherwise return parser error'''
+        """check the time format and return the time if it is valid, otherwise return parser error"""
         try:
             t = datetime.strptime(time, "%H:%M").strftime("%H:%M")
         except ValueError:
             parser.error("Invalid time format, use HH:MM")
         else:
             return t
-    
+
     def isSessionExist(session: str):
-        '''check if the session is valid and return the session if it is valid, otherwise return parser error'''
+        """check if the session is valid and return the session if it is valid, otherwise return parser error"""
         if Path(f"{Path(__file__).parent}/Profiles/{session}").exists():
             return session
         else:
             parser.error(f"Session not found for {session}")
-    
+
     parser = ArgumentParser(
-        description="Microsoft Rewards Farmer V2.1", 
-        allow_abbrev=False, 
+        description="Microsoft Rewards Farmer V2.1",
+        allow_abbrev=False,
         usage="You may use execute the program with the default config or use arguments to configure available options."
     )
-    parser.add_argument('--everyday', 
+    parser.add_argument('--everyday',
                         action='store_true',
-                        help='This argument will make the script run everyday at the time you start.', 
+                        help='This argument will make the script run everyday at the time you start.',
                         required=False)
     parser.add_argument('--headless',
                         help='Enable headless browser.',
-                        action = 'store_true',
+                        action='store_true',
                         required=False)
     parser.add_argument('--session',
                         help='Creates session for each account and use it.',
@@ -1290,11 +1364,15 @@ def argumentParser():
                         help="Reduce delays where ever it's possible to make script faster.",
                         action='store_true',
                         required=False)
+    parser.add_argument('--superfast',
+                        help="Reduce delays SUPER FAST where ever it's possible to make script faster.",
+                        action='store_true',
+                        required=False)
     parser.add_argument('--telegram',
                         metavar=('<API_TOKEN>', '<CHAT_ID>'),
                         nargs=2,
-                        help='This argument takes token and chat id to send logs to Telegram.', 
-                        type=str, 
+                        help='This argument takes token and chat id to send logs to Telegram.',
+                        type=str,
                         required=False)
     parser.add_argument('--discord',
                         metavar='<WEBHOOK_URL>',
@@ -1305,7 +1383,7 @@ def argumentParser():
     parser.add_argument('--edge',
                         help='Use Microsoft Edge webdriver instead of Chrome.',
                         action='store_true',
-                        required=False,)
+                        required=False)
     parser.add_argument('--account-browser',
                         nargs=1,
                         type=isSessionExist,
@@ -1317,26 +1395,29 @@ def argumentParser():
                         nargs=1,
                         type=isValidTime,
                         )
-    parser.add_argument(
-        "--on-finish",
-        help="Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit",
-        choices=["shutdown", "sleep", "hibernate", "exit"],
-        required=False,
-        metavar="ACTION"
-    )
+    parser.add_argument("--on-finish",
+                        help="Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit",
+                        choices=["shutdown", "sleep", "hibernate", "exit"],
+                        required=False,
+                        metavar="ACTION"
+                        )
+
     args = parser.parse_args()
-    if args.fast:
-        global FAST
-        FAST = True
+
+    if args.superfast or args.fast:
+        global SUPER_FAST, FAST
+        SUPER_FAST = True if args.superfast else False
+        FAST = True if args.fast and not args.superfast else False
     if len(sys.argv) > 1:
         for arg in vars(args):
             prBlue(f"[INFO] {arg}: {getattr(args, arg)}")
     return args
 
+
 def logs():
-    '''Read logs and check whether account farmed or not'''
+    """Read logs and check whether account farmed or not"""
     global LOGS
-    shared_items =[]
+    shared_items = []
     try:
         # Read datas on 'logs_accounts.txt'
         LOGS = json.load(open(f"{Path(__file__).parent}/Logs_{account_path.stem}.txt", "r"))
@@ -1346,16 +1427,18 @@ def logs():
             shared_items.append(user['username'])
             if not user['username'] in LOGS.keys():
                 LOGS[user["username"]] = {"Last check": "",
-                                        "Today's points": 0,
-                                        "Points": 0}
+                                          "Today's points": 0,
+                                          "Points": 0}
         if shared_items != LOGS.keys():
             diff = LOGS.keys() - shared_items
             for accs in list(diff):
                 del LOGS[accs]
-        
+
         # check that if any of accounts has farmed today or not.
         for account in LOGS.keys():
-            if LOGS[account]["Last check"] == str(date.today()) and list(LOGS[account].keys()) == ['Last check', "Today's points", 'Points']:
+            if LOGS[account]["Last check"] == str(date.today()) and list(LOGS[account].keys()) == ['Last check',
+                                                                                                   "Today's points",
+                                                                                                   'Points']:
                 FINISHED_ACCOUNTS.append(account)
             elif LOGS[account]['Last check'] == 'Your account has been suspended':
                 FINISHED_ACCOUNTS.append(account)
@@ -1378,23 +1461,24 @@ def logs():
                 LOGS[account]['PC searches'] = False
             if not isinstance(LOGS[account]["Points"], int):
                 LOGS[account]["Points"] = 0
-        updateLogs()               
+        updateLogs()
         prGreen('\n[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
         prRed(f'\n[LOGS] "Logs_{account_path.stem}.txt" file not found.')
         LOGS = {}
         for account in ACCOUNTS:
             LOGS[account["username"]] = {"Last check": "",
-                                        "Today's points": 0,
-                                        "Points": 0,
-                                        "Daily": False,
-                                        "Punch cards": False,
-                                        "More promotions": False,
-                                        "MSN shopping game": False,
-                                        "PC searches": False}
+                                         "Today's points": 0,
+                                         "Points": 0,
+                                         "Daily": False,
+                                         "Punch cards": False,
+                                         "More promotions": False,
+                                         "MSN shopping game": False,
+                                         "PC searches": False}
         updateLogs()
         prGreen(f'[LOGS] "Logs_{account_path.stem}.txt" created.\n')
-        
+
+
 def updateLogs():
     _logs = copy.deepcopy(LOGS)
     for account in _logs:
@@ -1403,7 +1487,8 @@ def updateLogs():
         _logs[account].pop("Redeem goal title", None)
         _logs[account].pop("Redeem goal price", None)
     with open(f'{Path(__file__).parent}/Logs_{account_path.stem}.txt', 'w') as file:
-        file.write(json.dumps(_logs, indent = 4))
+        file.write(json.dumps(_logs, indent=4))
+
 
 def cleanLogs():
     LOGS[CURRENT_ACCOUNT].pop("Daily", None)
@@ -1412,17 +1497,19 @@ def cleanLogs():
     LOGS[CURRENT_ACCOUNT].pop("MSN shopping game", None)
     LOGS[CURRENT_ACCOUNT].pop("PC searches", None)
 
+
 def finishedAccount():
     New_points = POINTS_COUNTER - STARTING_POINTS
     prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
     prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
-    
+
     FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-    if LOGS[CURRENT_ACCOUNT]["Points"] > 0 and POINTS_COUNTER >= LOGS[CURRENT_ACCOUNT]["Points"] :
+    if LOGS[CURRENT_ACCOUNT]["Points"] > 0 and POINTS_COUNTER >= LOGS[CURRENT_ACCOUNT]["Points"]:
         LOGS[CURRENT_ACCOUNT]["Today's points"] = POINTS_COUNTER - LOGS[CURRENT_ACCOUNT]["Points"]
     else:
         LOGS[CURRENT_ACCOUNT]["Today's points"] = New_points
     LOGS[CURRENT_ACCOUNT]["Points"] = POINTS_COUNTER
+
 
 def checkInternetConnection():
     system = platform.system()
@@ -1438,6 +1525,7 @@ def checkInternetConnection():
             time.sleep(1)
         except:
             return
+
 
 def createMessage():
     today = date.today().strftime("%d/%m/%Y")
@@ -1485,8 +1573,9 @@ def createMessage():
                 message += redeem_message
             else:
                 message += "\n"
-    message += f"💵 Total earned points: {total_earned} (${total_earned/1300:0.02f}) (€{total_earned/1500:0.02f})"
+    message += f"💵 Total earned points: {total_earned} (${total_earned / 1300:0.02f}) (€{total_earned / 1500:0.02f})"
     return message
+
 
 def sendReportToMessenger(message):
     if ARGS.telegram:
@@ -1494,35 +1583,47 @@ def sendReportToMessenger(message):
     if ARGS.discord:
         sendToDiscord(message)
 
+
 def sendToTelegram(message):
-    t = get_notifier('telegram') 
+    t = get_notifier('telegram')
     t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
-    
+
+
 def sendToDiscord(message):
     webhook_url = ARGS.discord[0]
     if len(message) > 2000:
-        messages = [message[i:i+2000] for i in range(0, len(message), 2000)]
+        messages = [message[i:i + 2000] for i in range(0, len(message), 2000)]
         for ms in messages:
             content = {"username": "⭐️ Microsoft Rewards Bot ⭐️", "content": ms}
             response = requests.post(webhook_url, json=content)
     else:
         content = {"username": "⭐️ Microsoft Rewards Bot ⭐️", "content": message}
-        response = requests.post(webhook_url, json=content) 
+        response = requests.post(webhook_url, json=content)
     if response.status_code == 204:
         prGreen("[LOGS] Report sent to Discord.\n")
     else:
         prRed("[ERROR] Could not send report to Discord.\n")
-    
+
+
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
+
+
 def prGreen(prt):
     print(f"\033[92m{prt}\033[00m")
+
+
 def prYellow(prt):
     print(f"\033[93m{prt}\033[00m")
+
+
 def prBlue(prt):
     print(f"\033[94m{prt}\033[00m")
+
+
 def prPurple(prt):
     print(f"\033[95m{prt}\033[00m")
+
 
 def logo():
     prRed("""
@@ -1534,6 +1635,7 @@ def logo():
     ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
     prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.1\n")
 
+
 try:
     account_path = Path(__file__).parent / 'accounts.json'
     ACCOUNTS = json.load(open(account_path, "r"))
@@ -1543,13 +1645,14 @@ except FileNotFoundError:
             "username": "Your Email",
             "password": "Your Password"
         }], indent=4))
-    prPurple(f"[ACCOUNT] Accounts credential file '{account_path.name}' created."\
-            "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
+    prPurple(f"[ACCOUNT] Accounts credential file '{account_path.name}' created."
+             "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
     input()
     ACCOUNTS = json.load(open(account_path, "r"))
 
+
 def farmer():
-    '''fuction that runs other functions to farm.'''
+    """fuction that runs other functions to farm."""
     global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS
     try:
         for account in ACCOUNTS:
@@ -1590,7 +1693,8 @@ def farmer():
                 browser.quit()
 
             if MOBILE:
-                browser = browserSetup(True, account.get('mobile_user_agent', MOBILE_USER_AGENT), account.get('proxy', None))
+                browser = browserSetup(True, account.get('mobile_user_agent', MOBILE_USER_AGENT),
+                                       account.get('proxy', None))
                 print('[LOGIN]', 'Logging-in mobile...')
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
@@ -1605,7 +1709,7 @@ def farmer():
                     bingSearches(browser, remainingSearchesM, True)
                 prGreen('[BING] Finished Mobile Bing searches !')
                 browser.quit()
-                
+
             if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
                 prGreen(f"[POINTS] Account ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
                 if ARGS.telegram or ARGS.discord:
@@ -1614,7 +1718,7 @@ def farmer():
             finishedAccount()
             cleanLogs()
             updateLogs()
-            
+
     except FunctionTimedOut:
         prRed('[ERROR] Time out raised.\n')
         ERROR = True
@@ -1647,6 +1751,7 @@ def farmer():
             message = createMessage()
             sendReportToMessenger(message)
         FINISHED_ACCOUNTS.clear()
+
 
 def main():
     global LANG, GEO, TZ, ARGS
@@ -1684,10 +1789,10 @@ def main():
     end = time.time()
     delta = end - start
     hour, remain = divmod(delta, 3600)
-    min, sec = divmod(remain, 60)
-    print(f"The farmer takes: {hour:02.0f}:{min:02.0f}:{sec:02.0f}")
+    minutes, sec = divmod(remain, 60)
+    print(f"The farmer takes: {hour:02.0f}:{minutes:02.0f}:{sec:02.0f}")
     print(f"Farmer finished on {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
-    LOGS["Elapsed time"] = f"{hour:02.0f}:{min:02.0f}:{sec:02.0f}"
+    LOGS["Elapsed time"] = f"{hour:02.0f}:{minutes:02.0f}:{sec:02.0f}"
     updateLogs()
     if ARGS.on_finish:
         plat = platform.system()
@@ -1706,7 +1811,8 @@ def main():
         elif ARGS.on_finish == "exit":
             return
     input('Press enter to close the program...')
-          
+
+
 if __name__ == '__main__':
     try:
         main()
