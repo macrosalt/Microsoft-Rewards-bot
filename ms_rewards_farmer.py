@@ -1640,7 +1640,7 @@ def logo():
 
 
 def tkinter_calculator():
-    """Rewards Calculator GUI. """
+    """Rewards Calculator GUI"""
     microsoft = 4750  # price of microsoft/xbox gift cards
     non_microsoft = 6750  # price of 3rd party gift cards
     points = 242  # estimated daily points (in australia: 242)
@@ -1681,7 +1681,7 @@ def tkinter_calculator():
                 return False
 
         if not value == "" and (int(value) > 100) or (int(value) <= 0):
-                return False
+            return False
 
         return True
 
@@ -1725,6 +1725,7 @@ def tkinter_calculator():
 
     # Function to submit the form
     def submit():
+        """run on submit button pressed"""
         price = price_entry.get()
         accounts = accounts_entry.get()
         balance = balance_entry.get()
