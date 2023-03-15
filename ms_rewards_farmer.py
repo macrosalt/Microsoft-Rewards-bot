@@ -369,11 +369,11 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             time.sleep(3)
         except:
             if str(browser.current_url).split('?')[0] == "https://account.live.com/proofs/Add":
-                prRed('[LOGIN] Please complete the Security Check on ' + CURRENT_ACCOUNT)
+                prRed(f'[LOGIN] Please complete the Security Check on {CURRENT_ACCOUNT}')
                 FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
                 LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
                 updateLogs()
-                exit()
+                sys.exit()
     # Wait 5 seconds
     time.sleep(5)
     # Refresh page
@@ -1640,6 +1640,7 @@ def logo():
 
 
 def tkinter_calculator():
+    """Rewards Calculator GUI. """
     microsoft = 4750  # price of microsoft/xbox gift cards
     non_microsoft = 6750  # price of 3rd party gift cards
     points = 242  # estimated daily points (in australia: 242)
@@ -1659,8 +1660,8 @@ def tkinter_calculator():
     form_frame.pack(pady=10)
 
     def validate_float_input(value):
-        # only allow numbers
-        for i in range(len(value)):
+        """validate input if it is float"""
+        for i in enumerate(value):
             if value[i] not in '0123456789.':
                 return False
 
@@ -1668,19 +1669,18 @@ def tkinter_calculator():
         if value.count(".") > 1:
             return False
 
-        if "." in value:
-            if len(value.split(".", 1)[1]) > 2:
-                return False
+        if "." in value and len(value.split(".", 1)[1]) > 2:
+            return False
 
         return True
 
     def validate_numeric_input(value):
-        for i in range(len(value)):
+        """validate input if it is integer"""
+        for i in enumerate(value):
             if value[i] not in '0123456789':
                 return False
 
-        if not value == "": 
-            if (int(value) > 100) or (int(value) <= 0):
+        if not value == "" and (int(value) > 100) or (int(value) <= 0):
                 return False
 
         return True
@@ -1741,7 +1741,7 @@ def tkinter_calculator():
             balance = float(balance) if balance != "" else 0
         except ValueError:
             messagebox.showerror("Critical Error, now closing...")
-            exit("Error (ValueError)")
+            sys.exit("Error (ValueError)")
 
         non = '' if associated else 'Non-'
         cards_required = ceil((price - balance) / 5)
@@ -1862,7 +1862,7 @@ def farmer():
         prBlue('[Driver] Please download correct version of webdriver form link below:')
         prBlue('[Driver] https://chromedriver.chromium.org/downloads')
         input('Press any key to close...')
-        exit()
+        sys.exit()
     except KeyboardInterrupt:
         ERROR = True
         browser.quit()
@@ -1897,7 +1897,7 @@ def main():
     # MS REWARD CALCULATOR
     if ARGS.calculator:
         tkinter_calculator()
-        return exit(0)
+        return sys.exit(0)
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
     if ARGS.account_browser:
