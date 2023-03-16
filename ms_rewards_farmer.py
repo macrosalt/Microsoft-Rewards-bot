@@ -1617,9 +1617,11 @@ def sendToDiscord(message):
 
 
 def setRedeemGoal(browser: WebDriver, goal: str):
-    """Sets current account's goal for redeeming.
+    """
+    Sets current account's goal for redeeming.
     @param browser - Selenium instance of the web browser.
-    @param goal - Name of the goal to use."""
+    @param goal - Name of the goal to use.
+    """
     print("[GOAL SETTER] Setting new account goal...")
 
     goal = goal.lower()
@@ -1700,84 +1702,85 @@ def setRedeemGoal(browser: WebDriver, goal: str):
 
 
 def redeemGoal(browser: WebDriver):
-        """Automatically redeems current account's goal.
-        @param browser - Selenium instance of the web browser."""
+    """
+    Automatically redeems current account's goal.
+    @param browser - Selenium instance of the web browser.
+    """
+    try:
         try:
+            browser.find_element(
+                By.XPATH,
+                value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]/span/ng-transclude",
+            ).click()
+            time.sleep(random.uniform(5, 7))
+        except NoSuchElementException:
+            browser.find_element(
+                By.XPATH,
+                value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
+            ).click()
+            time.sleep(random.uniform(5, 7))
+        try:
+            url = browser.current_url
+            url = url.split("/")
+            id = url[-1]
             try:
                 browser.find_element(
-                    By.XPATH,
-                    value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]/span/ng-transclude",
+                    By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]'
                 ).click()
                 time.sleep(random.uniform(5, 7))
             except NoSuchElementException:
                 browser.find_element(
-                    By.XPATH,
-                    value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
+                    By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]/span[1]'
                 ).click()
-                time.sleep(random.uniform(5, 7))
-            try:
-                url = browser.current_url
-                url = url.split("/")
-                id = url[-1]
-                try:
-                    browser.find_element(
-                        By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]'
-                    ).click()
-                    time.sleep(random.uniform(5, 7))
-                except NoSuchElementException:
-                    browser.find_element(
-                        By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]/span[1]'
-                    ).click()
-                # If a cookie consent container is present, we need to accept
-                # those cookies to be able to redeem the reward
-                if browser.find_elements(By.ID, value="wcpConsentBannerCtrl"):
-                    browser.find_element(By.XPATH, value="/html/body/div[3]/div/div[2]/button[1]").click()
-                    time.sleep(random.uniform(2, 4))
-                try:
-                    browser.find_element(By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]').click()
-                    time.sleep(random.uniform(2, 4))
-                except NoSuchElementException:
-                    browser.find_element(By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]/span[1]').click()
-            except NoSuchElementException as exc:
-                browser.get("https://rewards.microsoft.com/")
-                prRed("[REDEEM] Ran into an exception trying to redeem!")
-                prRed(str(exc))
-                return
-            # Handle phone verification landing page
-            try:
-                veri = browser.find_element(By.XPATH, value='//*[@id="productCheckoutChallenge"]/form/div[1]').text
-                if veri.lower() == "phone verification":
-                    prRed("[REDEEM] Phone verification required!")
-                    LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Phone verification required!'
-                    updateLogs()
-                    cleanLogs()
-                    return
-            except NoSuchElementException as e:
-                prRed(str(e))
-            finally:
+            # If a cookie consent container is present, we need to accept
+            # those cookies to be able to redeem the reward
+            if browser.find_elements(By.ID, value="wcpConsentBannerCtrl"):
+                browser.find_element(By.XPATH, value="/html/body/div[3]/div/div[2]/button[1]").click()
                 time.sleep(random.uniform(2, 4))
             try:
-                error = browser.find_element(By.XPATH, value='//*[@id="productCheckoutError"]/div/div[1]').text
-                if "issue with your account or order" in error.lower():
-                    message = f"\n[REDEEM] {CURRENT_ACCOUNT} has encountered the following message while attempting to auto-redeem rewards:\n{error}\nUnfortunately, this likely means this account has been shadow-banned. You may test your luck and contact support or just close the account and try again on another account."
-                    prRed(message)
-                    LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Account banned!'
-                    updateLogs()
-                    cleanLogs()
-                    return
-            except NoSuchElementException as exc:
-                prRed(str(exc))
-
-            prGreen(f"[REDEEM] {CURRENT_ACCOUNT} card redeemed!")
-            LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Redeemed!'
-            updateLogs()
-            cleanLogs()
-            global auto_redeem_counter  # pylint: disable=global-statement
-            auto_redeem_counter += 1
+                browser.find_element(By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]').click()
+                time.sleep(random.uniform(2, 4))
+            except NoSuchElementException:
+                browser.find_element(By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]/span[1]').click()
         except NoSuchElementException as exc:
+            browser.get("https://rewards.microsoft.com/")
             prRed("[REDEEM] Ran into an exception trying to redeem!")
             prRed(str(exc))
             return
+        # Handle phone verification landing page
+        try:
+            veri = browser.find_element(By.XPATH, value='//*[@id="productCheckoutChallenge"]/form/div[1]').text
+            if veri.lower() == "phone verification":
+                prRed("[REDEEM] Phone verification required!")
+                LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Phone verification required!'
+                updateLogs()
+                cleanLogs()
+                return
+        except NoSuchElementException as e:
+            prRed(str(e))
+        finally:
+            time.sleep(random.uniform(2, 4))
+        try:
+            error = browser.find_element(By.XPATH, value='//*[@id="productCheckoutError"]/div/div[1]').text
+            if "issue with your account or order" in error.lower():
+                message = f"\n[REDEEM] {CURRENT_ACCOUNT} has encountered the following message while attempting to auto-redeem rewards:\n{error}\nUnfortunately, this likely means this account has been shadow-banned. You may test your luck and contact support or just close the account and try again on another account."
+                prRed(message)
+                LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Account banned!'
+                updateLogs()
+                cleanLogs()
+                return
+        except NoSuchElementException as exc:
+            prRed(str(exc))
+        prGreen(f"[REDEEM] {CURRENT_ACCOUNT} card redeemed!")
+        LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Redeemed!'
+        updateLogs()
+        cleanLogs()
+        global auto_redeem_counter  # pylint: disable=global-statement
+        auto_redeem_counter += 1
+    except NoSuchElementException as exc:
+        prRed("[REDEEM] Ran into an exception trying to redeem!")
+        prRed(str(exc))
+        return
 
 
 def prRed(prt):
@@ -1853,6 +1856,7 @@ def tkinter_calculator():
                 return False
 
         if not value == "":
+            # the above if statement is required otherwise it will return an error when clicking backspace
             if (int(value) > 99) or (int(value) <= 0):
                 return False
 
@@ -1998,7 +2002,6 @@ def farmer():
                         goal = ''
                     if goal != '':
                         # Goal needs to be updated
-                        from main import setRedeemGoal
                         setRedeemGoal(browser, goal)
                         redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
 
