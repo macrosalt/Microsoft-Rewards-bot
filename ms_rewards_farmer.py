@@ -1856,7 +1856,8 @@ def tkinter_calculator():
                 return False
 
         if not value == "":
-            # the above if statement is required otherwise it will return an error when clicking backspace
+            # the above if statement is required
+            # otherwise it will return an error when clicking backspace
             if (int(value) > 99) or (int(value) <= 0):
                 return False
 
