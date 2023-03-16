@@ -50,6 +50,10 @@ FAST = False  # When this variable set True then all possible delays reduced.
 SUPER_FAST = False  # fast but super
 BASE_URL = "https://rewards.bing.com"
 
+# Auto Redeem - Define max amount of auto-redeems per run and counter
+MAX_REDEEMS = 1
+auto_redeem_counter = 0
+
 
 def isProxyWorking(proxy: str) -> bool:
     """Check if proxy is working or not"""
@@ -1391,14 +1395,16 @@ def argumentParser():
                         metavar='<HH:MM>',
                         help='Start the script at the specified time in 24h format (HH:MM).',
                         nargs=1,
-                        type=isValidTime,
-                        )
+                        type=isValidTime)
     parser.add_argument("--on-finish",
                         help="Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit",
                         choices=["shutdown", "sleep", "hibernate", "exit"],
                         required=False,
-                        metavar="ACTION"
-                        )
+                        metavar="ACTION")
+    parser.add_argument("--redeem",
+                        help="[Optional] Enable auto-redeem rewards based on accounts.json goals.",
+                        action="store_true",
+                        required=False)
     parser.add_argument("--calculator",
                         help="MS Rewards Calculator",
                         action='store_true',
@@ -1540,7 +1546,9 @@ def createMessage():
             redeem_title = value[1].get("Redeem goal title", None)
             redeem_price = value[1].get("Redeem goal price")
             redeem_count = value[1]["Points"] // redeem_price
-            if redeem_count > 1:
+            if value[1]['Auto redeem']:
+                redeem_message = f"🎁 Auto redeem: {value[1]['Auto redeem']} {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
+            elif redeem_count > 1:
                 redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
             else:
                 redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points\n\n"
@@ -1608,6 +1616,170 @@ def sendToDiscord(message):
         prRed("[ERROR] Could not send report to Discord.\n")
 
 
+def setRedeemGoal(browser: WebDriver, goal: str):
+    """Sets current account's goal for redeeming.
+    @param browser - Selenium instance of the web browser.
+    @param goal - Name of the goal to use."""
+    print("[GOAL SETTER] Setting new account goal...")
+
+    goal = goal.lower()
+    browser.get("https://rewards.microsoft.com/")
+    try:
+        goal_name = browser.find_element(
+            By.XPATH,
+            value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/h3",
+        )
+
+        goal_progress = browser.find_element(
+            By.XPATH,
+            value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/p",
+        )
+
+        # If goal is not set or is not the specified one, then set/change it
+        if "/" not in goal_progress.text.lower() or goal not in goal_name.text.lower():
+            # If we need to change it, it is mandatory to refresh the set goal button
+            if "/" in goal_progress.text.lower() and goal not in goal_name.text.lower():
+                # Check if unspecified goal has reached 100%
+                goal_progress = (
+                    browser.find_element(
+                        By.XPATH,
+                        value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/p",
+                    )
+                    .text.replace(" ", "")
+                    .split("/")
+                )
+                points = int(goal_progress[0].replace(",", ""))
+                total = int(goal_progress[1].replace(",", ""))
+
+                if points == total:
+                    # Choose remove goal element instead of redeem now
+                    element = browser.find_element(
+                        By.XPATH,
+                        value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[2]/span/ng-transclude",
+                    )
+                else:
+                    element = browser.find_element(
+                        By.XPATH,
+                        value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a/span/ng-transclude",
+                    )
+
+                element.click()
+                time.sleep(3)
+                element = browser.find_element(
+                    By.XPATH,
+                    value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a/span/ng-transclude",
+                )
+            else:
+                element = browser.find_element(
+                    By.XPATH,
+                    value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a/span/ng-transclude",
+                )
+            element.click()
+            time.sleep(3)
+            elements = browser.find_elements(By.CLASS_NAME, "c-image")
+            goal_found = False
+            for elem in elements:
+                if goal in elem.get_attribute("alt").lower():
+                    elem.click()
+                    goal_found = True
+                    break
+
+            if not goal_found:
+                prRed(
+                    "[GOAL SETTER] Specified goal not found! Search for any typos..."
+                )
+            else:
+                prGreen("[GOAL SETTER] New account goal set successfully!")
+
+    except NoSuchElementException as e:
+        prRed("[GOAL SETTER] Ran into an exception trying to redeem!")
+        prRed(str(e))
+        return
+    finally:
+        browser.get("https://rewards.microsoft.com/")
+
+
+def redeemGoal(browser: WebDriver):
+        """Automatically redeems current account's goal.
+        @param browser - Selenium instance of the web browser."""
+        try:
+            try:
+                browser.find_element(
+                    By.XPATH,
+                    value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]/span/ng-transclude",
+                ).click()
+                time.sleep(random.uniform(5, 7))
+            except NoSuchElementException:
+                browser.find_element(
+                    By.XPATH,
+                    value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
+                ).click()
+                time.sleep(random.uniform(5, 7))
+            try:
+                url = browser.current_url
+                url = url.split("/")
+                id = url[-1]
+                try:
+                    browser.find_element(
+                        By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]'
+                    ).click()
+                    time.sleep(random.uniform(5, 7))
+                except NoSuchElementException:
+                    browser.find_element(
+                        By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]/span[1]'
+                    ).click()
+                # If a cookie consent container is present, we need to accept
+                # those cookies to be able to redeem the reward
+                if browser.find_elements(By.ID, value="wcpConsentBannerCtrl"):
+                    browser.find_element(By.XPATH, value="/html/body/div[3]/div/div[2]/button[1]").click()
+                    time.sleep(random.uniform(2, 4))
+                try:
+                    browser.find_element(By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]').click()
+                    time.sleep(random.uniform(2, 4))
+                except NoSuchElementException:
+                    browser.find_element(By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]/span[1]').click()
+            except NoSuchElementException as exc:
+                browser.get("https://rewards.microsoft.com/")
+                prRed("[REDEEM] Ran into an exception trying to redeem!")
+                prRed(str(exc))
+                return
+            # Handle phone verification landing page
+            try:
+                veri = browser.find_element(By.XPATH, value='//*[@id="productCheckoutChallenge"]/form/div[1]').text
+                if veri.lower() == "phone verification":
+                    prRed("[REDEEM] Phone verification required!")
+                    LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Phone verification required!'
+                    updateLogs()
+                    cleanLogs()
+                    return
+            except NoSuchElementException as e:
+                prRed(str(e))
+            finally:
+                time.sleep(random.uniform(2, 4))
+            try:
+                error = browser.find_element(By.XPATH, value='//*[@id="productCheckoutError"]/div/div[1]').text
+                if "issue with your account or order" in error.lower():
+                    message = f"\n[REDEEM] {CURRENT_ACCOUNT} has encountered the following message while attempting to auto-redeem rewards:\n{error}\nUnfortunately, this likely means this account has been shadow-banned. You may test your luck and contact support or just close the account and try again on another account."
+                    prRed(message)
+                    LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Account banned!'
+                    updateLogs()
+                    cleanLogs()
+                    return
+            except NoSuchElementException as exc:
+                prRed(str(exc))
+
+            prGreen(f"[REDEEM] {CURRENT_ACCOUNT} card redeemed!")
+            LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Redeemed!'
+            updateLogs()
+            cleanLogs()
+            global auto_redeem_counter  # pylint: disable=global-statement
+            auto_redeem_counter += 1
+        except NoSuchElementException as exc:
+            prRed("[REDEEM] Ran into an exception trying to redeem!")
+            prRed(str(exc))
+            return
+
+
 def prRed(prt):
     print(f"\033[91m{prt}\033[00m")
 
@@ -1661,7 +1833,7 @@ def tkinter_calculator():
 
     def validate_float_input(value):
         """validate input if it is float"""
-        for i in enumerate(value):
+        for i, _ in enumerate(value):
             if value[i] not in '0123456789.':
                 return False
 
@@ -1676,12 +1848,13 @@ def tkinter_calculator():
 
     def validate_numeric_input(value):
         """validate input if it is integer"""
-        for i in enumerate(value):
+        for i, _ in enumerate(value):
             if value[i] not in '0123456789':
                 return False
 
-        if not value == "" and (int(value) > 100) or (int(value) <= 0):
-            return False
+        if not value == "":
+            if (int(value) > 99) or (int(value) <= 0):
+                return False
 
         return True
 
@@ -1770,6 +1943,7 @@ def tkinter_calculator():
 
     window.mainloop()
 
+
 try:
     account_path = Path(__file__).parent / 'accounts.json'
     ACCOUNTS = json.load(open(account_path, "r"))
@@ -1807,6 +1981,27 @@ def farmer():
                 browser.get(BASE_URL)
                 waitUntilVisible(browser, By.ID, 'app-host', 30)
                 redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
+
+                # Update goal if it is not the required one for auto-redeem
+                if ARGS.redeem:
+                    if 'goal' in account and not account['goal'].lower() in redeem_goal_title:
+                        # Account goal does not match its json goal
+                        goal = account["goal"].lower()
+                    elif 'Amazon' not in redeem_goal_title:
+                        # Account goal needs to have the defaut goal
+                        print(
+                            '[REEDEM] Goal has not been defined for this account, defaulting to Amazon Giftcard...'
+                        )
+                        goal = "amazon"
+                    else:
+                        # Goal is ok for this account
+                        goal = ''
+                    if goal != '':
+                        # Goal needs to be updated
+                        from main import setRedeemGoal
+                        setRedeemGoal(browser, goal)
+                        redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
+
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     completeDailySet(browser)
                 if not LOGS[CURRENT_ACCOUNT]['Punch cards']:
