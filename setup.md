@@ -13,8 +13,8 @@ On Windows, in file explorer click on the address bar, type "**wt**" into the fi
 ```
 pip install -r requirements.txt
 ren accounts.json.sample accounts.json
-echo "py .\ms_rewards_farmer.py" > manual_run.bat
-echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday" > run_at_6.30am_daily.bat
+echo "py .\ms_rewards_farmer.py --redeem" > manual_run.bat
+echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem" > run_at_6.30am_daily.bat
 echo "py .\ms_rewards_farmer.py --calculator" > calculator.bat
 ```
 ## Adding Accounts
@@ -23,11 +23,13 @@ To add/edit accounts open **accounts.json** and change the sample email and pass
 [
   {
     "username": "email1@gmail.com",
-    "password": "password1"
+    "password": "password1",
+    "goal": ""
   },
   {
     "username": "email2@gmail.com",
-    "password": "password2"
+    "password": "password2",
+    "goal": ""
   }
  ]
  ```
