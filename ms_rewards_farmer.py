@@ -2045,6 +2045,15 @@ def farmer():
 
             if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
                 prGreen(f"[POINTS] Account ready to redeem {redeem_goal_title} for {redeem_goal_price} points.")
+                if ARGS.redeem and auto_redeem_counter < MAX_REDEEMS:
+                    # Start auto-redeem process
+                    browser = browserSetup(False, PC_USER_AGENT, account.get('proxy', None))
+                    print('[LOGIN]', 'Logging-in...')
+                    login(browser, account['username'], account['password'])
+                    prGreen('[LOGIN] Logged-in successfully !')
+                    browser.get(BASE_URL)
+                    waitUntilVisible(browser, By.ID, 'app-host', 30)
+                    redeemGoal(browser)
                 if ARGS.telegram or ARGS.discord:
                     LOGS[CURRENT_ACCOUNT]["Redeem goal title"] = redeem_goal_title
                     LOGS[CURRENT_ACCOUNT]["Redeem goal price"] = redeem_goal_price
