@@ -1710,7 +1710,7 @@ def redeemGoal(browser: WebDriver):
         try:
             browser.find_element(
                 By.XPATH,
-                value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]/span/ng-transclude",
+                value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
             ).click()
             time.sleep(random.uniform(5, 7))
         except NoSuchElementException:
@@ -1719,6 +1719,7 @@ def redeemGoal(browser: WebDriver):
                 value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
             ).click()
             time.sleep(random.uniform(5, 7))
+
         try:
             url = browser.current_url
             url = url.split("/")
@@ -1756,8 +1757,8 @@ def redeemGoal(browser: WebDriver):
                 updateLogs()
                 cleanLogs()
                 return
-        except NoSuchElementException as e:
-            prRed(str(e))
+        except NoSuchElementException:
+            pass
         finally:
             time.sleep(random.uniform(2, 4))
         try:
@@ -1770,7 +1771,7 @@ def redeemGoal(browser: WebDriver):
                 cleanLogs()
                 return
         except NoSuchElementException as exc:
-            prRed(str(exc))
+            pass
         prGreen(f"[REDEEM] {CURRENT_ACCOUNT} card redeemed!")
         LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Redeemed!'
         updateLogs()
@@ -1993,9 +1994,9 @@ def farmer():
                         # Account goal does not match its json goal
                         goal = account["goal"].lower()
                     elif 'Amazon' not in redeem_goal_title:
-                        # Account goal needs to have the defaut goal
+                        # Account goal needs to have the default goal
                         print(
-                            '[REEDEM] Goal has not been defined for this account, defaulting to Amazon Giftcard...'
+                            '[REDEEM] Goal has not been defined for this account, defaulting to Amazon gift card...'
                         )
                         goal = "amazon"
                     else:
@@ -2050,7 +2051,7 @@ def farmer():
                     browser = browserSetup(False, PC_USER_AGENT, account.get('proxy', None))
                     print('[LOGIN]', 'Logging-in...')
                     login(browser, account['username'], account['password'])
-                    prGreen('[LOGIN] Logged-in successfully !')
+                    prGreen('[LOGIN] Logged-in successfully!')
                     browser.get(BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
                     redeemGoal(browser)
