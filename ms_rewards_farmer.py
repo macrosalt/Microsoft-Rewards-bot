@@ -1770,7 +1770,7 @@ def redeemGoal(browser: WebDriver):
                 updateLogs()
                 cleanLogs()
                 return
-        except NoSuchElementException as exc:
+        except NoSuchElementException:
             pass
         prGreen(f"[REDEEM] {CURRENT_ACCOUNT} card redeemed!")
         LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Redeemed!'
