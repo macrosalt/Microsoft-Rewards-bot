@@ -1443,6 +1443,7 @@ def checkInternetConnection():
 def createMessage():
     today = date.today().strftime("%d/%m/%Y")
     total_earned = 0
+    total_overall = 0
     message = f'📅 Daily report {today}\n\n'
     for index, value in enumerate(LOGS.items(), 1):
         redeem_message = None
@@ -1459,6 +1460,7 @@ def createMessage():
             new_points = value[1]["Today's points"]
             total_earned += new_points
             total_points = value[1]["Points"]
+            total_overall += total_points
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
             if redeem_message:
                 message += redeem_message
@@ -1474,19 +1476,21 @@ def createMessage():
             status = '⚠️ Unusual activity detected'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Unknown error !':
-            status = '⛔️ Unknow error occured'
+            status = '⛔️ Unknown error occurred'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
             status = f'Farmed on {value[1]["Last check"]}'
             new_points = value[1]["Today's points"]
             total_earned += new_points
             total_points = value[1]["Points"]
+            total_overall += total_points
             message += f"{index}. {value[0]}\n📝 Status: {status}\n⭐️ Earned points: {new_points}\n🏅 Total points: {total_points}\n"
             if redeem_message:
                 message += redeem_message
             else:
                 message += "\n"
     message += f"💵 Total earned points: {total_earned} (${total_earned/1300:0.02f}) (€{total_earned/1500:0.02f})"
+    message += f"\n💵 Total points overall: {total_overall} (${total_overall/1300:0.02f}) (€{total_overall/1500:0.02f})"
     return message
 
 def sendReportToMessenger(message):
