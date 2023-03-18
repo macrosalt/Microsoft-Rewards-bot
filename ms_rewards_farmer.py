@@ -65,7 +65,7 @@ def isProxyWorking(proxy: str) -> bool:
 
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
-    # Create Chrome browser
+    """Create Chrome browser"""
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
     if ARGS.edge:
@@ -113,7 +113,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
-    # Close welcome tab for new sessions
+    """Close welcome tab for new sessions"""
     if ARGS.session:
         time.sleep(2)
         if len(browser.window_handles) > 1:
@@ -267,7 +267,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
 
 
 def RewardsLogin(browser: WebDriver):
-    # Login into Rewards
+    """Login into Rewards"""
     browser.get(BASE_URL)
     try:
         time.sleep(10 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
@@ -305,6 +305,7 @@ def RewardsLogin(browser: WebDriver):
 
 @func_set_timeout(300)
 def checkBingLogin(browser: WebDriver, isMobile: bool = False):
+    """Check if logged in to Bing"""
     global POINTS_COUNTER  # pylint: disable=global-statement
     # Access Bing.com
     browser.get('https://bing.com/')
@@ -416,14 +417,17 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
 
 
 def waitUntilVisible(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
+    """Wait until visible"""
     WebDriverWait(browser, time_to_wait).until(ec.visibility_of_element_located((by_, selector)))
 
 
 def waitUntilClickable(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
+    """Wait until clickable"""
     WebDriverWait(browser, time_to_wait).until(ec.element_to_be_clickable((by_, selector)))
 
 
 def waitUntilQuestionRefresh(browser: WebDriver):
+    """Wait until question refresh"""
     tries = 0
     refreshCount = 0
     while True:
@@ -445,6 +449,7 @@ def waitUntilQuestionRefresh(browser: WebDriver):
 
 
 def waitUntilQuizLoads(browser: WebDriver):
+    """Wait until quiz loads"""
     tries = 0
     refreshCount = 0
     while True:
@@ -466,6 +471,7 @@ def waitUntilQuizLoads(browser: WebDriver):
 
 
 def findBetween(s: str, first: str, last: str) -> str:
+    """Find between"""
     try:
         start = s.index(first) + len(first)
         end = s.index(last, start)
@@ -475,18 +481,20 @@ def findBetween(s: str, first: str, last: str) -> str:
 
 
 def getCCodeLangAndOffset() -> tuple:
+    """Get lang, geo, time zone"""
     try:
         nfo = ipapi.location()
         lang = nfo['languages'].split(',')[0]
         geo = nfo['country']
         tz = str(round(int(nfo['utc_offset']) / 100 * 60))
-        return (lang, geo, tz)
-    # Due to limits that ipapi has some times it returns error so I put US and English as default, you may change it at whatever you need.
+        return lang, geo, tz
+    # Due to ipapi limitations it will default to US
     except:
-        return ('en-US', 'US', '-480')
+        return 'en-US', 'US', '-480'
 
 
 def getGoogleTrends(numberOfwords: int) -> list:
+    """Get trends"""
     search_terms = []
     i = 0
     while len(search_terms) < numberOfwords:
@@ -504,6 +512,7 @@ def getGoogleTrends(numberOfwords: int) -> list:
 
 
 def getRelatedTerms(word: str) -> list:
+    """Get related terms"""
     try:
         r = requests.get('https://api.bing.com/osjson.aspx?query=' + word, headers={'User-agent': PC_USER_AGENT})
         return r.json()[1]
@@ -512,6 +521,7 @@ def getRelatedTerms(word: str) -> list:
 
 
 def resetTabs(browser: WebDriver):
+    """Reset tabs"""
     try:
         curr = browser.current_window_handle
 
@@ -532,14 +542,16 @@ def resetTabs(browser: WebDriver):
 
 
 def getAnswerCode(key: str, string: str) -> str:
+    """Get answer code"""
     t = 0
-    for i in enumerate(string):
+    for i, _ in enumerate(string):
         t += ord(string[i])
     t += int(key[-2:], 16)
     return str(t)
 
 
 def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = False):
+    """Search Bing"""
     global POINTS_COUNTER  # pylint: disable=global-statement
     i = 0
     r = RandomWords()
@@ -576,6 +588,7 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
 
 
 def bingSearch(browser: WebDriver, word: str, isMobile: bool):
+    """Bing search"""
     try:
         if not isMobile:
             browser.find_element(By.ID, 'sb_form_q').clear()
@@ -622,6 +635,7 @@ def bingSearch(browser: WebDriver, word: str, isMobile: bool):
 
 
 def completePromotionalItems(browser: WebDriver):
+    """Complete promotional items"""
     try:
         item = getDashboardData(browser)["promotionalItem"]
         if (item["pointProgressMax"] == 100 or item["pointProgressMax"] == 200) and item["complete"] is False and item["destinationUrl"] == BASE_URL:
@@ -638,6 +652,7 @@ def completePromotionalItems(browser: WebDriver):
 
 
 def completeDailySetSearch(browser: WebDriver, cardNumber: int):
+    """Complete daily set search"""
     time.sleep(5)
     browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
@@ -650,6 +665,7 @@ def completeDailySetSearch(browser: WebDriver, cardNumber: int):
 
 
 def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
+    """Complete daily set survey"""
     time.sleep(5)
     browser.find_element(By.XPATH, f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
     time.sleep(1)
@@ -672,6 +688,7 @@ def completeDailySetSurvey(browser: WebDriver, cardNumber: int):
 
 
 def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
+    """Complete daily set quiz"""
     time.sleep(5)
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[{str(cardNumber)}]/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
@@ -729,6 +746,7 @@ def completeDailySetQuiz(browser: WebDriver, cardNumber: int):
 
 
 def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
+    """Complete daily set variable activity"""
     time.sleep(2)
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
@@ -783,6 +801,7 @@ def completeDailySetVariableActivity(browser: WebDriver, cardNumber: int):
 
 
 def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
+    """Complete daily set this or that"""
     time.sleep(2)
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
@@ -832,6 +851,7 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
 
 
 def getDashboardData(browser: WebDriver) -> dict:
+    """Get dashboard data"""
     dashboard = findBetween(browser.find_element(By.XPATH, '/html/body').get_attribute('innerHTML'), "var dashboard = ",
                             ";\n        appDataModule.constant(\"prefetchedDashboard\", dashboard);")
     dashboard = json.loads(dashboard)
@@ -839,6 +859,7 @@ def getDashboardData(browser: WebDriver) -> dict:
 
 
 def completeDailySet(browser: WebDriver):
+    """Complete daily set"""
     print('[DAILY SET]', 'Trying to complete the Daily Set...')
     d = getDashboardData(browser)
     error = False
@@ -887,10 +908,12 @@ def completeDailySet(browser: WebDriver):
 
 
 def getAccountPoints(browser: WebDriver) -> int:
+    """Get account points"""
     return getDashboardData(browser)['userStatus']['availablePoints']
 
 
 def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
+    """complete punch card"""
     browser.get(url)
     for child in childPromotions:
         if not child['complete']:
@@ -955,6 +978,7 @@ def completePunchCard(browser: WebDriver, url: str, childPromotions: dict):
 
 
 def completePunchCards(browser: WebDriver):
+    """Complete punch cards"""
     print('[PUNCH CARDS]', 'Trying to complete the Punch Cards...')
     punchCards = getDashboardData(browser)['punchCards']
     for punchCard in punchCards:
@@ -983,6 +1007,7 @@ def completePunchCards(browser: WebDriver):
 
 
 def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
+    """Complete more promotion search"""
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
@@ -995,6 +1020,7 @@ def completeMorePromotionSearch(browser: WebDriver, cardNumber: int):
 
 
 def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
+    """Complete more promotion quiz"""
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
@@ -1042,6 +1068,7 @@ def completeMorePromotionQuiz(browser: WebDriver, cardNumber: int):
 
 
 def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
+    """Complete more promotion ABC"""
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
@@ -1061,6 +1088,7 @@ def completeMorePromotionABC(browser: WebDriver, cardNumber: int):
 
 
 def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
+    """Complete more promotion this or that"""
     browser.find_element(By.XPATH,
                          f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
     time.sleep(1)
@@ -1104,6 +1132,7 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
 
 
 def completeMorePromotions(browser: WebDriver):
+    """Complete more promotions"""
     print('[MORE PROMO]', 'Trying to complete More Promotions...')
     morePromotions = getDashboardData(browser)['morePromotions']
     i = 0
@@ -1151,11 +1180,12 @@ def completeMSNShoppingGame(browser: WebDriver):
         return shadow_root
 
     def getChildren(element) -> List[WebElement]:
+        """get children"""
         children = browser.execute_script('return arguments[0].children', element)
         return children
 
     def getSignInButton() -> WebElement:
-        """check wheather user is signed in or not and return the button to sign in"""
+        """check whether user is signed in or not and return the button to sign in"""
         script_to_user_pref_container = 'document.getElementsByTagName("shopping-page-base")[0]\
             .shadowRoot.children[0].children[1].children[0]\
             .shadowRoot.children[0].shadowRoot.children[0]\
@@ -1175,6 +1205,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         return button
 
     def signIn() -> None:
+        """sign in"""
         sign_in_button = getSignInButton()
         sign_in_button.click()
         print("[MSN GAME] Signing in...")
@@ -1186,6 +1217,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         getSignInButton()
 
     def getGamingCard() -> Union[WebElement, bool]:
+        """get gaming card"""
         shopping_page_base_childs = expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         shopping_homepage = shopping_page_base_childs.find_element(By.TAG_NAME, 'shopping-homepage')
         msft_feed_layout = expandShadowElement(shopping_homepage, 0).find_element(By.TAG_NAME, 'msft-feed-layout')
@@ -1197,6 +1229,7 @@ def completeMSNShoppingGame(browser: WebDriver):
             return False
 
     def clickCorrectAnswer() -> None:
+        """click correct answer"""
         options_container = expandShadowElement(gaming_card, 1)
         options_elements = getChildren(getChildren(options_container)[1])
         # click on the correct answer in options_elements
@@ -1210,6 +1243,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         select_button.click()
 
     def clickPlayAgain() -> None:
+        """click play again"""
         time.sleep(random.randint(4, 6))
         options_container = expandShadowElement(gaming_card)[1]
         getChildren(options_container)[0].find_element(By.TAG_NAME, 'button').click()
@@ -1268,6 +1302,7 @@ def completeMSNShoppingGame(browser: WebDriver):
 
 
 def getRemainingSearches(browser: WebDriver):
+    """get remaining searches"""
     dashboard = getDashboardData(browser)
     searchPoints = 1
     counters = dashboard['userStatus']['counters']
@@ -1297,6 +1332,7 @@ def getRemainingSearches(browser: WebDriver):
 
 
 def getRedeemGoal(browser: WebDriver):
+    """get redeem goal"""
     user_status = getDashboardData(browser)["userStatus"]
     return (user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"])
 
@@ -1489,6 +1525,7 @@ def logs():
 
 
 def updateLogs():
+    """update logs"""
     _logs = copy.deepcopy(LOGS)
     for account in _logs:
         if account == "Elapsed time":
@@ -1500,6 +1537,7 @@ def updateLogs():
 
 
 def cleanLogs():
+    """clean logs"""
     LOGS[CURRENT_ACCOUNT].pop("Daily", None)
     LOGS[CURRENT_ACCOUNT].pop("Punch cards", None)
     LOGS[CURRENT_ACCOUNT].pop("More promotions", None)
@@ -1508,6 +1546,7 @@ def cleanLogs():
 
 
 def finishedAccount():
+    """terminal print when account finished"""
     New_points = POINTS_COUNTER - STARTING_POINTS
     prGreen('[POINTS] You have earned ' + str(New_points) + ' points today !')
     prGreen('[POINTS] You are now at ' + str(POINTS_COUNTER) + ' points !\n')
@@ -1521,6 +1560,7 @@ def finishedAccount():
 
 
 def checkInternetConnection():
+    """Check if you're connected to the inter-web superhighway"""
     system = platform.system()
     while True:
         try:
@@ -1537,6 +1577,7 @@ def checkInternetConnection():
 
 
 def createMessage():
+    """Create message"""
     today = date.today().strftime("%d/%m/%Y")
     total_earned = 0
     message = f'📅 Daily report {today}\n\n'
@@ -1589,6 +1630,7 @@ def createMessage():
 
 
 def sendReportToMessenger(message):
+    """send report to messenger"""
     if ARGS.telegram:
         sendToTelegram(message)
     if ARGS.discord:
@@ -1596,11 +1638,13 @@ def sendReportToMessenger(message):
 
 
 def sendToTelegram(message):
+    """send to telegram"""
     t = get_notifier('telegram')
     t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
 
 
 def sendToDiscord(message):
+    """send to discord"""
     webhook_url = ARGS.discord[0]
     if len(message) > 2000:
         messages = [message[i:i + 2000] for i in range(0, len(message), 2000)]
@@ -1785,26 +1829,32 @@ def redeemGoal(browser: WebDriver):
 
 
 def prRed(prt):
+    """colour print"""
     print(f"\033[91m{prt}\033[00m")
 
 
 def prGreen(prt):
+    """colour print"""
     print(f"\033[92m{prt}\033[00m")
 
 
 def prYellow(prt):
+    """colour print"""
     print(f"\033[93m{prt}\033[00m")
 
 
 def prBlue(prt):
+    """colour print"""
     print(f"\033[94m{prt}\033[00m")
 
 
 def prPurple(prt):
+    """colour print"""
     print(f"\033[95m{prt}\033[00m")
 
 
 def logo():
+    """logo"""
     prRed("""
     ███╗   ███╗███████╗    ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗██████╗ 
     ████╗ ████║██╔════╝    ██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗
@@ -2097,6 +2147,7 @@ def farmer():
 
 
 def main():
+    """main"""
     global LANG, GEO, TZ, ARGS  # pylint: disable=global-statement
     if not platform.system() == "Linux":
         # show colors in terminal
