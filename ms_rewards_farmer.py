@@ -12,6 +12,7 @@ from datetime import date, datetime, timedelta
 from notifiers import get_notifier
 from typing import Union, List
 import copy
+import traceback
 
 import ipapi
 import requests
@@ -1711,5 +1712,6 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
+        traceback.print_exc()
         prRed(str(e))
-        input("press enter to close...")
+        input("press Enter to close...")
