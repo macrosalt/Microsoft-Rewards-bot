@@ -1613,7 +1613,7 @@ def createMessage():
             status = '⚠️ Unusual activity detected'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Unknown error !':
-            status = '⛔️ Unknow error occured'
+            status = '⛔️ Unknown error occured'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
             status = f'Farmed on {value[1]["Last check"]}'
@@ -1625,7 +1625,10 @@ def createMessage():
                 message += redeem_message
             else:
                 message += "\n"
-    message += f"💵 Total earned points: {total_earned} (${total_earned / 1300:0.02f}) (€{total_earned / 1500:0.02f})"
+    message += f"💵 Total earned points: {total_earned} " \
+               f"(${total_earned / 1300:0.02f}) " \
+               f"(€{total_earned / 1500:0.02f}) " \
+               f"(AU${total_earned / 1350:0.02f})"
     return message
 
 
@@ -1869,12 +1872,11 @@ def tkinter_calculator():
     """Rewards Calculator GUI"""
     microsoft = 4750  # price of microsoft/xbox gift cards
     non_microsoft = 6750  # price of 3rd party gift cards
-    points = 242  # estimated daily points (in australia: 242)
 
     # Create a new Tkinter window
     window = tk.Tk()
     window.title("RewardStimator - Microsoft Rewards Bot Estimator")
-    window.geometry("500x250")
+    window.geometry("500x280")
     window.resizable(False, False)
 
     # Add a title label
@@ -1941,16 +1943,25 @@ def tkinter_calculator():
     balance_entry.grid(row=2, column=1, padx=5, pady=5)
     balance_entry.configure(validatecommand=(balance_entry.register(validate_float_input), '%P'))
 
+    # Add a label for the daily points field
+    daily_points_label = ttk.Label(form_frame, text="Estimated daily points:")
+    daily_points_label.grid(row=3, column=0, padx=5, pady=5, sticky="w")
+
+    # Estimated daily points
+    estimated_daily_points = ttk.Entry(form_frame, width=20, validate="key")
+    estimated_daily_points.grid(row=3, column=1, padx=5, pady=5)
+    estimated_daily_points.configure(validatecommand=(estimated_daily_points.register(validate_float_input), '%P'))
+
     # Add a label for the associated field
     associated_label = ttk.Label(form_frame, text="Microsoft Associated Gift Card:")
-    associated_label.grid(row=3, column=0, padx=5, pady=5, sticky="w")
+    associated_label.grid(row=4, column=0, padx=5, pady=5, sticky="w")
 
     # Add radio buttons for the associated field
     associated_var = tk.BooleanVar()
     yes_radio = ttk.Radiobutton(form_frame, text="Yes", variable=associated_var, value=True)
     no_radio = ttk.Radiobutton(form_frame, text="No", variable=associated_var, value=False)
-    yes_radio.grid(row=3, column=1, padx=5, pady=0, sticky="w")
-    no_radio.grid(row=3, column=1, padx=5, pady=0, sticky="e")
+    yes_radio.grid(row=4, column=1, padx=5, pady=0, sticky="w")
+    no_radio.grid(row=4, column=1, padx=5, pady=0, sticky="e")
 
     # Function to submit the form
     def submit():
@@ -1958,6 +1969,7 @@ def tkinter_calculator():
         price = price_entry.get()
         accounts = accounts_entry.get()
         balance = balance_entry.get()
+        daily_points = estimated_daily_points.get()
         associated = associated_var.get()
 
         # Validate form data
@@ -1969,6 +1981,7 @@ def tkinter_calculator():
             price = float(price)
             accounts = int(accounts)
             balance = float(balance) if balance != "" else 0
+            daily_points = float(estimated_daily_points.get())
         except ValueError:
             messagebox.showerror("Critical Error, now closing...")
             sys.exit("Error (ValueError)")
@@ -1977,7 +1990,7 @@ def tkinter_calculator():
         cards_required = ceil((price - balance) / 5)
         cr_per_acc = ceil(cards_required / accounts)  # cards per account
         excess = (cr_per_acc * accounts * 5) - price + balance
-        elapsed_time = ceil(((microsoft if associated else non_microsoft) / points) * cr_per_acc)
+        elapsed_time = ceil(((microsoft if associated else non_microsoft) / daily_points) * cr_per_acc)
 
         if cards_required <= 0:
             messagebox.showerror("Error", "Current balance is higher or equal to price.")
