@@ -2210,7 +2210,10 @@ def main():
     if ARGS.on_finish:
         plat = platform.system()
         if ARGS.on_finish == "shutdown":
-            os.system("shutdown /s /t 10")
+            if plat == "Windows":
+                os.system("shutdown /s /t 10")
+            elif plat == "Linux":
+                os.system("systemctl poweroff")
         elif ARGS.on_finish == "sleep":
             if plat == "Windows":
                 os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
