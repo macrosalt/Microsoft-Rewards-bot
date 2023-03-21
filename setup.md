@@ -13,8 +13,9 @@ On Windows, in file explorer click on the address bar, type "**wt**" into the fi
 ```
 pip install -r requirements.txt
 ren accounts.json.sample accounts.json
-echo "py .\ms_rewards_farmer.py" > manual_run.bat
-echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday" > run_at_6.30am_daily.bat
+echo "py .\ms_rewards_farmer.py --redeem" > manual_run.bat
+echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem" > run_at_6.30am_daily.bat
+echo "py .\ms_rewards_farmer.py --calculator" > calculator.bat
 ```
 ## Adding Accounts
 To add/edit accounts open **accounts.json** and change the sample email and password to add more accounts simply follow the following:
@@ -22,14 +23,16 @@ To add/edit accounts open **accounts.json** and change the sample email and pass
 [
   {
     "username": "email1@gmail.com",
-    "password": "password1"
+    "password": "password1",
+    "goal": ""
   },
   {
     "username": "email2@gmail.com",
-    "password": "password2"
+    "password": "password2",
+    "goal": ""
   }
  ]
  ```
 **Make sure when adding more accounts you add a comma after the curly bracket.**
 ## Running the script
-Finally! You've reached the point where we are ready to run the script. Simply in the folder where your bot is located, double click **manual_run.bat**. To keep it running daily just double click **run_at_6.30am_daily.bat** and make sure not to close terminal. Enjoy!
+Finally! You've reached the point where we are ready to run the script. Simply in the folder where your bot is located, double click **manual_run.bat**. To keep it running daily just double click **run_at_6.30am_daily.bat** and make sure not to close terminal. To use microsoft rewards calculator open **calculator.bat** Enjoy!
