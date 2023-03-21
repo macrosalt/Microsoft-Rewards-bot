@@ -10,7 +10,7 @@ import urllib.parse
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Literal
 import copy
 import traceback
 
@@ -156,6 +156,34 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             updateLogs()
             cleanLogs()
             raise Exception(prRed('[ERROR] Your account has been locked !'))
+        elif browser.title == "Help us protect your account" or browser.current_url.startswith("https://account.live.com/proofs/Add"):
+            prYellow('[ERROR] Unusual activity detected !')
+            if isElementExists("iShowSkip") and ARGS.skip_unusual:
+                try:
+                    waitUntilClickable(browser, By.ID, "iShowSkip")
+                    browser.find_element(By.ID, "iShowSkip").click()
+                except:
+                    LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+                    FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                    updateLogs()
+                    cleanLogs()
+                    raise Exception("[ERROR] Unusual activity detected !")
+                else:
+                    prGreen('[LOGIN] Account already logged in !')
+                    RewardsLogin(browser)
+                    print('[LOGIN]', 'Ensuring login on Bing...')
+                    checkBingLogin(browser, isMobile)
+                    return
+            else:
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                updateLogs()
+                cleanLogs()
+                if ARGS.telegram or ARGS.discord:
+                    message = createMessage()
+                    sendReportToMessenger(message)
+                input('Press any key to close...')
+                os._exit(0)
         elif isElementExists(browser, By.ID, 'mectrl_headerPicture') or 'Sign In or Create' in browser.title:
             if isElementExists(browser, By.ID, 'i0118'):
                 browser.find_element(By.ID, "i0118").send_keys(pwd)
@@ -223,17 +251,34 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             updateLogs()
             cleanLogs()
             raise Exception(prRed('[ERROR] Your account has been locked !'))
-        elif browser.title == "Help us protect your account":
-            prRed('[ERROR] Unusual activity detected !')
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            updateLogs()
-            cleanLogs()
-            if ARGS.telegram or ARGS.discord:
-                message = createMessage()
-                sendReportToMessenger(message)
-            input('Press any key to close...')
-            os._exit(0)
+        elif browser.title == "Help us protect your account" or browser.current_url.startswith("https://account.live.com/proofs/Add"):
+            prYellow('[ERROR] Unusual activity detected !')
+            if isElementExists("iShowSkip") and ARGS.skip_unusual:
+                try:
+                    waitUntilClickable(browser, By.ID, "iShowSkip")
+                    browser.find_element(By.ID, "iShowSkip").click()
+                except:
+                    LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+                    FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                    updateLogs()
+                    cleanLogs()
+                    raise Exception("[ERROR] Unusual activity detected !")
+                else:
+                    prGreen('[LOGIN] Account already logged in !')
+                    RewardsLogin(browser)
+                    print('[LOGIN]', 'Ensuring login on Bing...')
+                    checkBingLogin(browser, isMobile)
+                    return
+            else:
+                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+                updateLogs()
+                cleanLogs()
+                if ARGS.telegram or ARGS.discord:
+                    message = createMessage()
+                    sendReportToMessenger(message)
+                input('Press any key to close...')
+                os._exit(0)
         else:
             LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unknown error !'
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
@@ -1219,7 +1264,7 @@ def completeMSNShoppingGame(browser: WebDriver):
         expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         getSignInButton()
 
-    def getGamingCard() -> Union[WebElement, bool]:
+    def getGamingCard() -> Union[WebElement, Literal[False]]:
         """get gaming card"""
         shopping_page_base_childs = expandShadowElement(browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         shopping_homepage = shopping_page_base_childs.find_element(By.TAG_NAME, 'shopping-homepage')
@@ -1448,9 +1493,12 @@ def argumentParser():
                         help="MS Rewards Calculator",
                         action='store_true',
                         required=False)
+    parser.add_argument("--skip-unusual",
+                        help="Skip unusual activity detection.",
+                        action="store_true",
+                        required=False)
 
     args = parser.parse_args()
-
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
         SUPER_FAST = args.superfast
