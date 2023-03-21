@@ -1587,8 +1587,10 @@ def createMessage():
             redeem_title = value[1].get("Redeem goal title", None)
             redeem_price = value[1].get("Redeem goal price")
             redeem_count = value[1]["Points"] // redeem_price
-            if value[1]['Auto redeem']:
-                redeem_message = f"🎁 Auto redeem: {value[1]['Auto redeem']} {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
+            if ARGS.redeem:
+                # only run if args.redeem mate
+                if value[1]['Auto redeem']:
+                    redeem_message = f"🎁 Auto redeem: {value[1]['Auto redeem']} {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
             elif redeem_count > 1:
                 redeem_message = f"🎁 Ready to redeem: {redeem_title} for {redeem_price} points ({redeem_count}x)\n\n"
             else:
