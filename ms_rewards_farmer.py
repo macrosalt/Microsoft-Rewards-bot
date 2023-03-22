@@ -1497,6 +1497,10 @@ def argumentParser():
                         help="Skip unusual activity detection.",
                         action="store_true",
                         required=False)
+    parser.add_argument("--skip-shopping",
+                        help="Skip MSN shopping game (useful for people living in regions which do not support MSN Shopping.",
+                        action="store_true",
+                        required=False)
 
     args = parser.parse_args()
     if args.superfast or args.fast:
@@ -2132,7 +2136,7 @@ def farmer():
                     completePunchCards(browser)
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
-                if not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
+                if ARGS.skip_shopping and not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
                     completeMSNShoppingGame(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = bool(remainingSearchesM)
