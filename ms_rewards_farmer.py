@@ -1516,9 +1516,6 @@ def argumentParser():
         SUPER_FAST = args.superfast
         if args.fast and not args.superfast:
             FAST = True
-    if len(sys.argv) > 1 and not args.calculator:
-        for arg in vars(args):
-            prBlue(f"[INFO] {arg}: {getattr(args, arg)}")
     return args
 
 
@@ -1528,7 +1525,7 @@ def logs():
     shared_items = []
     try:
         # Read datas on 'logs_accounts.txt'
-        LOGS = json.load(open(f"{Path(__file__).parent}/Logs_{account_path.stem}.txt", "r"))
+        LOGS = json.load(open(f"{Path(__file__).parent}/Logs_{ACCOUNTS_PATH.stem}.txt", "r"))
         LOGS.pop("Elapsed time", None)
         # sync accounts and logs file for new accounts or remove accounts from logs.
         for user in ACCOUNTS:
@@ -1572,7 +1569,7 @@ def logs():
         updateLogs()
         prGreen('\n[LOGS] Logs loaded successfully.\n')
     except FileNotFoundError:
-        prRed(f'\n[LOGS] "Logs_{account_path.stem}.txt" file not found.')
+        prRed(f'\n[LOGS] "Logs_{ACCOUNTS_PATH.stem}.txt" file not found.')
         LOGS = {}
         for account in ACCOUNTS:
             LOGS[account["username"]] = {"Last check": "",
@@ -1584,7 +1581,7 @@ def logs():
                                          "MSN shopping game": False,
                                          "PC searches": False}
         updateLogs()
-        prGreen(f'[LOGS] "Logs_{account_path.stem}.txt" created.\n')
+        prGreen(f'[LOGS] "Logs_{ACCOUNTS_PATH.stem}.txt" created.\n')
 
 
 def updateLogs():
@@ -1595,7 +1592,7 @@ def updateLogs():
             continue
         _logs[account].pop("Redeem goal title", None)
         _logs[account].pop("Redeem goal price", None)
-    with open(f'{Path(__file__).parent}/Logs_{account_path.stem}.txt', 'w') as file:
+    with open(f'{Path(__file__).parent}/Logs_{ACCOUNTS_PATH.stem}.txt', 'w') as file:
         file.write(json.dumps(_logs, indent=4))
 
 
@@ -1698,6 +1695,13 @@ def createMessage():
                f"(€{total_earned / 1500:0.02f}) " \
                f"(AU${total_earned / 1350:0.02f})"
     return message
+
+
+def prArgs():
+    """print arguments"""
+    if len(sys.argv) > 1 and not ARGS.calculator:
+        for arg in vars(ARGS):
+            prBlue(f"[INFO] {arg}: {getattr(ARGS, arg)}")
 
 
 def sendReportToMessenger(message):
@@ -2081,19 +2085,22 @@ def tkinter_calculator():
     window.mainloop()
 
 
-try:
-    account_path = Path(__file__).parent / 'accounts.json'
-    ACCOUNTS = json.load(open(account_path, "r"))
-except FileNotFoundError:
-    with open(account_path, 'w') as f:
-        f.write(json.dumps([{
-            "username": "Your Email",
-            "password": "Your Password"
-        }], indent=4))
-    prPurple(f"[ACCOUNT] Accounts credential file '{account_path.name}' created."
-             "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
-    input()
-    ACCOUNTS = json.load(open(account_path, "r"))
+def loadAccounts():
+    """get or create accounts.json"""
+    global ACCOUNTS, ACCOUNTS_PATH
+    try:
+        ACCOUNTS_PATH = Path(__file__).parent / 'accounts.json'
+        ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
+    except FileNotFoundError:
+        with open(ACCOUNTS_PATH, 'w') as f:
+            f.write(json.dumps([{
+                "username": "Your Email",
+                "password": "Your Password"
+            }], indent=4))
+        prPurple(f"[ACCOUNT] Accounts credential file '{ACCOUNTS_PATH.name}' created."
+                "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
+        input()
+        ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
 
 
 def farmer():
@@ -2233,13 +2240,16 @@ def main():
     if not platform.system() == "Linux":
         # show colors in terminal
         os.system('color')
-    logo()
     ARGS = argumentParser()
 
     # MS REWARD CALCULATOR
     if ARGS.calculator:
         tkinter_calculator()
         return sys.exit(0)
+    
+    logo()
+    prArgs()
+    loadAccounts()
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
     if ARGS.account_browser:
