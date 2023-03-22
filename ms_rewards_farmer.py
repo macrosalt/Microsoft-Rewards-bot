@@ -36,6 +36,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
+from pyvirtualdisplay import Display
 
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.46'
@@ -65,6 +66,11 @@ def isProxyWorking(proxy: str) -> bool:
         return True
     except:
         return False
+    
+
+def createDisplay():
+    display = Display(visible=0, size=(1920, 1080))
+    display.start()
 
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
@@ -101,6 +107,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     if ARGS.headless and ARGS.account_browser is None:
+        createDisplay()
         options.add_argument("--headless=new")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
