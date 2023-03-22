@@ -296,7 +296,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Wait complete loading
     try:
         waitUntilVisible(browser, By.ID, 'KmsiCheckboxField', 10)
-    except (TimeoutException) as e:
+    except TimeoutException as e:
         pass
     # Click next
     try:
@@ -884,10 +884,10 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
 
         correctAnswerCode = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
 
-        if (answer1Code == correctAnswerCode):
+        if answer1Code == correctAnswerCode:
             answer1.click()
             time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
-        elif (answer2Code == correctAnswerCode):
+        elif answer2Code == correctAnswerCode:
             answer2.click()
             time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
 
@@ -1164,11 +1164,11 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
 
         correctAnswerCode = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
 
-        if (answer1Code == correctAnswerCode):
+        if answer1Code == correctAnswerCode:
             answer1.click()
             time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
 
-        elif (answer2Code == correctAnswerCode):
+        elif answer2Code == correctAnswerCode:
             answer2.click()
             time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
 
@@ -1339,7 +1339,8 @@ def completeMSNShoppingGame(browser: WebDriver):
                 break
     except NoSuchElementException:
         prYellow("[MSN GAME] Failed to locate MSN shopping game !")
-    except:
+    except Exception as exc:  # skipcq
+        prRed(exc if ERROR else "")
         prYellow("[MSN GAME] Failed to complete MSN shopping game !")
     else:
         prGreen("[MSN GAME] Completed MSN shopping game successfully !")
@@ -1382,7 +1383,7 @@ def getRemainingSearches(browser: WebDriver):
 def getRedeemGoal(browser: WebDriver):
     """get redeem goal"""
     user_status = getDashboardData(browser)["userStatus"]
-    return (user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"])
+    return user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"]
 
 
 def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
@@ -1495,6 +1496,10 @@ def argumentParser():
                         required=False)
     parser.add_argument("--skip-unusual",
                         help="Skip unusual activity detection.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--skip-shopping",
+                        help="Skip MSN shopping game (useful for people living in regions which do not support MSN Shopping.",
                         action="store_true",
                         required=False)
 
@@ -1620,7 +1625,7 @@ def checkInternetConnection():
             elif system == "Linux":
                 subprocess.check_output(["ping", "-c", "1", "8.8.8.8"], timeout=5)
             return
-        except(subprocess.TimeoutExpired):
+        except subprocess.TimeoutExpired:
             prRed("[ERROR] No internet connection.")
             time.sleep(1)
         except:
@@ -2132,7 +2137,7 @@ def farmer():
                     completePunchCards(browser)
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
-                if not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
+                if not ARGS.skip_shopping and not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
                     completeMSNShoppingGame(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = bool(remainingSearchesM)
@@ -2292,3 +2297,4 @@ if __name__ == '__main__':
         traceback.print_exc()
         prRed(str(e))
         input("press Enter to close...")
+        
