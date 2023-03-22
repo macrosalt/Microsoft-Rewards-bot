@@ -296,7 +296,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Wait complete loading
     try:
         waitUntilVisible(browser, By.ID, 'KmsiCheckboxField', 10)
-    except (TimeoutException) as e:
+    except TimeoutException as e:
         pass
     # Click next
     try:
@@ -884,10 +884,10 @@ def completeDailySetThisOrThat(browser: WebDriver, cardNumber: int):
 
         correctAnswerCode = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
 
-        if (answer1Code == correctAnswerCode):
+        if answer1Code == correctAnswerCode:
             answer1.click()
             time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
-        elif (answer2Code == correctAnswerCode):
+        elif answer2Code == correctAnswerCode:
             answer2.click()
             time.sleep(15 if not FAST and not SUPER_FAST else 10 if not SUPER_FAST else 5)
 
@@ -1164,11 +1164,11 @@ def completeMorePromotionThisOrThat(browser: WebDriver, cardNumber: int):
 
         correctAnswerCode = browser.execute_script("return _w.rewardsQuizRenderInfo.correctAnswer")
 
-        if (answer1Code == correctAnswerCode):
+        if answer1Code == correctAnswerCode:
             answer1.click()
             time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
 
-        elif (answer2Code == correctAnswerCode):
+        elif answer2Code == correctAnswerCode:
             answer2.click()
             time.sleep(8 if not FAST and not SUPER_FAST else 5 if not SUPER_FAST else 2.5)
 
@@ -1383,7 +1383,7 @@ def getRemainingSearches(browser: WebDriver):
 def getRedeemGoal(browser: WebDriver):
     """get redeem goal"""
     user_status = getDashboardData(browser)["userStatus"]
-    return (user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"])
+    return user_status["redeemGoal"]["title"], user_status["redeemGoal"]["price"]
 
 
 def isElementExists(browser: WebDriver, _by: By, element: str) -> bool:
@@ -1625,7 +1625,7 @@ def checkInternetConnection():
             elif system == "Linux":
                 subprocess.check_output(["ping", "-c", "1", "8.8.8.8"], timeout=5)
             return
-        except(subprocess.TimeoutExpired):
+        except subprocess.TimeoutExpired:
             prRed("[ERROR] No internet connection.")
             time.sleep(1)
         except:
@@ -2297,3 +2297,4 @@ if __name__ == '__main__':
         traceback.print_exc()
         prRed(str(e))
         input("press Enter to close...")
+        
