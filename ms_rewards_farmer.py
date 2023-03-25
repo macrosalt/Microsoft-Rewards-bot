@@ -646,8 +646,12 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
                         pass
                 time.sleep(1)
                 points = int(browser.find_element(By.ID, 'fly_id_rc').get_attribute('innerHTML'))
-        except Exception as E: # skipcq
-            print(E)
+        except Exception as exc: # skipcq
+            if ERROR:
+                traceback.print_exc()
+                prRed(str(exc))
+            else:
+                pass
         return points
     
     global POINTS_COUNTER  # pylint: disable=global-statement
@@ -943,7 +947,10 @@ def completeDailySet(browser: WebDriver):
                         else:
                             print('[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
                             completeDailySetVariableActivity(cardNumber)
-        except:
+        except Exception as exc:
+            if ERROR:
+                traceback.print_exc()
+                prRed(str(exc))
             error = True
             resetTabs(browser)
     if not error:
@@ -1031,7 +1038,10 @@ def completePunchCards(browser: WebDriver):
             ):
                 url = punchCard['parentPromotion']['attributes']['destination']
                 completePunchCard(url, punchCard['childPromotions'])
-        except:
+        except Exception as exc:
+            if ERROR:
+                traceback.print_exc()
+                prRed(str(exc))
             resetTabs(browser)
     time.sleep(2)
     browser.get(BASE_URL)
@@ -1215,7 +1225,10 @@ def completeMorePromotions(browser: WebDriver):
                 'promotionType'] == "" \
                     and promotion['destinationUrl'] == BASE_URL:
                 completeMorePromotionSearch(i)
-        except:
+        except Exception as exc:
+            if ERROR:
+                traceback.print_exc()
+                prRed(str(exc))
             resetTabs(browser)
             
     completePromotionalItems()
@@ -1353,7 +1366,9 @@ def completeMSNShoppingGame(browser: WebDriver):
     except NoSuchElementException:
         prYellow("[MSN GAME] Failed to locate MSN shopping game !")
     except Exception as exc:  # skipcq
-        prRed(exc if ERROR else "")
+        if ERROR:
+            traceback.print_exc()
+            prRed(str(exc))
         prYellow("[MSN GAME] Failed to complete MSN shopping game !")
     else:
         prGreen("[MSN GAME] Completed MSN shopping game successfully !")
