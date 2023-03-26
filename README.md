@@ -65,6 +65,8 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
         <li>Use optional arguments</li>
           <ul>
             <li><code>--headless</code> You can use this argument to run the script in headless mode.</li>
+            <li><code>--no-images</code> Prevent images from loading to increase performance.</li>
+            <li><code>--shuffle</code> Randomize the order in which accounts are farmed.</li>
             <li><code>--redeem</code> Enable auto-redeem rewards based on accounts.json goals.</li>
             <li><code>--calculator</code> Opens GUI calculator with custom options. When using this flag the script will not run.</li>
             <li><code>--session</code> Use this argument to create session for each account.</li>

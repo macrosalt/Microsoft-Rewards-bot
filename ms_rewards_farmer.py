@@ -93,6 +93,8 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
              "webrtc.ip_handling_policy": "disable_non_proxied_udp",
              "webrtc.multiple_routes_enabled": False,
              "webrtc.nonproxied_udp_enabled": False}
+    if ARGS.no_images:
+        prefs["profile.managed_default_content_settings.images"] = 2
     if ARGS.account_browser:
         prefs["detach"] = True
     if proxy is not None:
@@ -1535,6 +1537,14 @@ def argumentParser():
                         help="Skip MSN shopping game (useful for people living in regions which do not support MSN Shopping.",
                         action="store_true",
                         required=False)
+    parser.add_argument("--no-images",
+                        help="Prevent images from loading to increase performance.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--shuffle",
+                        help="Randomize the order in which accounts are farmed.",
+                        action="store_true",
+                        required=False)
 
     args = parser.parse_args()
     if args.superfast or args.fast:
@@ -2150,6 +2160,8 @@ def farmer():
     """function that runs other functions to farm."""
     global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS  # pylint: disable=global-statement
     try:
+        if ARGS.shuffle:
+            random.shuffle(ACCOUNTS)
         for account in ACCOUNTS:
             CURRENT_ACCOUNT = account['username']
             if CURRENT_ACCOUNT in FINISHED_ACCOUNTS:
