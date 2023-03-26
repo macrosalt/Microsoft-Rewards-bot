@@ -115,9 +115,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
     if ARGS.edge:
-        browser = ARGS.no_webdriver_manager and webdriver.Edge(options=options) or webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()), options=options)
+        browser = webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()), options=options)
     else:
-        browser = ARGS.no_webdriver_manager and webdriver.Chrome(options=options) or webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return browser
 
 
@@ -1549,7 +1549,6 @@ def argumentParser():
                         help="Use system installed webdriver instead of webdriver-manager.",
                         action="store_true",
                         required=False)
-
 
     args = parser.parse_args()
     if args.superfast or args.fast:
