@@ -18,26 +18,23 @@ from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
 from random_word import RandomWords
 from selenium import webdriver
-from selenium.common.exceptions import (ElementNotInteractableException,
-                                        NoAlertPresentException,
-                                        NoSuchElementException,
-                                        SessionNotCreatedException,
-                                        TimeoutException,
-                                        UnexpectedAlertPresentException,
-                                        JavascriptException,
+from selenium.common.exceptions import (ElementNotInteractableException, NoAlertPresentException,
+                                        NoSuchElementException, SessionNotCreatedException, TimeoutException,
+                                        UnexpectedAlertPresentException, JavascriptException,
                                         ElementNotVisibleException)
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-import tkinter as tk
-from tkinter import messagebox, ttk
-from math import ceil
 from pyvirtualdisplay import Display
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
+import tkinter as tk
+from tkinter import messagebox, ttk
+from math import ceil
 
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51'
@@ -933,8 +930,8 @@ def completeDailySet(browser: WebDriver):
     error = False
     todayDate = datetime.today().strftime('%m/%d/%Y')
     todayPack = []
-    for date, data in d['dailySetPromotions'].items():
-        if date == todayDate:
+    for date_, data in d['dailySetPromotions'].items():
+        if date_ == todayDate:
             todayPack = data
     for activity in todayPack:
         try:
@@ -1051,7 +1048,7 @@ def completePunchCards(browser: WebDriver):
     for punchCard in punchCards:
         try:
             if (
-                    punchCard['parentPromotion'] != None and punchCard['childPromotions'] != None and
+                    punchCard['parentPromotion'] is not None and punchCard['childPromotions'] is not None and
                     punchCard['parentPromotion']['complete'] is False and
                     punchCard['parentPromotion']['pointProgressMax'] != 0
             ):
