@@ -27,11 +27,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
-from pyvirtualdisplay import Display
 from selenium.webdriver.chrome.service import Service
+from pyvirtualdisplay import Display
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
 import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
@@ -67,6 +66,7 @@ def isProxyWorking(proxy: str) -> bool:
 
 
 def createDisplay():
+    """Create Display"""
     display = Display(visible=False, size=(1920, 1080))
     display.start()
 
@@ -944,8 +944,7 @@ def completeDailySet(browser: WebDriver):
                     if activity['pointProgressMax'] == 50 and activity['pointProgress'] == 0:
                         print('[DAILY SET]', 'Completing This or That of card ' + str(cardNumber))
                         completeDailySetThisOrThat(cardNumber)
-                    elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity[
-                        'pointProgress'] == 0:
+                    elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity['pointProgress'] == 0:
                         print('[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
                         completeDailySetQuiz(cardNumber)
                     elif activity['pointProgressMax'] == 10 and activity['pointProgress'] == 0:
