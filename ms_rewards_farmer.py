@@ -1658,6 +1658,8 @@ def checkInternetConnection():
         except subprocess.TimeoutExpired:
             prRed("[ERROR] No internet connection.")
             time.sleep(1)
+        except FileNotFoundError:
+            return
         except:
             return
 
