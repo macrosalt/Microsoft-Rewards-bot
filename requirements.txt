@@ -10,3 +10,4 @@ random-word==1.0.7
 pyyaml
 notifiers
 pyvirtualdisplay
+webdriver-manager>=3.8.5
