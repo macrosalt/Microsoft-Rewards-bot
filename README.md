@@ -3,6 +3,7 @@
   <img src="https://ForTheBadge.com/images/badges/built-by-developers.svg" alt="cosmetic"/>
   <img src="https://ForTheBadge.com/images/badges/uses-git.svg" alt="cosmetic"/>
   <img src="https://ForTheBadge.com/images/badges/built-with-love.svg" alt="cosmetic"/>
+  <a href="https://discord.gg/fuKXD3ZQ"><img src="https://dcbadge.vercel.app/api/server/fuKXD3ZQ"/></a>
 </p>
 
 <pre align="center">
@@ -36,21 +37,11 @@
 
 <h2 align="center">Installation</h2>
 <p allign="center">You can also find this repository on <a href="https://gitlab.com/farshadzargary1997/Microsoft-Rewards-bot">Gitlab</a>.
-You can use the simple installation guide made for Windows 10/11 devices who plan on using Chrome/Chromedriver, <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/master/setup.md">here</a>.</p>
+You can use the simple installation guide made for Windows 10/11 devices who plan on using Chrome, <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/master/setup.md">here</a>.</p>
 <p align="center">
   <ul>
     <li>Install requirements with the following command : <pre>pip install -r requirements.txt</pre></li>
-    <li>Make sure you have Chrome installed</li>
-    <li>Install ChromeDriver :<ul>
-      <li>Windows :<ul>
-        <li>Download Chrome WebDriver as same as your Google Chrome version : https://chromedriver.chromium.org/downloads</li>
-        <li>Place the file in X:\Windows (X as your Windows disk letter)</li>
-      </ul>
-      <li>MacOS or Linux :<ul>
-        <li><pre>apt install chromium-chromedriver</pre></li>
-        <li>or if you have brew : <pre>brew cask install chromedriver</pre></li>
-      </ul>
-    </ul></li>
+    <li>Make sure you have Chrome installed (unless your using --edge)</li>
     <li>Edit the accounts.json.sample with your accounts credentials and rename it by removing <code>.sample</code> at the end.<br/>
     If you want to add more than one account, the syntax is the following (<code>mobile_user_agent</code>, <code>proxy</code> and <code>goal</code> are optional).
     Remove <code>mobile_user_agent</code>, <code>proxy</code> or <code>goal</code> from your account if you don't know how to use them:<pre>[{
@@ -74,6 +65,8 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
         <li>Use optional arguments</li>
           <ul>
             <li><code>--headless</code> You can use this argument to run the script in headless mode.</li>
+            <li><code>--no-images</code> Prevent images from loading to increase performance.</li>
+            <li><code>--shuffle</code> Randomize the order in which accounts are farmed.</li>
             <li><code>--redeem</code> Enable auto-redeem rewards based on accounts.json goals.</li>
             <li><code>--calculator</code> Opens GUI calculator with custom options. When using this flag the script will not run.</li>
             <li><code>--session</code> Use this argument to create session for each account.</li>
@@ -85,8 +78,11 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--error</code> When you use this argument, app displays crash error in terminal when it fails.</li>
             <li><code>--telegram TOKEN CHAT_ID</code> Use this argument to send logs to your telegram through your bot.</li>
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through webhook.</li>
-            <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.<a href="https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"> Download Microsoft Edge web driver.</a></li>
-            <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit</li>
+            <li><code>--skip-unusual</code> Click on skip for 5 days on unusual activity detection.</li>
+            <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.</li>
+            <li><code>--skip-shopping</code> Skips MSN shopping game.</li>
+            <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager.</li>
+            <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --everyday 14:30 --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled.</li>
