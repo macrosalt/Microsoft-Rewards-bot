@@ -55,14 +55,13 @@ def download(url, action, json_decode=True) -> str:
 
 def validate(repo, specific_file="", api=False) -> str:
     """
-    example.com (repo) + directory = example.com/directory
-    if API then https://api.github.com/repos/Prabh-Saini/Microsoft-Rewards-bot/git/trees/update?recursive=1
+    example.com (repo) + directory = example.com/directory if API then
+    https://api.github.com/repos/USER/REPO/git/trees/BRANCH?recursive=1
     """
     if api:
         return fr'https://api.github.com/repos/{repo["name"]}/{repo["repo"]}/git/trees/{repo["branch"]}?recursive=1'
-    else:
-        repo_link = fr'https://raw.githubusercontent.com/{repo["name"]}/{repo["repo"]}/{repo["branch"]}'
-        return f'{repo_link}{specific_file}' if repo_link[-1] == "/" else f'{repo_link}/{specific_file}'
+    repo_link = fr'https://raw.githubusercontent.com/{repo["name"]}/{repo["repo"]}/{repo["branch"]}'
+    return f'{repo_link}{specific_file}' if repo_link[-1] == "/" else f'{repo_link}/{specific_file}'
 
 
 def api_to_list(data) -> list:
@@ -75,7 +74,7 @@ def api_to_list(data) -> list:
             stripped.append(file_path)
 
     # convert useful file paths to list
-    for index, value in enumerate(stripped):
+    for _, value in enumerate(stripped):
         files.append(value['path'])
 
     return sorted(files)
@@ -122,9 +121,9 @@ def download_online_files(path) -> list:
         print(f"Attempting to download {file}.")
         try:
             downloaded_text = download(validate(repository, file), f"downloading {file}", False)
-            temp_file = open(fr'{path}\{file}', "wb")
-            temp_file.write(downloaded_text.encode(sys.stdout.encoding, errors='replace'))
-        except Exception as exc:
+            with open(fr'{path}\{file}', "wb") as temp_file:
+                temp_file.write(downloaded_text.encode(sys.stdout.encoding, errors='replace'))
+        except Exception as exc:  # skipcq
             debug(exc)
             print(f"Failed to download {file}.\nError occurred whilst downloading files.\n"
                   "Before reporting this as an issue on github please run --debug and report the result.")
@@ -150,7 +149,7 @@ def move_temp_files():
 def pip_install():
     try:
         call("pip install -r requirements.txt", shell=True)
-    except Exception as exc:
+    except Exception as exc:  # skipcq
         debug(exc)
         print("Pip was unable to automatically update your modules."
               "\nPlease manually update your modules by using: 'pip install -r requirements.txt'.")
