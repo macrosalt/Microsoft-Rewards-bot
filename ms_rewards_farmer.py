@@ -2243,13 +2243,9 @@ def update_handler(local_version) -> bool | None:
     repo = f'{repo}version.json' if repo[-1] == "/" else f'{repo}/version.json'
     try:
         latest_version = requests.get(repo)
-    except requests.exceptions.RequestException:
-        disable_warnings()
-        try:
-            latest_version = requests.get(repo, verify=False)
-        except requests.exceptions.RequestException as exc:
-            print("[UPDATER] Unable to check latest version. ")
-            return print(exc if ERROR else "")
+    except requests.exceptions.RequestException as exc:
+        print("[UPDATER] Unable to check latest version. ")
+        return print(exc if ERROR else "")
 
     # Error handling
     if latest_version.status_code != 200:
