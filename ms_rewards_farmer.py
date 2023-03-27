@@ -2158,6 +2158,7 @@ def loadAccounts():
                  "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
         input()
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
+    finally:
         if ARGS.shuffle:
             random.shuffle(ACCOUNTS)
 
