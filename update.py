@@ -1,7 +1,6 @@
 import json
 from argparse import ArgumentParser
 from requests import get, exceptions
-from urllib3 import disable_warnings
 import sys
 import os
 from shutil import rmtree, copy
@@ -30,14 +29,9 @@ def download(url, action, json_decode=True) -> str:
     # Attempt to downloaded_file
     try:
         downloaded_file = get(url)
-    except exceptions.RequestException:
-        # Retry if SSL error
-        disable_warnings()
-        try:
-            downloaded_file = get(url, verify=False)
-        except exceptions.RequestException as exc:
-            print(f"[UPDATER] Unable to {action}. ")
-            sys.exit(exc)
+    except exceptions.RequestException as exc:
+        print(f"[UPDATER] Unable to {action}. ")
+        sys.exit(exc)
 
     # Error handling
     if downloaded_file.status_code != 200:
