@@ -93,6 +93,8 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
              "webrtc.ip_handling_policy": "disable_non_proxied_udp",
              "webrtc.multiple_routes_enabled": False,
              "webrtc.nonproxied_udp_enabled": False}
+    if ARGS.no_images:
+        prefs["profile.managed_default_content_settings.images"] = 2
     if ARGS.account_browser:
         prefs["detach"] = True
     if proxy is not None:
@@ -113,9 +115,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
     if ARGS.edge:
-        browser = webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()), options=options)
+        browser = webdriver.Edge(options=options) if ARGS.no_webdriver_manager else webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()), options=options)
     else:
-        browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return browser
 
 
@@ -1535,6 +1537,18 @@ def argumentParser():
                         help="Skip MSN shopping game (useful for people living in regions which do not support MSN Shopping.",
                         action="store_true",
                         required=False)
+    parser.add_argument("--no-images",
+                        help="Prevent images from loading to increase performance.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--shuffle",
+                        help="Randomize the order in which accounts are farmed.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--no-webdriver-manager",
+                        help="Use system installed webdriver instead of webdriver-manager.",
+                        action="store_true",
+                        required=False)
 
     args = parser.parse_args()
     if args.superfast or args.fast:
@@ -2144,6 +2158,9 @@ def loadAccounts():
                  "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
         input()
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
+    finally:
+        if ARGS.shuffle:
+            random.shuffle(ACCOUNTS)
 
 
 def farmer():

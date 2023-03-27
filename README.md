@@ -65,6 +65,8 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
         <li>Use optional arguments</li>
           <ul>
             <li><code>--headless</code> You can use this argument to run the script in headless mode.</li>
+            <li><code>--no-images</code> Prevent images from loading to increase performance.</li>
+            <li><code>--shuffle</code> Randomize the order in which accounts are farmed.</li>
             <li><code>--redeem</code> Enable auto-redeem rewards based on accounts.json goals.</li>
             <li><code>--calculator</code> Opens GUI calculator with custom options. When using this flag the script will not run.</li>
             <li><code>--session</code> Use this argument to create session for each account.</li>
@@ -78,8 +80,9 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through webhook.</li>
             <li><code>--skip-unusual</code> Click on skip for 5 days on unusual activity detection.</li>
             <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.</li>
-            <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--skip-shopping</code> Skips MSN shopping game.</li>
+            <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager.</li>
+            <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --everyday 14:30 --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled.</li>
