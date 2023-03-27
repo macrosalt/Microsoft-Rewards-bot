@@ -2158,14 +2158,14 @@ def loadAccounts():
                  "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
         input()
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
+        if ARGS.shuffle:
+            random.shuffle(ACCOUNTS)
 
 
 def farmer():
     """function that runs other functions to farm."""
     global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS  # pylint: disable=global-statement
     try:
-        if ARGS.shuffle:
-            random.shuffle(ACCOUNTS)
         for account in ACCOUNTS:
             CURRENT_ACCOUNT = account['username']
             if CURRENT_ACCOUNT in FINISHED_ACCOUNTS:
