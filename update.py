@@ -19,9 +19,9 @@ temp_folder = "temp\\"
 dir_path = os.path.join(__file__.replace(os.path.basename(__file__), ""))
 ignore_files = ["LICENSE", ".gitignore", ".deepsource.toml", "accounts.json.sample", "version.json", "update.py"]
 repository = {
-    "name": "Prabh-Saini",
+    "name": "farshadz1997",
     "repo": "Microsoft-Rewards-bot",
-    "branch": "update"
+    "branch": "master"
 }
 
 
