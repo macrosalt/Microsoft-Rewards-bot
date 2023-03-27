@@ -2207,7 +2207,7 @@ def update_handler(local_version) -> bool | None:
         style.configure("Feature.TLabel", font=("Segoe UI", 12), background="#fff", foreground="#333")
         style.configure("Listbox.TListbox", font=("Segoe UI", 12), foreground="#fff")
         # Add a label indicating a new version is available
-        version_label = ttk.Label(window, text=f"A New Version is Available!", style="Title.TLabel", background="#fff")
+        version_label = ttk.Label(window, text="A New Version is Available!", style="Title.TLabel", background="#fff")
         version_label.pack(padx=20, pady=20)
         update_label = ttk.Label(window,
                                  text=f"The current version downloaded on your device is outdated ({current_version}). A new update is available ({future_version}). To update use 'py update.py --update'.\nChange log:",
@@ -2227,7 +2227,7 @@ def update_handler(local_version) -> bool | None:
         window.mainloop()
 
     # function variables
-    repo = r"https://raw.githubusercontent.com/Prabh-Saini/Microsoft-Rewards-bot/update"
+    repo = r"https://raw.githubusercontent.com/farshadz1997/Microsoft-Rewards-bot/master"
 
     # create loading bar
     loadingbar({
@@ -2258,7 +2258,7 @@ def update_handler(local_version) -> bool | None:
     try:
         response = json.loads(latest_version.text)
     except json.JSONDecodeError:
-        return print(f"[UPDATER] Unable to check latest version (JSONDecodeError)")
+        return print("[UPDATER] Unable to check latest version (JSONDecodeError)")
 
     # COMPARE LOCAL AND LATEST VERSION
     if local_version != response["version"]:
