@@ -14,7 +14,6 @@ import copy
 import traceback
 import ipapi
 import requests
-from urllib3 import disable_warnings
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
 from random_word import RandomWords
@@ -2168,7 +2167,7 @@ def loadAccounts():
             random.shuffle(ACCOUNTS)
 
 
-def update_handler(local_version) -> bool | None:
+def update_handler(local_version):
     """Checks if the update is the latest"""
     # initialize functions
     def loadingbar(configuration: dict, skip_text_after_loading_bar_finished) -> None:
@@ -2245,23 +2244,27 @@ def update_handler(local_version) -> bool | None:
         latest_version = requests.get(repo)
     except requests.exceptions.RequestException as exc:
         print("[UPDATER] Unable to check latest version. ")
-        return print(exc if ERROR else "")
+        print(exc if ERROR else "")
+        return
 
     # Error handling
     if latest_version.status_code != 200:
-        return print(f"[UPDATER] Unable to check latest version (Status: {latest_version.status_code})")
+        print(f"[UPDATER] Unable to check latest version (Status: {latest_version.status_code})")
+        return
 
     try:
         response = json.loads(latest_version.text)
     except json.JSONDecodeError:
-        return print("[UPDATER] Unable to check latest version (JSONDecodeError)")
+        print("[UPDATER] Unable to check latest version (JSONDecodeError)")
+        return
 
     # COMPARE LOCAL AND LATEST VERSION
     if local_version != response["version"]:
         if not ARGS.headless:
             update_window(local_version, response['version'], response['changelog'])
-        return prRed(f"\n[UPDATER] Your version ({local_version}) is outdated. "
-                     f"Please update to {response['version']} using 'py update.py --update'.")
+        prRed(f"\n[UPDATER] Your version ({local_version}) is outdated. "
+              f"Please update to {response['version']} using 'py update.py --update'.")
+        return
     print(f"[UPDATER] Your version ({local_version}) is up to date!")
 
 
