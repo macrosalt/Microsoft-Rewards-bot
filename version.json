@@ -1,7 +1,8 @@
 {
-  "version": "230323a",
+  "version": "230328a",
   "changelog": [
     "Bug fixes",
-    "Update handler added."
+    "Automatic Outdated Version Detection (with GUI)",
+    "Update.py which automatically updates your script"
   ]
 }
