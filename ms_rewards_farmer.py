@@ -35,6 +35,10 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
 
+# VERSION - UPDATE WITH EVERY UPDATE
+# SHOULD BE FORMATTED YYMMDDa or YYMMDDb
+version = "230328a"
+
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51'
 MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36 EdgA/111.0.1661.48'
@@ -1462,7 +1466,7 @@ def argumentParser():
             parser.error(f"Session not found for {session}")
 
     parser = ArgumentParser(
-        description="Microsoft Rewards Farmer V2.1",
+        description=f"Microsoft Rewards Farmer {version}",
         allow_abbrev=False,
         usage="You may use execute the program with the default config or use arguments to configure available options."
     )
@@ -1994,7 +1998,7 @@ def logo():
     ██║╚██╔╝██║╚════██║    ██╔══╝  ██╔══██║██╔══██╗██║╚██╔╝██║██╔══╝  ██╔══██╗
     ██║ ╚═╝ ██║███████║    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗██║  ██║
     ╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝""")
-    prPurple("            by @Charlesbel upgraded by @Farshadz1997        version 2.1\n")
+    prPurple(f"            by @Charlesbel upgraded by @Farshadz1997        version {version}\n")
 
 
 def tkinter_calculator():
@@ -2163,6 +2167,107 @@ def loadAccounts():
             random.shuffle(ACCOUNTS)
 
 
+def update_handler(local_version):
+    """Checks if the update is the latest"""
+    # initialize functions
+    def loadingbar(configuration: dict, skip_text_after_loading_bar_finished) -> None:
+        """
+        eg. Loading response... [#########################]
+        config = {
+            "text_after_loading_bar_finished": "Successfully loaded",
+            "text_before_loading_bar": "Loading response... ",
+            "size_of_loading_bar": 25,
+            "delay": 0.05,
+            "design_of_loaded_bar": "#",
+            "design_of_unloaded_bar": "."
+        }
+        """
+        for i in range(configuration["size_of_loading_bar"]):
+            sys.stdout.write(configuration["text_before_loading_bar"] + "[{0}]   \r".format(
+                configuration["design_of_loaded_bar"] * (i + 1) + configuration["design_of_unloaded_bar"] * (
+                        (configuration["size_of_loading_bar"] - 1) - i)))
+            sys.stdout.flush()
+            time.sleep(configuration["delay"])
+        print(end='\x1b[2K')  # clears the line
+        if not skip_text_after_loading_bar_finished:
+            sys.stdout.write(configuration["text_after_loading_bar_finished"])
+
+    def update_window(current_version, future_version, feature_list) -> None:
+        """Creates tkinter window which shows available update, and it's feature list"""
+        # Create the Tkinter window
+        window = tk.Tk()
+        window.title("New Version Available")
+        window.geometry("500x400")
+        window.configure(bg="#fff")
+        window.resizable(False, False)
+        # Add some styling
+        style = ttk.Style()
+        style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#fff", foreground="#1E90FF")
+        style.configure("Feature.TLabel", font=("Segoe UI", 12), background="#fff", foreground="#333")
+        style.configure("Listbox.TListbox", font=("Segoe UI", 12), foreground="#fff")
+        # Add a label indicating a new version is available
+        version_label = ttk.Label(window, text="A New Version is Available!", style="Title.TLabel", background="#fff")
+        version_label.pack(padx=20, pady=20)
+        update_label = ttk.Label(window,
+                                 text=f"The current version downloaded on your device is outdated ({current_version}). A new update is available ({future_version}). To update use 'py update.py --update'.\nChange log:",
+                                 style="Feature.TLabel", background="#fff", wraplength="460")
+        update_label.pack(padx=20, pady=0, anchor=tk.W)
+        # Add a listbox displaying features
+        listbox_frame = ttk.Frame(window)
+        listbox_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        listbox = tk.Listbox(listbox_frame, width=50, height=5, font=("Segoe UI", 12), background="#fff",
+                             foreground="#333",
+                             highlightthickness=0, bd=0, selectbackground="#1E90FF", selectforeground="#FFF",
+                             relief=tk.FLAT, exportselection=False, activestyle="none", takefocus=False)
+        for feature in feature_list:
+            listbox.insert(tk.END, feature)
+        listbox.pack(side=tk.TOP, fill=tk.BOTH, expand=True, anchor=tk.CENTER)
+        # Start the Tkinter event loop
+        window.mainloop()
+
+    # function variables
+    repo = r"https://raw.githubusercontent.com/farshadz1997/Microsoft-Rewards-bot/master"
+
+    # create loading bar
+    loadingbar({
+        "text_after_loading_bar_finished": "",
+        "text_before_loading_bar": "[UPDATER] Getting latest version from the internet...",
+        "size_of_loading_bar": 25,
+        "delay": 0.05,
+        "design_of_loaded_bar": "#",
+        "design_of_unloaded_bar": "."
+    }, True)
+
+    # GET THE LATEST VERSION - the following line if the url ends in '/'
+    repo = f'{repo}version.json' if repo[-1] == "/" else f'{repo}/version.json'
+    try:
+        latest_version = requests.get(repo)
+    except requests.exceptions.RequestException as exc:
+        print("[UPDATER] Unable to check latest version. ")
+        print(exc if ERROR else "")
+        return
+
+    # Error handling
+    if latest_version.status_code != 200:
+        print(f"[UPDATER] Unable to check latest version (Status: {latest_version.status_code})")
+        return
+
+    try:
+        response = json.loads(latest_version.text)
+    except json.JSONDecodeError:
+        print("[UPDATER] Unable to check latest version (JSONDecodeError)")
+        return
+
+    # COMPARE LOCAL AND LATEST VERSION
+    if local_version != response["version"]:
+        if not ARGS.headless:
+            update_window(local_version, response['version'], response['changelog'])
+        prRed(f"\n[UPDATER] Your version ({local_version}) is outdated. "
+              f"Please update to {response['version']} using 'py update.py --update'.")
+        return
+    print(f"[UPDATER] Your version ({local_version}) is up to date!")
+
+
 def farmer():
     """function that runs other functions to farm."""
     global ERROR, MOBILE, CURRENT_ACCOUNT, STARTING_POINTS  # pylint: disable=global-statement
@@ -2311,6 +2416,7 @@ def main():
 
     logo()
     prArgs()
+    update_handler(version)  # CHECK FOR UPDATES
     loadAccounts()
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
