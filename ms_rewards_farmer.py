@@ -71,8 +71,11 @@ def isProxyWorking(proxy: str) -> bool:
 
 def createDisplay():
     """Create Display"""
-    display = Display(visible=False, size=(1920, 1080))
-    display.start()
+    try:
+        display = Display(visible=False, size=(1920, 1080))
+        display.start()
+    except:
+        pass
 
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
