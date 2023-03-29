@@ -1764,7 +1764,12 @@ def sendReportToMessenger(message):
 def sendToTelegram(message):
     """send to telegram"""
     t = get_notifier('telegram')
-    t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+    if len(message) > 4096:
+        messages = [message[i:i+4096] for i in range(0, len(message), 4096)]
+        for ms in messages:
+            t.notify(message=ms, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
+    else:
+        t.notify(message=message, token=ARGS.telegram[0], chat_id=ARGS.telegram[1])
 
 
 def sendToDiscord(message):
