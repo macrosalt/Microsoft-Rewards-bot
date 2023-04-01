@@ -3,7 +3,7 @@
   <img src="https://ForTheBadge.com/images/badges/built-by-developers.svg" alt="cosmetic"/>
   <img src="https://ForTheBadge.com/images/badges/uses-git.svg" alt="cosmetic"/>
   <img src="https://ForTheBadge.com/images/badges/built-with-love.svg" alt="cosmetic"/>
-  <a href="https://discord.gg/fuKXD3ZQ"><img src="https://dcbadge.vercel.app/api/server/fuKXD3ZQ"/></a>
+  <a href="https://discord.gg/GaF8fFBtE3"><img src="https://dcbadge.vercel.app/api/server/GaF8fFBtE3"/></a>
 </p>
 
 <pre align="center">
