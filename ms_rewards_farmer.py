@@ -1556,7 +1556,11 @@ def argumentParser():
                         help="Use system installed webdriver instead of webdriver-manager.",
                         action="store_true",
                         required=False)
-
+    parser.add_argument("--currency",
+                        help="Use system installed webdriver instead of webdriver-manager.",
+                        choices=["EUR", "USD", "AUD", "INR"],
+                        action="store",
+                        required=False)
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -1739,16 +1743,23 @@ def createMessage():
                 message += redeem_message
             else:
                 message += "\n"
+
+    if ARGS.currency == "EUR":
+        rate = 1500
+        currency_symbol = "€"
+    elif ARGS.currency == "AUD":
+        rate = 1350
+        currency_symbol = "AU$"
+    elif ARGS.currency == "INR":
+        rate = 16
+        currency_symbol = "₹"
+    else:
+        rate = 1300
+        currency_symbol = "$"
     message += f"💵 Total earned points: {total_earned} "\
-               f"(${total_earned / 1300:0.02f}) "\
-               f"(€{total_earned / 1500:0.02f}) "\
-               f"(AU${total_earned / 1350:0.02f}) "\
-               f"(₹{total_overall / 16:0.02f}) \n"
+        f"({currency_symbol}{total_earned / rate:0.02f}) \n"
     message += f"💵 Total Overall points: {total_overall} "\
-               f"(${total_overall / 1300:0.02f}) "\
-               f"(€{total_overall / 1500:0.02f}) "\
-               f"(AU${total_overall / 1350:0.02f})"\
-               f"(₹{total_overall / 16:0.02f})"
+        f"({currency_symbol}{total_overall / rate:0.02f})"
     return message
 
 
