@@ -1688,7 +1688,18 @@ def checkInternetConnection():
         except:
             return
 
+
 def format_currency(points, currency):
+    """
+    Formats the given amount as a currency string.
+
+    Args:
+        amount (float): The amount to format.
+        currency (str, optional): The currency code to use for formatting. Defaults to None.
+
+    Returns:
+        str: The formatted currency string.
+    """
     convert = {
         "EUR": {"rate": 1500, "symbol": "€"},
         "AUD": {"rate": 1350, "symbol": "AU$"},
@@ -1763,7 +1774,6 @@ def createMessage():
                 message += redeem_message
             else:
                 message += "\n"
-    
     if ARGS.currency:
         message += f"💵 Total earned points: {total_earned} "\
             f"({format_currency(total_earned, ARGS.currency)}) \n"
