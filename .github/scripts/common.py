@@ -6,7 +6,7 @@ LOG_PREFIX = "log_"
 LOG_TO_INSTANCE = {
     "1": "o-ubuntu",
     "2": "o-opc",
-    "3": "instance-1",
+    "3": "msr001",
     "4": "us2",
     "5": "us3",
     "6": "us32",
