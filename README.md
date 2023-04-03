@@ -120,6 +120,12 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
 <h2 align="center">⚠️CAUTION!⚠️</h2>
 <p align="center">
   <h4 align="center">Do not use headless mode, it can cause your account to be suspended from Microsoft Rewards.</h4>
+</p>
+
+## Legal Notice!
+
+I and contributors do not endorse breaking Microsoft’s ToS. This is a proof of concept and purely for educational purposes to learn about Python and Selenium. Contributors and I have learned a lot about Python, Selenium and even using Github and how to collaborate as a team of people remotely.
+Please take a look at [Microsoft ToS](https://www.microsoft.com/en-us/servicesagreement/).
 
 ## Support me
 
