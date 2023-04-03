@@ -1556,7 +1556,11 @@ def argumentParser():
                         help="Use system installed webdriver instead of webdriver-manager.",
                         action="store_true",
                         required=False)
-
+    parser.add_argument("--currency",
+                        help="Use system installed webdriver instead of webdriver-manager.",
+                        choices=["EUR", "USD", "AUD", "INR", "GBP", "CAD", "JPY", "CHF", "NZD", "ZAR", "BRL", "CNY", "HKD", "SGD", "THB"],
+                        action="store",
+                        required=False)
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -1685,6 +1689,37 @@ def checkInternetConnection():
             return
 
 
+def format_currency(points, currency):
+    """
+    Formats the given amount as a currency string.
+
+    Args:
+        amount (float): The amount to format.
+        currency (str, optional): The currency code to use for formatting. Defaults to None.
+
+    Returns:
+        str: The formatted currency string.
+    """
+    convert = {
+        "EUR": {"rate": 1500, "symbol": "€"},
+        "AUD": {"rate": 1350, "symbol": "AU$"},
+        "INR": {"rate": 16, "symbol": "₹"},
+        "USD": {"rate": 1300, "symbol": "$"},
+        "GBP": {"rate": 1700, "symbol": "£"},
+        "CAD": {"rate": 1000, "symbol": "CA$"},
+        "JPY": {"rate": 12, "symbol": "¥"},
+        "CHF": {"rate": 1400, "symbol": "CHF"},
+        "NZD": {"rate": 1200, "symbol": "NZ$"},
+        "ZAR": {"rate": 90, "symbol": "R"},
+        "BRL": {"rate": 250, "symbol": "R$"},
+        "CNY": {"rate": 200, "symbol": "¥"},
+        "HKD": {"rate": 170, "symbol": "HK$"},
+        "SGD": {"rate": 950, "symbol": "S$"},
+        "THB": {"rate": 40, "symbol": "฿"}
+    }
+    return f"{convert[currency]['symbol']}{points / convert[currency]['rate']:0.02f}"
+
+
 def createMessage():
     """Create message"""
     today = date.today().strftime("%d/%m/%Y")
@@ -1739,16 +1774,23 @@ def createMessage():
                 message += redeem_message
             else:
                 message += "\n"
-    message += f"💵 Total earned points: {total_earned} "\
-               f"(${total_earned / 1300:0.02f}) "\
-               f"(€{total_earned / 1500:0.02f}) "\
-               f"(AU${total_earned / 1350:0.02f}) "\
-               f"(₹{total_overall / 16:0.02f}) \n"
-    message += f"💵 Total Overall points: {total_overall} "\
-               f"(${total_overall / 1300:0.02f}) "\
-               f"(€{total_overall / 1500:0.02f}) "\
-               f"(AU${total_overall / 1350:0.02f})"\
-               f"(₹{total_overall / 16:0.02f})"
+    if ARGS.currency:
+        message += f"💵 Total earned points: {total_earned} "\
+            f"({format_currency(total_earned, ARGS.currency)}) \n"
+        message += f"💵 Total Overall points: {total_overall} "\
+            f"({format_currency(total_overall, ARGS.currency)})"
+    else:
+        message += f"💵 Total earned points: {total_earned} "\
+            f"(${total_earned / 1300:0.02f}) "\
+            f"(€{total_earned / 1500:0.02f}) "\
+            f"(AU${total_earned / 1350:0.02f}) "\
+            f"(₹{total_overall / 16:0.02f}) \n"
+        message += f"💵 Total Overall points: {total_overall} "\
+            f"(${total_overall / 1300:0.02f}) "\
+            f"(€{total_overall / 1500:0.02f}) "\
+            f"(AU${total_overall / 1350:0.02f})"\
+            f"(₹{total_overall / 16:0.02f})"
+
     return message
 
 
