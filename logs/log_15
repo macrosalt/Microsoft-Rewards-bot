@@ -2,7 +2,11 @@
     "dcpnzssa@outlook.com": {
         "Last check": "Unknown error !",
         "Today's points": 13661,
-        "Points": 26277
+        "Points": 26277,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "ardjjelo@outlook.com": {
         "Last check": "Unknown error !",
@@ -19,8 +23,12 @@
         "Points": 12398
     },
     "chlsnyec@outlook.com": {
-        "Last check": "Unknown error !",
+        "Last check": "2023-04-02",
         "Today's points": 385,
-        "Points": 12616
+        "Points": 12616,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
