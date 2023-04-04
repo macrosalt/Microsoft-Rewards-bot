@@ -35,10 +35,6 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
 
-# VERSION - UPDATE WITH EVERY UPDATE
-# SHOULD BE FORMATTED YYMMDDa or YYMMDDb
-version = "230328a"
-
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51'
 MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36 EdgA/111.0.1661.48'
@@ -74,8 +70,9 @@ def createDisplay():
     try:
         display = Display(visible=False, size=(1920, 1080))
         display.start()
-    except:
-        pass
+    except Exception as exc:  # skipcq
+        prYellow("Virtual Display Failed!")
+        prRed(exc if ERROR else "")
 
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
@@ -113,8 +110,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    if ARGS.headless and ARGS.account_browser is None:
+
+    if ARGS.virtual_display:
         createDisplay()
+
+    if ARGS.headless and ARGS.account_browser is None:
         options.add_argument("--headless=new")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
@@ -1561,6 +1561,18 @@ def argumentParser():
                         choices=["EUR", "USD", "AUD", "INR", "GBP", "CAD", "JPY", "CHF", "NZD", "ZAR", "BRL", "CNY", "HKD", "SGD", "THB"],
                         action="store",
                         required=False)
+    parser.add_argument("--virtual-display",
+                        help="Use system installed webdriver instead of webdriver-manager.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--dont-check-for-updates",
+                        help="Prevent script from updating.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--repeat-shopping",
+                        help="Repeat MSN shopping.",
+                        action="store_true",
+                        required=False)
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -1797,8 +1809,13 @@ def createMessage():
 def prArgs():
     """print arguments"""
     if len(sys.argv) > 1 and not ARGS.calculator:
+        total_enabled_flags = 0
         for arg in vars(ARGS):
-            prBlue(f"[INFO] {arg}: {getattr(ARGS, arg)}")
+            if getattr(ARGS, arg) is not False and getattr(ARGS, arg) is not None:
+                prBlue(f"[FLAGS] {arg}: {getattr(ARGS, arg)}")
+                total_enabled_flags += 1
+        if total_enabled_flags == 0:
+            prYellow("[FLAGS] No flags are used")
 
 
 def sendReportToMessenger(message):
@@ -2185,11 +2202,6 @@ def tkinter_calculator():
             messagebox.showerror("Error", "Current balance is higher or equal to price.")
             return
 
-        if accounts >= 15:
-            messagebox.showerror("Reality check",
-                                 f"You can't actually reasonably run {accounts} accounts mate.")
-            return
-
         messagebox.showinfo("RewardStimator Result", f""
                                                      f"Total $5 {non}Microsoft gift cards required: {cards_required}"
                                                      f"\n{non}Microsoft gift cards required per account: {cr_per_acc}"
@@ -2204,7 +2216,7 @@ def tkinter_calculator():
 
 def loadAccounts():
     """get or create accounts.json"""
-    global ACCOUNTS, ACCOUNTS_PATH
+    global ACCOUNTS, ACCOUNTS_PATH  # pylint: disable=global-statement
     try:
         ACCOUNTS_PATH = Path(__file__).parent / 'accounts.json'
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
@@ -2373,6 +2385,9 @@ def farmer():
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
                 if not ARGS.skip_shopping and not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
+                    if ARGS.repeat_shopping:
+                        completeMSNShoppingGame(browser)
+                        prYellow("Running repeated MSN shopping. It will likely result in error due to msn shopping likely completed")
                     completeMSNShoppingGame(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = bool(remainingSearchesM)
@@ -2435,8 +2450,11 @@ def farmer():
     except KeyboardInterrupt:
         ERROR = True
         browser.quit()
-        input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
-        farmer()
+        try:
+            input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
+            farmer()
+        except KeyboardInterrupt:
+            sys.exit("Force Exit (ctrl+c)")
     except Exception as e:
         if "executable needs to be in PATH" in str(e):
             prRed('[ERROR] WebDriver not found.\n')
@@ -2472,7 +2490,8 @@ def main():
 
     logo()
     prArgs()
-    update_handler(version)  # CHECK FOR UPDATES
+    if not ARGS.dont_check_for_updates:
+        update_handler(version)  # CHECK FOR UPDATES
     loadAccounts()
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
@@ -2531,7 +2550,19 @@ def main():
     input('Press enter to close the program...')
 
 
+def get_version():
+    """Get version from version.json"""
+    try:
+        with open('version.json', 'r') as version_json:
+            return json.load(version_json)['version']
+    except Exception as exc:  # skipcq
+        prRed(exc if ERROR else "")
+        return "Unknown"
+
+
 if __name__ == '__main__':
+    version = get_version()
+
     try:
         main()
     except Exception as e:
