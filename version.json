@@ -2,7 +2,7 @@
   "version": "230404a",
   "changelog": [
     "Bug fixes",
-    "Automatic Updater now supports Linux,
+    "Automatic Updater now supports Linux",
     "Dynamic updating from version.json",
     "Added virtual display flag '--virtual-display'",
     "Only show flags that are enabled"
