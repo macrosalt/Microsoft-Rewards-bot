@@ -11,6 +11,7 @@
     "Telegram message bug (for messages over 4096 characters)",
     "Avoid checking for new updates using '--dont-check-for-updates'",
     "Double ctrl+c support",
-    "Repeat MSN shopping with '--repeat-shopping'"
+    "Repeat MSN shopping with '--repeat-shopping'",
+    "Improved rewardstimator"
   ]
 }
