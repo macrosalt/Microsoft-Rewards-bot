@@ -1,8 +1,10 @@
 {
-  "version": "230328a",
+  "version": "230404a",
   "changelog": [
     "Bug fixes",
-    "Automatic Outdated Version Detection (with GUI)",
-    "Update.py which automatically updates your script"
+    "Automatic Updater now supports Linux,
+    "Dynamic updating from version.json",
+    "Added virtual display flag '--virtual-display'",
+    "Only show flags that are enabled"
   ]
 }
