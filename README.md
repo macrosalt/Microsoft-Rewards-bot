@@ -84,6 +84,7 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--skip-shopping</code> Skips MSN shopping game.</li>
             <li><code>--repeat-shopping</code> Repeat MSN shopping game. (So it runs twice per account consecutively)</li>
             <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager.</li>
+            <li><code>--virtual-display</code> Use PyVirtualDisplay (intended for Raspberry Pi users).</li>
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--currency CURRENCY</code> Converts your points into your preferred currency. Available currencies: EUR, USD, AUD, INR, GBP, CAD, JPY, CHF, NZD, ZAR, BRL, CNY, HKD, SGD, THB</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
