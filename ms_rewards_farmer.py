@@ -1802,8 +1802,14 @@ def createMessage():
 def prArgs():
     """print arguments"""
     if len(sys.argv) > 1 and not ARGS.calculator:
+        total_enabled_flags = 0
         for arg in vars(ARGS):
-            prBlue(f"[INFO] {arg}: {getattr(ARGS, arg)}")
+            if getattr(ARGS, arg) is not False and getattr(ARGS, arg) is not None:
+                prBlue(f"[FLAGS] {arg}: {getattr(ARGS, arg)}")
+                total_enabled_flags += 1
+        if total_enabled_flags == 0:
+            prYellow("[FLAGS] No flags are used")
+
 
 
 def sendReportToMessenger(message):
