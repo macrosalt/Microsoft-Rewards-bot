@@ -70,10 +70,9 @@ def createDisplay():
     try:
         display = Display(visible=False, size=(1920, 1080))
         display.start()
-    except Exception as exc:
+    except Exception as exc:  # skipcq
         prYellow("Virtual Display Failed!")
         prRed(exc if ERROR else "")
-        pass
 
 
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
@@ -1811,7 +1810,6 @@ def prArgs():
             prYellow("[FLAGS] No flags are used")
 
 
-
 def sendReportToMessenger(message):
     """send report to messenger"""
     if ARGS.telegram:
@@ -2215,7 +2213,7 @@ def tkinter_calculator():
 
 def loadAccounts():
     """get or create accounts.json"""
-    global ACCOUNTS, ACCOUNTS_PATH
+    global ACCOUNTS, ACCOUNTS_PATH  # pylint: disable=global-statement
     try:
         ACCOUNTS_PATH = Path(__file__).parent / 'accounts.json'
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
@@ -2543,10 +2541,11 @@ def main():
 
 
 def get_version():
+    """Get version from version.json"""
     try:
         with open('version.json', 'r') as version_json:
             return json.load(version_json)['version']
-    except Exception as exc:
+    except Exception as exc:  # skipcq
         prRed(exc if ERROR else "")
         return "Unknown"
 
