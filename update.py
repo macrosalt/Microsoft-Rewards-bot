@@ -7,14 +7,14 @@ from shutil import rmtree, copy
 from subprocess import call
 
 # get args
-parser = ArgumentParser(description="Microsoft Rewards Farmer V2.1 Updater, type in --updater")
+parser = ArgumentParser(description="Microsoft Rewards Farmer Updater, use '--update'.")
 parser.add_argument('--update', action='store_true', help='Update.', required=False)
 parser.add_argument('--debug', action='store_true', help="Debug mode.", required=False)
 parser.add_argument('-y', action='store_true', help="Will automatically say yes.", required=False)
 args = parser.parse_args()
 
 # important settings
-temp_folder = "temp\\"
+temp_folder = "temp//"
 dir_path = os.path.join(__file__.replace(os.path.basename(__file__), ""))
 ignore_files = ["LICENSE", ".gitignore", ".deepsource.toml", "accounts.json.sample", "version.json", "update.py"]
 repository = {
@@ -98,7 +98,7 @@ def delete_dir(dir_name: str) -> None:
 def user_permissions() -> str | bool:
     """Ask user if Yes or No"""
     if not args.y:
-        rights = input("Automatic installer will download and update your program files. If you have the appropriate file, and download rights please continue by entering 'Y'. [y/N]")
+        rights = input("Automatic installer will download and update your program files. If you have the appropriate file, and download rights please continue by entering 'Y'. [y/N] ")
         if rights.lower() not in ['y', 'yes']:
             print("Exiting script...")
             sys.exit(1)
@@ -120,7 +120,7 @@ def download_online_files(path) -> list:
         print(f"Attempting to download {file}.")
         try:
             downloaded_text = download(validate(repository, file), f"downloading {file}", False)
-            with open(fr'{path}\{file}', "wb") as temp_file:
+            with open(fr'{path}/{file}', "wb") as temp_file:
                 temp_file.write(downloaded_text.encode(sys.stdout.encoding, errors='replace'))
         except Exception as exc:  # skipcq
             debug(exc)
