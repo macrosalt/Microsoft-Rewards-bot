@@ -5,6 +5,9 @@
     "Automatic Updater now supports Linux",
     "Dynamic updating from version.json",
     "Added virtual display flag '--virtual-display'",
-    "Only show flags that are enabled"
+    "Only show flags that are enabled",
+    "Added --currency so you can manually adjust currency to the correct one",
+    "Added new line in notifications for 'Overall Points'",
+    "Telegram message bug (for messages over 4096 characters)"
   ]
 }
