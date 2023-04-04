@@ -1565,6 +1565,10 @@ def argumentParser():
                         help="Use system installed webdriver instead of webdriver-manager.",
                         action="store_true",
                         required=False)
+    parser.add_argument("--dont-check-for-updates",
+                        help="Prevent script from updating.",
+                        action="store_true",
+                        required=False)
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -2444,8 +2448,11 @@ def farmer():
     except KeyboardInterrupt:
         ERROR = True
         browser.quit()
-        input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
-        farmer()
+        try:
+            input('\n\033[94m[INFO] Farmer paused. Press enter to continue...\033[00m\n')
+            farmer()
+        except KeyboardInterrupt:
+            sys.exit("Force Exit (ctrl+c)")
     except Exception as e:
         if "executable needs to be in PATH" in str(e):
             prRed('[ERROR] WebDriver not found.\n')
@@ -2481,7 +2488,8 @@ def main():
 
     logo()
     prArgs()
-    update_handler(version)  # CHECK FOR UPDATES
+    if not ARGS.dont_check_for_updates:
+        update_handler(version)  # CHECK FOR UPDATES
     loadAccounts()
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
