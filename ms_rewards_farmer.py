@@ -1569,6 +1569,10 @@ def argumentParser():
                         help="Prevent script from updating.",
                         action="store_true",
                         required=False)
+    parser.add_argument("--repeat-shopping",
+                        help="Repeat MSN shopping.",
+                        action="store_true",
+                        required=False)
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -2386,6 +2390,9 @@ def farmer():
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
                 if not ARGS.skip_shopping and not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
+                    if ARGS.repeat_shopping:
+                        completeMSNShoppingGame(browser)
+                        prYellow("Running repeated MSN shopping. It will likely result in error due to msn shopping likely completed")
                     completeMSNShoppingGame(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = bool(remainingSearchesM)
