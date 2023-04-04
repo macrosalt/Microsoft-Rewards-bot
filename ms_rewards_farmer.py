@@ -35,10 +35,6 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
 
-# VERSION - UPDATE WITH EVERY UPDATE
-# SHOULD BE FORMATTED YYMMDDa or YYMMDDb
-version = "230328a"
-
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51'
 MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36 EdgA/111.0.1661.48'
@@ -74,7 +70,9 @@ def createDisplay():
     try:
         display = Display(visible=False, size=(1920, 1080))
         display.start()
-    except:
+    except Exception as exc:
+        prYellow("Virtual Display Failed!")
+        prRed(exc if ERROR else "")
         pass
 
 
@@ -113,8 +111,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    if ARGS.headless and ARGS.account_browser is None:
+
+    if ARGS.virtual_display:
         createDisplay()
+
+    if ARGS.headless and ARGS.account_browser is None:
         options.add_argument("--headless=new")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
@@ -1561,6 +1562,10 @@ def argumentParser():
                         choices=["EUR", "USD", "AUD", "INR", "GBP", "CAD", "JPY", "CHF", "NZD", "ZAR", "BRL", "CNY", "HKD", "SGD", "THB"],
                         action="store",
                         required=False)
+    parser.add_argument("--virtual-display",
+                        help="Use system installed webdriver instead of webdriver-manager.",
+                        action="store_true",
+                        required=False)
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -2531,7 +2536,18 @@ def main():
     input('Press enter to close the program...')
 
 
+def get_version():
+    try:
+        with open('version.json', 'r') as version_json:
+            return json.load(version_json)['version']
+    except Exception as exc:
+        prRed(exc if ERROR else "")
+        return "Unknown"
+
+
 if __name__ == '__main__':
+    version = get_version()
+
     try:
         main()
     except Exception as e:
