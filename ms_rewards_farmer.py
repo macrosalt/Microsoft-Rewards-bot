@@ -2202,11 +2202,6 @@ def tkinter_calculator():
             messagebox.showerror("Error", "Current balance is higher or equal to price.")
             return
 
-        if accounts >= 15:
-            messagebox.showerror("Reality check",
-                                 f"You can't actually reasonably run {accounts} accounts mate.")
-            return
-
         messagebox.showinfo("RewardStimator Result", f""
                                                      f"Total $5 {non}Microsoft gift cards required: {cards_required}"
                                                      f"\n{non}Microsoft gift cards required per account: {cr_per_acc}"
