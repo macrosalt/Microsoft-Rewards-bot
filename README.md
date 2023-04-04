@@ -82,6 +82,7 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--skip-unusual</code> Click on skip for 5 days on unusual activity detection.</li>
             <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.</li>
             <li><code>--skip-shopping</code> Skips MSN shopping game.</li>
+            <li><code>--repeat-shopping</code> Repeat MSN shopping game. (So it runs twice per account consecutively)</li>
             <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager.</li>
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--currency CURRENCY</code> Converts your points into your preferred currency. Available currencies: EUR, USD, AUD, INR, GBP, CAD, JPY, CHF, NZD, ZAR, BRL, CNY, HKD, SGD, THB</li>
