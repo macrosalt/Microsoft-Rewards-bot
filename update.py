@@ -16,7 +16,7 @@ args = parser.parse_args()
 # important settings
 temp_folder = "temp//"
 dir_path = os.path.join(__file__.replace(os.path.basename(__file__), ""))
-ignore_files = ["LICENSE", ".gitignore", ".deepsource.toml", "accounts.json.sample", "version.json", "update.py"]
+ignore_files = ["LICENSE", ".gitignore", ".deepsource.toml", "accounts.json.sample", "update.py"]
 repository = {
     "name": "farshadz1997",
     "repo": "Microsoft-Rewards-bot",
