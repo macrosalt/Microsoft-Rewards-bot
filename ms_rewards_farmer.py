@@ -189,15 +189,17 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                     browser.close()
             browser.switch_to.window(current_window)
 
+    # Checks if proxy is dead if you added the flag
     global IS_PROXY_WORKING
-    if not IS_PROXY_WORKING:
-        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your Provided Proxy is Dead, Please replace a new one and run the script again'
-        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-        updateLogs()
-        cleanLogs()
-        IS_PROXY_WORKING = True
-        raise Exception(prRed(
-            'Your Provided Proxy is Dead, Please replace a new one and run the script again'))
+    if ARGS.skip_if_proxy_dead:
+        if not IS_PROXY_WORKING:
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Provided Proxy is Dead, Please replace a new one and run the script again'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            updateLogs()
+            cleanLogs()
+            IS_PROXY_WORKING = True
+            raise Exception(prPurple(
+                '[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again'))
     time.sleep(1)
     # Access to bing.com
     browser.get('https://login.live.com/')
@@ -1894,6 +1896,9 @@ def createMessage():
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Unknown error !':
             status = '⛔️ Unknown error occurred'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+        elif value[1]['Last check'] == 'Provided Proxy is Dead, Please replace a new one and run the script again':
+            status = '📛 Provided Proxy is Dead, Please replace a new one and run the script again'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
             status = f'Farmed on {value[1]["Last check"]}'
