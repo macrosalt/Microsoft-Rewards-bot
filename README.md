@@ -87,6 +87,7 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--virtual-display</code> Use PyVirtualDisplay (intended for Raspberry Pi users).</li>
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--currency CURRENCY</code> Converts your points into your preferred currency. Available currencies: EUR, USD, AUD, INR, GBP, CAD, JPY, CHF, NZD, ZAR, BRL, CNY, HKD, SGD, THB</li>
+            <li><code>----skip-if-proxy-dead</code> skips farming a particular account whose supplied proxy is no longer active.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled.</li>
