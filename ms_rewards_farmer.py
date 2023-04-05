@@ -50,6 +50,7 @@ LOGS = {}  # Dictionary of accounts to write in 'logs_accounts.txt'.
 FAST = False  # When this variable set True then all possible delays reduced.
 SUPER_FAST = False  # fast but super
 BASE_URL = "https://rewards.bing.com"
+IS_PROXY_WORKING=True
 
 # Auto Redeem - Define max amount of auto-redeems per run and counter
 MAX_REDEEMS = 1
@@ -79,6 +80,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     """Create Chrome browser"""
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
+    global IS_PROXY_WORKING
     if ARGS.edge:
         options = EdgeOptions()
     else:
@@ -106,7 +108,10 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             options.add_argument(f'--proxy-server={proxy}')
             prBlue(f"Using proxy: {proxy}")
         else:
-            prYellow(f"[PROXY] Your entered proxy is not working, continuing without proxy.")
+            if ARGS.skip_if_proxy_dead:
+                IS_PROXY_WORKING=False
+            else:
+                prYellow(f"[PROXY] Your entered proxy is not working, continuing without proxy.")
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -173,6 +178,18 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                     time.sleep(0.5)
                     browser.close()
             browser.switch_to.window(current_window)
+
+    
+    global IS_PROXY_WORKING
+    if not IS_PROXY_WORKING:
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your Provided Proxy is Dead, Please replace a new one and run the script again'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        IS_PROXY_WORKING=True
+        raise Exception(prRed(
+            'Your Provided Proxy is Dead, Please replace a new one and run the script again'))
+    time.sleep(1)
     # Access to bing.com
     browser.get('https://login.live.com/')
     # Check if account is already logged in
@@ -1580,6 +1597,10 @@ def argumentParser():
                         required=False)
     parser.add_argument("--repeat-shopping",
                         help="Repeat MSN shopping.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--skip-if-proxy-dead",
+                        help="Skips the account when ptovided Proxy is dead/ not working",
                         action="store_true",
                         required=False)
     args = parser.parse_args()
