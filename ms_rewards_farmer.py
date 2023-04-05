@@ -83,7 +83,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     """Create Chrome browser"""
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
-    global IS_PROXY_WORKING
+    global IS_PROXY_WORKING  # pylint: disable=global-statement
     if ARGS.edge:
         options = EdgeOptions()
     else:
@@ -117,7 +117,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
                 IS_PROXY_WORKING = False
             else:
                 prYellow(
-                    f"[PROXY] Your entered proxy is not working, continuing without proxy.")
+                    "[PROXY] Your entered proxy is not working, continuing without proxy.")
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -190,16 +190,15 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             browser.switch_to.window(current_window)
 
     # Checks if proxy is dead if you added the flag
-    global IS_PROXY_WORKING
-    if ARGS.skip_if_proxy_dead:
-        if not IS_PROXY_WORKING:
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Provided Proxy is Dead, Please replace a new one and run the script again'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            updateLogs()
-            cleanLogs()
-            IS_PROXY_WORKING = True
-            raise Exception(prPurple(
-                '[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again'))
+    global IS_PROXY_WORKING  # pylint: disable=global-statement
+    if ARGS.skip_if_proxy_dead and not IS_PROXY_WORKING:
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Provided Proxy is Dead, Please replace a new one and run the script again'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        IS_PROXY_WORKING = True
+        raise Exception(prPurple(
+            '[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again'))
     time.sleep(1)
     # Access to bing.com
     browser.get('https://login.live.com/')
