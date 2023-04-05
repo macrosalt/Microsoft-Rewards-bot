@@ -111,9 +111,6 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
-    if ARGS.virtual_display:
-        createDisplay()
-
     if ARGS.headless and ARGS.account_browser is None:
         options.add_argument("--headless=new")
     options.add_argument('log-level=3')
@@ -130,7 +127,42 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
-    """Close welcome tab for new sessions"""
+    
+    def answerToBreakFreeFromPassword():
+        # Click No thanks on break free from password question
+        time.sleep(2)
+        browser.find_element(By.ID, "iCancel").click()
+        time.sleep(5)
+        
+    def answerToSecurityQuestion():
+        # Click Looks good on security question
+        time.sleep(2)
+        browser.find_element(By.ID, 'iLooksGood').click()
+        time.sleep(5)
+    
+    def answerUpdatingTerms():
+        # Accept updated terms
+        time.sleep(2)
+        browser.find_element(By.ID, 'iNext').click()
+        time.sleep(5)
+        
+    def waitToLoadBlankPage():
+        time.sleep(calculateSleep(10))
+        wait = WebDriverWait(browser, 10)
+        wait.until(ec.presence_of_element_located((By.TAG_NAME, "body")))
+        wait.until(ec.presence_of_all_elements_located)
+        wait.until(ec.title_contains(""))
+        wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "html[lang]")))
+        wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")
+        
+    def handleLockedAccount():
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        raise Exception(prRed('[ERROR] Your account has been locked !'))
+    
+    #Close welcome tab for new sessions
     if ARGS.session:
         time.sleep(2)
         if len(browser.window_handles) > 1:
@@ -146,26 +178,14 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     # Check if account is already logged in
     if ARGS.session:
         if browser.title == "":
-            time.sleep(calculateSleep(10))
-            wait = WebDriverWait(browser, 10)
-            wait.until(ec.presence_of_element_located((By.TAG_NAME, "body")))
-            wait.until(ec.presence_of_all_elements_located)
-            wait.until(ec.title_contains(""))
-            wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "html[lang]")))
-            wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")
+            waitToLoadBlankPage()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
-            time.sleep(2)
-            browser.find_element(By.ID, 'iNext').click()
-            time.sleep(5)
+            answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
-            time.sleep(2)
-            browser.find_element(By.ID, 'iLooksGood').click()
-            time.sleep(5)
+            answerToSecurityQuestion()
         # Click No thanks on break free from password question
-        if isElementExists(browser, By.ID, "setupAppDesc"):
-            time.sleep(2)
-            browser.find_element(By.ID, "iCancel").click()
-            time.sleep(5)
+        if isElementExists(browser, By.ID, "setupAppDesc") or browser.title == "Break free from your passwords":
+            answerToBreakFreeFromPassword()
         if browser.title == 'Microsoft account | Home' or isElementExists(browser, By.ID, 'navs_container'):
             prGreen('[LOGIN] Account already logged in !')
             RewardsLogin(browser)
@@ -173,41 +193,14 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             checkBingLogin(browser, isMobile)
             return
         elif browser.title == 'Your account has been temporarily suspended':
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            updateLogs()
-            cleanLogs()
-            raise Exception(prRed('[ERROR] Your account has been locked !'))
+            handleLockedAccount()
         elif browser.title == "Help us protect your account" or browser.current_url.startswith(
                 "https://account.live.com/proofs/Add"):
-            prYellow('[ERROR] Unusual activity detected !')
-            if isElementExists("iShowSkip") and ARGS.skip_unusual:
-                try:
-                    waitUntilClickable(browser, By.ID, "iShowSkip")
-                    browser.find_element(By.ID, "iShowSkip").click()
-                except:
-                    LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-                    FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                    updateLogs()
-                    cleanLogs()
-                    raise Exception("[ERROR] Unusual activity detected !")
-                else:
-                    prGreen('[LOGIN] Account already logged in !')
-                    RewardsLogin(browser)
-                    print('[LOGIN]', 'Ensuring login on Bing...')
-                    checkBingLogin(browser, isMobile)
-                    return
-            else:
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                updateLogs()
-                cleanLogs()
-                if ARGS.telegram or ARGS.discord:
-                    message = createMessage()
-                    sendReportToMessenger(message)
-                input('Press any key to close...')
-                os._exit(0)
+            handleUnusualActivity(browser, isMobile)
+            return
         elif isElementExists(browser, By.ID, 'mectrl_headerPicture') or 'Sign In or Create' in browser.title:
+            browser.find_element(By.ID, 'mectrl_headerPicture').click()
+            waitUntilVisible(browser, By.ID, 'i0118', 15)
             if isElementExists(browser, By.ID, 'i0118'):
                 browser.find_element(By.ID, "i0118").send_keys(pwd)
                 time.sleep(2)
@@ -239,26 +232,14 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     time.sleep(5)
     try:
         if browser.title == "":
-            time.sleep(calculateSleep(10))
-            wait = WebDriverWait(browser, 10)
-            wait.until(ec.presence_of_element_located((By.TAG_NAME, "body")))
-            wait.until(ec.presence_of_all_elements_located)
-            wait.until(ec.title_contains(""))
-            wait.until(ec.presence_of_element_located((By.CSS_SELECTOR, "html[lang]")))
-            wait.until(lambda driver: driver.execute_script("return document.readyState") == "complete")
+            waitToLoadBlankPage()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
-            time.sleep(2)
-            browser.find_element(By.ID, 'iNext').click()
-            time.sleep(5)
+            answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
-            time.sleep(2)
-            browser.find_element(By.ID, 'iLooksGood').click()
-            time.sleep(5)
+            answerToSecurityQuestion()
         # Click No thanks on break free from password question
-        if isElementExists(browser, By.ID, "setupAppDesc"):
-            time.sleep(2)
-            browser.find_element(By.ID, "iCancel").click()
-            time.sleep(5)
+        if isElementExists(browser, By.ID, "setupAppDesc") or browser.title == "Break free from your passwords":
+            answerToBreakFreeFromPassword()
         if ARGS.session:
             # Click Yes to stay signed in.
             browser.find_element(By.ID, 'idSIButton9').click()
@@ -269,46 +250,11 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         # Check for if account has been locked.
         if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME,
                                                                                              "serviceAbusePageContainer  PageContainer"):
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            updateLogs()
-            cleanLogs()
-            raise Exception(prRed('[ERROR] Your account has been locked !'))
-        elif browser.title == "Help us protect your account" or browser.current_url.startswith(
-                "https://account.live.com/proofs/Add"):
-            prYellow('[ERROR] Unusual activity detected !')
-            if isElementExists("iShowSkip") and ARGS.skip_unusual:
-                try:
-                    waitUntilClickable(browser, By.ID, "iShowSkip")
-                    browser.find_element(By.ID, "iShowSkip").click()
-                except:
-                    LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-                    FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                    updateLogs()
-                    cleanLogs()
-                    raise Exception("[ERROR] Unusual activity detected !")
-                else:
-                    prGreen('[LOGIN] Account already logged in !')
-                    RewardsLogin(browser)
-                    print('[LOGIN]', 'Ensuring login on Bing...')
-                    checkBingLogin(browser, isMobile)
-                    return
-            else:
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                updateLogs()
-                cleanLogs()
-                if ARGS.telegram or ARGS.discord:
-                    message = createMessage()
-                    sendReportToMessenger(message)
-                input('Press any key to close...')
-                os._exit(0)
-        else:
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unknown error !'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            updateLogs()
-            cleanLogs()
-            raise Exception(prRed('[ERROR] Unknown error !'))
+            handleLockedAccount()
+        elif browser.title == "Help us protect your account" or \
+            browser.current_url.startswith("https://account.live.com/proofs/Add"):
+            handleUnusualActivity(browser, isMobile)
+            return
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
@@ -351,6 +297,9 @@ def RewardsLogin(browser: WebDriver):
             time.sleep(5)
     except:
         pass
+    if browser.title == "Help us protect your account" or \
+        browser.current_url.startswith("https://account.live.com/proofs/Add"):
+        handleUnusualActivity(browser)
     time.sleep(calculateSleep(10))
     # Check for ErrorMessage
     try:
@@ -378,10 +327,35 @@ def RewardsLogin(browser: WebDriver):
 @func_set_timeout(300)
 def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     """Check if logged in to Bing"""
+    
+    def getEmailPass():
+        for account in ACCOUNTS:
+            if account["username"] == CURRENT_ACCOUNT:
+                return account["username"], account["password"]
+    
+    def loginAgain():
+        waitUntilVisible(browser, By.ID, 'loginHeader', 10)
+        print('[LOGIN]', 'Writing email...')
+        email, pwd = getEmailPass()
+        browser.find_element(By.NAME, "loginfmt").send_keys(email)
+        browser.find_element(By.ID, 'idSIButton9').click()
+        time.sleep(calculateSleep(5))
+        waitUntilVisible(browser, By.ID, 'loginHeader', 10)
+        browser.find_element(By.ID, "i0118").send_keys(pwd)
+        print('[LOGIN]', 'Writing password...')
+        browser.find_element(By.ID, 'idSIButton9').click()
+        time.sleep(5)
+        if isElementExists(browser, By.ID, "idSIButton9"):
+            if ARGS.session:
+                # Click Yes to stay signed in.
+                browser.find_element(By.ID, 'idSIButton9').click()
+            else:
+                # Click No.
+                browser.find_element(By.ID, 'idBtn_Back').click()
+        browser.get("https://bing.com/")
+    
     global POINTS_COUNTER  # pylint: disable=global-statement
-    # Access Bing.com
     browser.get('https://bing.com/')
-    # Wait 15 seconds
     time.sleep(calculateSleep(15))
     # try to get points at first if account already logged in
     if ARGS.session:
@@ -438,6 +412,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         try:
             time.sleep(1)
             browser.find_element(By.ID, 'HBSignIn').click()
+            if isElementExists(browser, By.NAME, "loginfmt"):
+                loginAgain()
         except:
             pass
         try:
@@ -445,12 +421,9 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             browser.find_element(By.ID, 'iShowSkip').click()
             time.sleep(3)
         except:
-            if str(browser.current_url).split('?')[0] == "https://account.live.com/proofs/Add":
-                prRed(f'[LOGIN] Please complete the Security Check on {CURRENT_ACCOUNT}')
-                FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-                LOGS[CURRENT_ACCOUNT]['Last check'] = 'Requires manual check!'
-                updateLogs()
-                sys.exit()
+            if browser.title == "Help us protect your account" or browser.current_url.startswith(
+                "https://account.live.com/proofs/Add"):
+                handleUnusualActivity(browser, isMobile)
     # Wait 5 seconds
     time.sleep(5)
     # Refresh page
@@ -487,6 +460,36 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     except:
         checkBingLogin(browser, isMobile)
 
+
+def handleUnusualActivity(browser: WebDriver, isMobile: bool = False):
+    prYellow('[ERROR] Unusual activity detected !')
+    if isElementExists("iShowSkip") and ARGS.skip_unusual:
+        try:
+            waitUntilClickable(browser, By.ID, "iShowSkip")
+            browser.find_element(By.ID, "iShowSkip").click()
+        except:
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            updateLogs()
+            cleanLogs()
+            raise Exception("[ERROR] Unusual activity detected !")
+        else:
+            prGreen('[LOGIN] Account already logged in !')
+            RewardsLogin(browser)
+            print('[LOGIN]', 'Ensuring login on Bing...')
+            checkBingLogin(browser, isMobile)
+            return
+    else:
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        if ARGS.telegram or ARGS.discord:
+            message = createMessage()
+            sendReportToMessenger(message)
+        input('Press any key to close...')
+        os._exit(0)
+        
 
 def waitUntilVisible(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
     """Wait until visible"""
@@ -761,7 +764,8 @@ def completeDailySet(browser: WebDriver):
         if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
             browser.find_element(By.ID, 'bnp_hfly_cta2').click()
             time.sleep(2)
-        waitUntilVisible(browser, By.ID, "btoption0", 15)
+        waitUntilClickable(browser, By.ID, "btoption0", 15)
+        time.sleep(1.5)
         browser.find_element(By.ID, "btoption" + str(random.randint(0, 1))).click()
         time.sleep(calculateSleep(10))
         browser.close()
@@ -1251,8 +1255,8 @@ def completeMorePromotions(browser: WebDriver):
     prGreen('[MORE PROMO] Completed More Promotions successfully !')
 
 
-def completeMSNShoppingGame(browser: WebDriver):
-    """Complete MSN Shopping Game"""
+def completeMSNShoppingGame(browser: WebDriver) -> bool:
+    """Complete MSN Shopping Game, returns True if completed successfully else False"""
 
     def expandShadowElement(element, index: int = None) -> Union[List[WebElement], WebElement]:
         """Returns childrens of shadow element"""
@@ -1380,16 +1384,20 @@ def completeMSNShoppingGame(browser: WebDriver):
                 break
     except NoSuchElementException:
         prYellow("[MSN GAME] Failed to locate MSN shopping game !")
+        finished = False
     except Exception as exc:  # skipcq
         if ERROR:
             prRed(str(exc))
         prYellow("[MSN GAME] Failed to complete MSN shopping game !")
+        finished = False
     else:
         prGreen("[MSN GAME] Completed MSN shopping game successfully !")
+        finished = True
     finally:
         browser.get(BASE_URL)
         LOGS[CURRENT_ACCOUNT]["MSN shopping game"] = True
         updateLogs()
+        return finished
 
 
 def getRemainingSearches(browser: WebDriver):
@@ -1446,7 +1454,8 @@ def accountBrowser(chosen_account: str):
             break
     else:
         return None
-    browserSetup(False, PC_USER_AGENT)
+    browser = browserSetup(False, PC_USER_AGENT)
+    return browser
 
 
 def argumentParser():
@@ -2385,10 +2394,12 @@ def farmer():
                 if not LOGS[CURRENT_ACCOUNT]['More promotions']:
                     completeMorePromotions(browser)
                 if not ARGS.skip_shopping and not LOGS[CURRENT_ACCOUNT]['MSN shopping game']:
+                    finished = False
                     if ARGS.repeat_shopping:
-                        completeMSNShoppingGame(browser)
+                        finished = completeMSNShoppingGame(browser)
                         prYellow("Running repeated MSN shopping. It will likely result in error due to msn shopping likely completed")
-                    completeMSNShoppingGame(browser)
+                    if not finished:
+                        completeMSNShoppingGame(browser)
                 remainingSearches, remainingSearchesM = getRemainingSearches(browser)
                 MOBILE = bool(remainingSearchesM)
                 if remainingSearches != 0:
@@ -2497,15 +2508,20 @@ def main():
     LANG, GEO, TZ = getCCodeLangAndOffset()
     if ARGS.account_browser:
         prBlue(f"\n[INFO] Opening session for {ARGS.account_browser[0]}")
-        accountBrowser(ARGS.account_browser[0])
+        browser = accountBrowser(ARGS.account_browser[0])
         input("Press Enter to close when you finished...")
-        return None
+        if browser is not None:
+            browser.quit()
     run_at = None
     if ARGS.start_at:
         run_at = ARGS.start_at[0]
     elif ARGS.everyday and ARGS.start_at is None:
         run_at = datetime.now().strftime("%H:%M")
         prBlue(f"\n[INFO] Starting everyday at {run_at}.")
+        
+    if ARGS.virtual_display:
+        createDisplay()
+    
     if run_at is not None:
         prBlue(f"\n[INFO] Farmer will start at {run_at}")
         while True:
