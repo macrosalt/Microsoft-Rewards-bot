@@ -2246,6 +2246,10 @@ def loadAccounts():
 
 def update_handler(local_version):
     """Checks if the update is the latest"""
+    # Check if version is unknown
+    if local_version == "Unknown":
+        prRed("Update handler will not run due to the local version being unknown.")
+
     # initialize functions
     def loadingbar(configuration: dict, skip_text_after_loading_bar_finished) -> None:
         """
