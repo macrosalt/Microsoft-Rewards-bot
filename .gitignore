@@ -1,6 +1,7 @@
 *.json
 *.txt
 .vscode
+accounts.json
 chromedriver.exe
 Profiles
 __pycache__
