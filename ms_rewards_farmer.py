@@ -947,9 +947,9 @@ def completeDailySet(browser: WebDriver):
             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/\
             mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]\
             /div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
-        time.sleep(1)
+        time.sleep(2)
         browser.switch_to.window(window_name=browser.window_handles[1])
-        time.sleep(calculateSleep(15))
+        time.sleep(calculateSleep(25))
         # Accept cookie popup
         if isElementExists(browser, By.ID, 'bnp_container'):
             browser.find_element(By.ID, 'bnp_btn_accept').click()
@@ -982,10 +982,10 @@ def completeDailySet(browser: WebDriver):
 
             if answer1Code == correctAnswerCode:
                 answer1.click()
-                time.sleep(calculateSleep(15))
+                time.sleep(calculateSleep(25))
             elif answer2Code == correctAnswerCode:
                 answer2.click()
-                time.sleep(calculateSleep(15))
+                time.sleep(calculateSleep(25))
 
         time.sleep(5)
         browser.close()
@@ -1094,7 +1094,7 @@ def completePunchCards(browser: WebDriver):
                             "return _w.rewardsQuizRenderInfo.correctAnswer")
                         browser.find_element(
                             By.XPATH, f'//input[@value="{answer}"]').click()
-                        time.sleep(calculateSleep(15))
+                        time.sleep(calculateSleep(25))
                     time.sleep(5)
                     browser.close()
                     time.sleep(2)
@@ -1278,11 +1278,11 @@ def completeMorePromotions(browser: WebDriver):
 
             if answer1Code == correctAnswerCode:
                 answer1.click()
-                time.sleep(calculateSleep(8))
+                time.sleep(calculateSleep(20))
 
             elif answer2Code == correctAnswerCode:
                 answer2.click()
-                time.sleep(calculateSleep(8))
+                time.sleep(calculateSleep(20))
 
         time.sleep(5)
         browser.close()
@@ -1606,7 +1606,7 @@ def argumentParser():
                         action='store_true',
                         required=False)
     parser.add_argument('--superfast',
-                        help="Reduce delays SUPER FAST where ever it's possible to make script faster.",
+                        help="Reduce delays where ever it's possible even further than fast mode to make script faster.",
                         action='store_true',
                         required=False)
     parser.add_argument('--telegram',
@@ -1641,7 +1641,7 @@ def argumentParser():
                         required=False,
                         metavar="ACTION")
     parser.add_argument("--redeem",
-                        help="[Optional] Enable auto-redeem rewards based on accounts.json goals.",
+                        help="Enable auto-redeem rewards based on accounts.json goals.",
                         action="store_true",
                         required=False)
     parser.add_argument("--calculator",
@@ -1653,7 +1653,7 @@ def argumentParser():
                         action="store_true",
                         required=False)
     parser.add_argument("--skip-shopping",
-                        help="Skip MSN shopping game (useful for people living in regions which do not support MSN Shopping.",
+                        help="Skip MSN shopping game. Useful for people living in regions which do not support MSN Shopping.",
                         action="store_true",
                         required=False)
     parser.add_argument("--no-images",
@@ -1669,13 +1669,13 @@ def argumentParser():
                         action="store_true",
                         required=False)
     parser.add_argument("--currency",
-                        help="Use system installed webdriver instead of webdriver-manager.",
+                        help="Converts your points into your preferred currency.",
                         choices=["EUR", "USD", "AUD", "INR", "GBP", "CAD", "JPY",
                                  "CHF", "NZD", "ZAR", "BRL", "CNY", "HKD", "SGD", "THB"],
                         action="store",
                         required=False)
     parser.add_argument("--virtual-display",
-                        help="Use system installed webdriver instead of webdriver-manager.",
+                        help="Use PyVirtualDisplay (intended for Raspberry Pi users).",
                         action="store_true",
                         required=False)
     parser.add_argument("--dont-check-for-updates",
@@ -1683,11 +1683,11 @@ def argumentParser():
                         action="store_true",
                         required=False)
     parser.add_argument("--repeat-shopping",
-                        help="Repeat MSN shopping.",
+                        help="Repeat MSN shopping so it runs twice per account.",
                         action="store_true",
                         required=False)
     parser.add_argument("--skip-if-proxy-dead",
-                        help="Skips the account when ptovided Proxy is dead/ not working",
+                        help="Skips the account when provided Proxy is dead/ not working",
                         action="store_true",
                         required=False)
     args = parser.parse_args()
