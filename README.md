@@ -47,22 +47,22 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
     Remove <code>mobile_user_agent</code>, <code>proxy</code> or <code>goal</code> from your account if you don't know how to use them:
 
 ```accounts.json   
-    [
-        {
-            "username": "Your Email",
-            "password": "Your Password",
-            "mobile_user_agent": "your preferred mobile user agent",
-            "proxy": "HTTP proxy",
-            "goal": "Amazon"
-        },
-        {
-            "username": "Your Email 2",
-            "password": "Your Password 2",
-            "mobile_user_agent": "your preferred mobile user agent",
-            "proxy": "HTTP proxy",
-            "goal": "Xbox Game Pass Ultimate"
-        }
-    ]   
+[
+    {
+        "username": "Your Email",
+        "password": "Your Password",
+        "mobile_user_agent": "your preferred mobile user agent",
+        "proxy": "HTTP proxy (IP:PORT)",
+        "goal": "Amazon"
+    },
+    {
+        "username": "Your Email 2",
+        "password": "Your Password 2",
+        "mobile_user_agent": "your preferred mobile user agent",
+        "proxy": "HTTP proxy (IP:PORT)",
+        "goal": "Xbox Game Pass Ultimate"
+     }
+]   
 ```
 
 </li>
@@ -96,6 +96,7 @@ You can use the simple installation guide made for Windows 10/11 devices who pla
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--currency CURRENCY</code> Converts your points into your preferred currency. Available currencies: EUR, USD, AUD, INR, GBP, CAD, JPY, CHF, NZD, ZAR, BRL, CNY, HKD, SGD, THB</li>
             <li><code>--skip-if-proxy-dead</code> skips farming a particular account whose supplied proxy is no longer active.</li>
+            <li><code>--dont-check-internet</code> Bot won't look for internet connection if you use this arg.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled.</li>
