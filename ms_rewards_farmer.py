@@ -1657,6 +1657,11 @@ def argumentParser():
                         help="Skips the account when provided Proxy is dead/ not working",
                         action="store_true",
                         required=False)
+    parser.add_argument("--dont-check-internet",
+                        help="Prevent script from checking internet connection.",
+                        action="store_true",
+                        required=False)
+    
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -1770,6 +1775,8 @@ def finishedAccount():
 
 def checkInternetConnection():
     """Check if you're connected to the inter-web superhighway"""
+    if ARGS.dont_check_internet:
+        return
     system = platform.system()
     while True:
         try:
