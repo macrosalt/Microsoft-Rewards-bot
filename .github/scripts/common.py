@@ -133,7 +133,8 @@ MACHINE_TO_ACCOUNT = {
 MACHINE_PRIORITY = {
     "macP_win1022H2": 1,
     "miHyper_win1022H2": 2,
-    "mac_origin": 3,
+    "miHyper_win7":3,
+    "mac_origin": 4,
 }
 
 ACCOUNT_TO_MACHINE = {}
