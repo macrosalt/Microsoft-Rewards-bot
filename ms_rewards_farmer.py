@@ -34,6 +34,8 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import tkinter as tk
 from tkinter import messagebox, ttk
 from math import ceil
+from exceptions import *
+
 
 # Define user-agents
 PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51'
@@ -52,7 +54,6 @@ LOGS = {}  # Dictionary of accounts to write in 'logs_accounts.txt'.
 FAST = False  # When this variable set True then all possible delays reduced.
 SUPER_FAST = False  # fast but super
 BASE_URL = "https://rewards.bing.com"
-IS_PROXY_WORKING = True
 
 # Auto Redeem - Define max amount of auto-redeems per run and counter
 MAX_REDEEMS = 1
@@ -83,7 +84,6 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     """Create Chrome browser"""
     from selenium.webdriver.chrome.options import Options as ChromeOptions
     from selenium.webdriver.edge.options import Options as EdgeOptions
-    global IS_PROXY_WORKING  # pylint: disable=global-statement
     if ARGS.edge:
         options = EdgeOptions()
     else:
@@ -114,10 +114,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             prBlue(f"Using proxy: {proxy}")
         else:
             if ARGS.skip_if_proxy_dead:
-                IS_PROXY_WORKING = False
+                raise ProxyIsDeadException
             else:
-                prYellow(
-                    "[PROXY] Your entered proxy is not working, continuing without proxy.")
+                prYellow("[PROXY] Your entered proxy is not working, continuing without proxy.")
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -170,13 +169,6 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         wait.until(lambda driver: driver.execute_script(
             "return document.readyState") == "complete")
 
-    def handleLockedAccount():
-        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
-        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-        updateLogs()
-        cleanLogs()
-        raise Exception(prRed('[ERROR] Your account has been locked !'))
-
     # Close welcome tab for new sessions
     if ARGS.session:
         time.sleep(2)
@@ -188,17 +180,6 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                     time.sleep(0.5)
                     browser.close()
             browser.switch_to.window(current_window)
-
-    # Checks if proxy is dead if you added the flag
-    global IS_PROXY_WORKING  # pylint: disable=global-statement
-    if ARGS.skip_if_proxy_dead and not IS_PROXY_WORKING:
-        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Provided Proxy is Dead, Please replace a new one and run the script again'
-        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-        updateLogs()
-        cleanLogs()
-        IS_PROXY_WORKING = True
-        raise Exception(prPurple(
-            '[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again'))
     time.sleep(1)
     # Access to bing.com
     browser.get('https://login.live.com/')
@@ -220,7 +201,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             checkBingLogin(browser, isMobile)
             return
         elif browser.title == 'Your account has been temporarily suspended':
-            handleLockedAccount()
+            raise AccountLockedException
         elif browser.title == "Help us protect your account" or browser.current_url.startswith(
                 "https://account.live.com/proofs/Add"):
             handleUnusualActivity(browser, isMobile)
@@ -277,7 +258,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
         # Check for if account has been locked.
         if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME,
                                                                                              "serviceAbusePageContainer  PageContainer"):
-            handleLockedAccount()
+            raise AccountLockedException
         elif browser.title == "Help us protect your account" or \
                 browser.current_url.startswith("https://account.live.com/proofs/Add"):
             handleUnusualActivity(browser, isMobile)
@@ -334,21 +315,11 @@ def RewardsLogin(browser: WebDriver):
         # Check wheter account suspended or not
         if browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute(
                 'innerHTML') == ' Uh oh, it appears your Microsoft Rewards account has been suspended.':
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
-            LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A'
-            LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A'
-            cleanLogs()
-            updateLogs()
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            raise Exception(
-                prRed('[ERROR] Your Microsoft Rewards account has been suspended !'))
+            raise AccountSuspendedException
         # Check whether Rewards is available in your region or not
         elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute(
                 'innerHTML') == 'Microsoft Rewards is not available in this country or region.':
-            prRed(
-                '[ERROR] Microsoft Rewards is not available in this country or region !')
-            input('[ERROR] Press any key to close...')
-            os._exit(0)
+            raise RegionException
     except NoSuchElementException:
         pass
 
@@ -503,11 +474,7 @@ def handleUnusualActivity(browser: WebDriver, isMobile: bool = False):
             waitUntilClickable(browser, By.ID, "iShowSkip")
             browser.find_element(By.ID, "iShowSkip").click()
         except:
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
-            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
-            updateLogs()
-            cleanLogs()
-            raise Exception("[ERROR] Unusual activity detected !")
+            raise UnusualActivityException
         else:
             prGreen('[LOGIN] Account already logged in !')
             RewardsLogin(browser)
@@ -2504,7 +2471,10 @@ def farmer():
                      CURRENT_ACCOUNT + '********************')
             if not LOGS[CURRENT_ACCOUNT]['PC searches']:
                 browser = browserSetup(
-                    False, PC_USER_AGENT, account.get('proxy', None))
+                    False,
+                    PC_USER_AGENT,
+                    account.get('proxy', None)
+                )
                 print('[LOGIN]', 'Logging-in...')
                 login(browser, account['username'], account['password'])
                 prGreen('[LOGIN] Logged-in successfully !')
@@ -2532,8 +2502,7 @@ def farmer():
                     if goal != '':
                         # Goal needs to be updated
                         setRedeemGoal(browser, goal)
-                        redeem_goal_title, redeem_goal_price = getRedeemGoal(
-                            browser)
+                        redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
 
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     completeDailySet(browser)
@@ -2562,8 +2531,11 @@ def farmer():
                 browser.quit()
 
             if MOBILE:
-                browser = browserSetup(True, account.get('mobile_user_agent', MOBILE_USER_AGENT),
-                                       account.get('proxy', None))
+                browser = browserSetup(
+                    True,
+                    account.get('mobile_user_agent', MOBILE_USER_AGENT),
+                    account.get('proxy', None)
+                )
                 print('[LOGIN]', 'Logging-in mobile...')
                 login(browser, account['username'], account['password'], True)
                 prGreen('[LOGIN] Logged-in successfully !')
@@ -2606,6 +2578,7 @@ def farmer():
         ERROR = True
         browser.quit()
         farmer()
+    
     except SessionNotCreatedException:
         prBlue('[Driver] Session not created.')
         prBlue(
@@ -2613,6 +2586,7 @@ def farmer():
         prBlue('[Driver] https://chromedriver.chromium.org/downloads')
         input('Press any key to close...')
         sys.exit()
+    
     except KeyboardInterrupt:
         ERROR = True
         browser.quit()
@@ -2622,6 +2596,53 @@ def farmer():
             farmer()
         except KeyboardInterrupt:
             sys.exit("Force Exit (ctrl+c)")
+    
+    except ProxyIsDeadException:
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Provided Proxy is Dead, Please replace a new one and run the script again'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        prPurple('\n[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again\n')
+        checkInternetConnection()
+        farmer()
+    
+    except AccountLockedException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        prRed('[ERROR] Your account has been locked !')
+        checkInternetConnection()
+        farmer()
+        
+    except UnusualActivityException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        prRed("[ERROR] Unusual activity detected !")
+        checkInternetConnection()
+        farmer()
+    
+    except AccountSuspendedException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
+        LOGS[CURRENT_ACCOUNT]["Today's points"] = 'N/A'
+        LOGS[CURRENT_ACCOUNT]["Points"] = 'N/A'
+        cleanLogs()
+        updateLogs()
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        checkInternetConnection()
+        farmer()
+    
+    except RegionException:
+        browser.quit()
+        prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
+        input('[ERROR] Press any key to close...')
+        os._exit(0)
+    
     except Exception as e:
         if "executable needs to be in PATH" in str(e):
             prRed('[ERROR] WebDriver not found.\n')
@@ -2632,9 +2653,11 @@ def farmer():
             traceback.print_exc()
         print('\n')
         ERROR = True
-        browser.quit()
+        if browser is not None:
+            browser.quit()
         checkInternetConnection()
         farmer()
+    
     else:
         if ARGS.telegram or ARGS.discord:
             message = createMessage()
