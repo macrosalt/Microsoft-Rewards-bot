@@ -819,11 +819,12 @@ def completeDailySet(browser: WebDriver):
                     if isElementExists(browser, By.ID, 'b_notificationContainer_bop'):
                         browser.find_element(By.ID, 'bnp_hfly_cta2').click()
                         time.sleep(2)
+                    waitUntilClickable(browser, By.ID, answer, 25)
                     browser.find_element(By.ID, answer).click()
-                    time.sleep(5)
+                    time.sleep(calculateSleep(6))
                     if not waitUntilQuestionRefresh(browser):
                         return
-                time.sleep(5)
+                time.sleep(calculateSleep(6))
             elif numberOfOptions == 4:
                 correctOption = browser.execute_script(
                     "return _w.rewardsQuizRenderInfo.correctAnswer")
@@ -835,14 +836,15 @@ def completeDailySet(browser: WebDriver):
                             browser.find_element(
                                 By.ID, 'bnp_hfly_cta2').click()
                             time.sleep(2)
+                        waitUntilClickable(browser, By.ID, f"rqAnswerOption{str(i)}", 25)
                         browser.find_element(
                             By.ID, "rqAnswerOption" + str(i)).click()
-                        time.sleep(5)
+                        time.sleep(calculateSleep(6))
                         if not waitUntilQuestionRefresh(browser):
                             return
                         break
-                time.sleep(5)
-        time.sleep(5)
+                time.sleep(calculateSleep(6))
+        time.sleep(calculateSleep(6))
         browser.close()
         time.sleep(2)
         browser.switch_to.window(window_name=browser.window_handles[0])
@@ -887,7 +889,7 @@ def completeDailySet(browser: WebDriver):
                 time.sleep(2)
                 return
             except NoSuchElementException:
-                time.sleep(random.randint(5, 9))
+                time.sleep(calculateSleep(random.randint(5, 9)))
                 browser.close()
                 time.sleep(2)
                 browser.switch_to.window(window_name=browser.window_handles[0])
@@ -935,7 +937,7 @@ def completeDailySet(browser: WebDriver):
                 time.sleep(2)
 
             answerEncodeKey = browser.execute_script("return _G.IG")
-
+            waitUntilVisible(browser, By.ID, "rqAnswerOption0", 15)
             answer1 = browser.find_element(By.ID, "rqAnswerOption0")
             answer1Title = answer1.get_attribute('data-option')
             answer1Code = getAnswerCode(answerEncodeKey, answer1Title)
@@ -947,6 +949,7 @@ def completeDailySet(browser: WebDriver):
             correctAnswerCode = browser.execute_script(
                 "return _w.rewardsQuizRenderInfo.correctAnswer")
 
+            waitUntilClickable(browser, By.ID, "rqAnswerOption0", 25)
             if answer1Code == correctAnswerCode:
                 answer1.click()
                 time.sleep(calculateSleep(25))
@@ -954,7 +957,7 @@ def completeDailySet(browser: WebDriver):
                 answer2.click()
                 time.sleep(calculateSleep(25))
 
-        time.sleep(5)
+        time.sleep(calculateSleep(6))
         browser.close()
         time.sleep(2)
         browser.switch_to.window(window_name=browser.window_handles[0])
@@ -1048,7 +1051,7 @@ def completePunchCards(browser: WebDriver):
                         browser.find_element(By.ID, "rqStartQuiz").click()
                     except:
                         pass
-                    time.sleep(5)
+                    time.sleep(calculateSleep(6))
                     waitUntilVisible(
                         browser, By.ID, "currentQuestionContainer", 15)
                     numberOfQuestions = browser.execute_script(
@@ -1059,6 +1062,7 @@ def completePunchCards(browser: WebDriver):
                     for question in range(numberOfQuestions):
                         answer = browser.execute_script(
                             "return _w.rewardsQuizRenderInfo.correctAnswer")
+                        waitUntilClickable(browser, By.XPATH, f'//input[@value="{answer}"]', 25)
                         browser.find_element(
                             By.XPATH, f'//input[@value="{answer}"]').click()
                         time.sleep(calculateSleep(25))
@@ -1076,7 +1080,8 @@ def completePunchCards(browser: WebDriver):
                     time.sleep(1)
                     browser.switch_to.window(
                         window_name=browser.window_handles[1])
-                    time.sleep(8)
+                    time.sleep(calculateSleep(8))
+                    waitUntilVisible(browser, By.XPATH, '//*[@id="QuestionPane0"]/div[2]', 15)
                     counter = str(
                         browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[
                         :-1][1:]
@@ -1166,19 +1171,21 @@ def completeMorePromotions(browser: WebDriver):
                             "iscorrectoption").lower() == "true":
                         answers.append("rqAnswerOption" + str(i))
                 for answer in answers:
+                    waitUntilClickable(browser, By.ID, answer, 25)
                     browser.find_element(By.ID, answer).click()
-                    time.sleep(5)
+                    time.sleep(calculateSleep(6))
                     if not waitUntilQuestionRefresh(browser):
                         return
-                time.sleep(5)
+                time.sleep(calculateSleep(6))
             elif numberOfOptions == 4:
                 correctOption = browser.execute_script(
                     "return _w.rewardsQuizRenderInfo.correctAnswer")
                 for i in range(4):
-                    if browser.find_element(By.ID, "rqAnswerOption" + str(i)).get_attribute(
+                    if browser.find_element(By.ID, f"rqAnswerOption{str(i)}").get_attribute(
                             "data-option") == correctOption:
+                        waitUntilClickable(browser, By.ID, f"rqAnswerOption{str(i)}", 25)
                         browser.find_element(
-                            By.ID, "rqAnswerOption" + str(i)).click()
+                            By.ID, f"rqAnswerOption{str(i)}").click()
                         time.sleep(5)
                         if not waitUntilQuestionRefresh(browser):
                             return
@@ -1197,6 +1204,7 @@ def completeMorePromotions(browser: WebDriver):
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(10))
+        waitUntilVisible(browser, By.XPATH, '//*[@id="QuestionPane0"]/div[2]', 15)
         counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[
             :-1][1:]
         numberOfQuestions = max([int(s)
@@ -1204,7 +1212,7 @@ def completeMorePromotions(browser: WebDriver):
         for question in range(numberOfQuestions):
             browser.execute_script(
                 f'document.evaluate("//*[@id=\'QuestionPane{str(question)}\']/div[1]/div[2]/a[{str(random.randint(1, 3))}]/div", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()')
-            time.sleep(calculateSleep(10))
+            time.sleep(calculateSleep(10) + 3)
         time.sleep(5)
         browser.close()
         time.sleep(2)
@@ -1232,6 +1240,7 @@ def completeMorePromotions(browser: WebDriver):
         for _ in range(NumberOfQuestionsLeft):
             answerEncodeKey = browser.execute_script("return _G.IG")
 
+            waitUntilVisible(browser, By.ID, "rqAnswerOption0", 15)
             answer1 = browser.find_element(By.ID, "rqAnswerOption0")
             answer1Title = answer1.get_attribute('data-option')
             answer1Code = getAnswerCode(answerEncodeKey, answer1Title)
@@ -1243,6 +1252,7 @@ def completeMorePromotions(browser: WebDriver):
             correctAnswerCode = browser.execute_script(
                 "return _w.rewardsQuizRenderInfo.correctAnswer")
 
+            waitUntilClickable(browser, By.ID, "rqAnswerOption0", 15)
             if answer1Code == correctAnswerCode:
                 answer1.click()
                 time.sleep(calculateSleep(20))
