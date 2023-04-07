@@ -1,5 +1,4 @@
 # Setting up Microsoft Rewards Bot
-Note: This guide will only show you how to how to run the bot using Google Chrome NOT Edge.
 ## Installing Python
 Firstly install the latest version of [Python](https://www.python.org/downloads/). Make sure to download the specified version for your operating system. 
 ## Installing the Bot
@@ -7,13 +6,27 @@ To download the bot go to [@farshadz1997's github page](https://github.com/farsh
 ## Installing Chrome
 If you already have Google Chrome installed, skip this step. Otherwise download the latest version of [Google Chrome](https://www.google.com/intl/en_au/chrome/thank-you.html?statcb=0&installdataindex=empty&defaultbrowser=0).
 ## Initalising the bot
-On Windows, in file explorer click on the address bar, type "**wt**" into the field, then hit enter. In terminal run the following commands (LINUX/MACOS USERS CAN NOT USE RENAME, THE HAVE TO USE MV (move))
+On Windows, in file explorer click on the address bar, type "**wt**" into the field, then hit enter. In terminal run the following commands.
+**Windows:**
 ```
 pip install -r requirements.txt
 ren accounts.json.sample accounts.json
 echo "py .\ms_rewards_farmer.py --redeem --session" > manual_run.bat
 echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session" > run_at_6.30am_daily.bat
+echo "py .\ms_rewards_farmer.py --redeem --session --edge" > manual_run_edge.bat
+echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session --edge" > run_at_6.30am_daily_edge.bat
 echo "py .\ms_rewards_farmer.py --calculator" > calculator.bat
+```
+**Linux:**
+```
+pip install -r requirements.txt
+sudo apt-get install python3-tk
+mv accounts.json.sample accounts.json
+echo "py .\ms_rewards_farmer.py --redeem --session" > manual_run.sh
+echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session" > run_at_6.30am_daily.sh
+echo "py .\ms_rewards_farmer.py --redeem --session --edge" > manual_run_edge.sh
+echo "py .\ms_rewards_farmer.py --start-at 06:30 --everyday --redeem --session --edge" > run_at_6.30am_daily_edge.sh
+echo "py .\ms_rewards_farmer.py --calculator" > calculator.sh
 ```
 ## Adding Accounts
 To add/edit accounts open **accounts.json** and change the sample email and password to add more accounts simply follow the following:
