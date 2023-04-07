@@ -14,6 +14,7 @@ import copy
 import traceback
 import ipapi
 import requests
+import pyotp
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
 from random_word import RandomWords
@@ -138,7 +139,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
 
 
 # Define login function
-def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
+def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: bool = False):
 
     def answerToBreakFreeFromPassword():
         # Click No thanks on break free from password question
@@ -168,6 +169,19 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             (By.CSS_SELECTOR, "html[lang]")))
         wait.until(lambda driver: driver.execute_script(
             "return document.readyState") == "complete")
+        
+    def answerTOTP(totpSecret):
+        # Wait 2 seconds
+        time.sleep(calculateSleep(5))
+        # Wait complete loading
+        waitUntilVisible(browser, By.ID, 'idDiv_SAOTCC_Title', 5)
+        if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+            # Enter TOTP code
+            totpCode = pyotp.TOTP(totpSecret).now()
+            browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+            print('[LOGIN]', 'Writing TOTP code...')
+            # Click submit
+            browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
 
     # Close welcome tab for new sessions
     if ARGS.session:
@@ -213,6 +227,8 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                 browser.find_element(By.ID, "i0118").send_keys(pwd)
                 time.sleep(2)
                 browser.find_element(By.ID, 'idSIButton9').click()
+                if totpSecret is not None:
+                    answerTOTP(totpSecret)
                 time.sleep(5)
                 prGreen('[LOGIN] Account logged in again !')
                 RewardsLogin(browser)
@@ -236,6 +252,8 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     print('[LOGIN]', 'Writing password...')
     # Click next
     browser.find_element(By.ID, 'idSIButton9').click()
+    if totpSecret is not None:
+        answerTOTP(totpSecret)
     # Wait 5 seconds
     time.sleep(5)
     try:
@@ -331,12 +349,12 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     def getEmailPass():
         for account in ACCOUNTS:
             if account["username"] == CURRENT_ACCOUNT:
-                return account["username"], account["password"]
+                return account["username"], account["password"], account.get("totpSecret", None)
 
     def loginAgain():
         waitUntilVisible(browser, By.ID, 'loginHeader', 10)
         print('[LOGIN]', 'Writing email...')
-        email, pwd = getEmailPass()
+        email, pwd, totpSecret = getEmailPass()
         browser.find_element(By.NAME, "loginfmt").send_keys(email)
         browser.find_element(By.ID, 'idSIButton9').click()
         time.sleep(calculateSleep(5))
@@ -344,6 +362,18 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         browser.find_element(By.ID, "i0118").send_keys(pwd)
         print('[LOGIN]', 'Writing password...')
         browser.find_element(By.ID, 'idSIButton9').click()
+        if totpSecret is not None:
+            # Wait 2 seconds
+            time.sleep(calculateSleep(5))
+            # Wait complete loading
+            waitUntilVisible(browser, By.ID, 'idDiv_SAOTCC_Title', 5)
+            if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+                # Enter TOTP code
+                totpCode = pyotp.TOTP(totpSecret).now()
+                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                print('[LOGIN]', 'Writing TOTP code...')
+                # Click submit
+                browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
         time.sleep(5)
         if isElementExists(browser, By.ID, "idSIButton9"):
             if ARGS.session:
@@ -2493,7 +2523,7 @@ def farmer():
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in...')
-                login(browser, account['username'], account['password'])
+                login(browser, account['username'], account['password'], account.get('totpSecret', None))
                 prGreen('[LOGIN] Logged-in successfully !')
                 STARTING_POINTS = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) +
@@ -2554,7 +2584,7 @@ def farmer():
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in mobile...')
-                login(browser, account['username'], account['password'], True)
+                login(browser, account['username'], account['password'], account.get('totpSecret', None), True)
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     STARTING_POINTS = POINTS_COUNTER
@@ -2578,7 +2608,7 @@ def farmer():
                     browser = browserSetup(
                         False, PC_USER_AGENT, account.get('proxy', None))
                     print('[LOGIN]', 'Logging-in...')
-                    login(browser, account['username'], account['password'])
+                    login(browser, account['username'], account['password'], account.get('totpSecret', None))
                     prGreen('[LOGIN] Logged-in successfully!')
                     browser.get(BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
