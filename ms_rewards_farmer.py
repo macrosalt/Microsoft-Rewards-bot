@@ -53,7 +53,7 @@ CURRENT_ACCOUNT = None  # save current account into this variable when farming.
 LOGS = {}  # Dictionary of accounts to write in 'logs_accounts.txt'.
 FAST = False  # When this variable set True then all possible delays reduced.
 SUPER_FAST = False  # fast but super
-BASE_URL = "https://rewards.bing.com"
+BASE_URL = "https://rewards.bing.com/"
 
 # Auto Redeem - Define max amount of auto-redeems per run and counter
 MAX_REDEEMS = 1
@@ -1904,7 +1904,7 @@ def createMessage():
             f"(${total_earned / 1300:0.02f}) "\
             f"(€{total_earned / 1500:0.02f}) "\
             f"(AU${total_earned / 1350:0.02f}) "\
-            f"(₹{total_overall / 16:0.02f}) \n"
+            f"(₹{total_earned / 16:0.02f}) \n"
         message += f"💵 Total Overall points: {total_overall} "\
             f"(${total_overall / 1300:0.02f}) "\
             f"(€{total_overall / 1500:0.02f}) "\
