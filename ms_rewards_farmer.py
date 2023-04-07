@@ -169,12 +169,10 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             (By.CSS_SELECTOR, "html[lang]")))
         wait.until(lambda driver: driver.execute_script(
             "return document.readyState") == "complete")
-        
+
     def answerTOTP(totpSecret):
-        # Wait 2 seconds
-        time.sleep(calculateSleep(5))
-        # Wait complete loading
-        waitUntilVisible(browser, By.ID, 'idDiv_SAOTCC_Title', 5)
+        # Wait 5 seconds
+        time.sleep(5)
         if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
             # Enter TOTP code
             totpCode = pyotp.TOTP(totpSecret).now()
@@ -363,10 +361,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         print('[LOGIN]', 'Writing password...')
         browser.find_element(By.ID, 'idSIButton9').click()
         if totpSecret is not None:
-            # Wait 2 seconds
-            time.sleep(calculateSleep(5))
-            # Wait complete loading
-            waitUntilVisible(browser, By.ID, 'idDiv_SAOTCC_Title', 5)
+            # Wait 5 seconds
+            time.sleep(5)
             if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
                 # Enter TOTP code
                 totpCode = pyotp.TOTP(totpSecret).now()
