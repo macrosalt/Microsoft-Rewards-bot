@@ -728,7 +728,7 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
                 raise Exception()
     for word in search_terms:
         i += 1
-        print('[BING]', str(i) + "/" + str(numberOfSearches))
+        print(f'[BING] {i}/{numberOfSearches}', end="\r")
         points = bingSearch(word, isMobile)
         if points <= POINTS_COUNTER:
             relatedTerms = getRelatedTerms(word)
@@ -2541,7 +2541,7 @@ def farmer():
                 if remainingSearches != 0:
                     print('[BING]', 'Starting Desktop and Edge Bing searches...')
                     bingSearches(browser, remainingSearches)
-                    prGreen('[BING] Finished Desktop and Edge Bing searches !')
+                    prGreen('\n[BING] Finished Desktop and Edge Bing searches !')
                 LOGS[CURRENT_ACCOUNT]['PC searches'] = True
                 updateLogs()
                 ERROR = False
@@ -2567,7 +2567,7 @@ def farmer():
                 if remainingSearchesM != 0:
                     print('[BING]', 'Starting Mobile Bing searches...')
                     bingSearches(browser, remainingSearchesM, True)
-                prGreen('[BING] Finished Mobile Bing searches !')
+                    prGreen('\n[BING] Finished Mobile Bing searches !')
                 browser.quit()
 
             if redeem_goal_title != "" and redeem_goal_price <= POINTS_COUNTER:
