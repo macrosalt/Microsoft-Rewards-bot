@@ -171,15 +171,20 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             "return document.readyState") == "complete")
 
     def answerTOTP(totpSecret):
-        # Wait 5 seconds
-        time.sleep(5)
+        """Enter TOTP code and submit"""
         if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+            if totpSecret is None:
+                print('[LOGIN]', 'TOTP code required but no secret was provided.')
+                time.sleep(5)
+                return
             # Enter TOTP code
             totpCode = pyotp.TOTP(totpSecret).now()
             browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
             print('[LOGIN]', 'Writing TOTP code...')
             # Click submit
             browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
+            # Wait 5 seconds
+            time.sleep(5)
 
     # Close welcome tab for new sessions
     if ARGS.session:
@@ -225,9 +230,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
                 browser.find_element(By.ID, "i0118").send_keys(pwd)
                 time.sleep(2)
                 browser.find_element(By.ID, 'idSIButton9').click()
-                if totpSecret is not None:
-                    answerTOTP(totpSecret)
                 time.sleep(5)
+                answerTOTP(totpSecret)
                 prGreen('[LOGIN] Account logged in again !')
                 RewardsLogin(browser)
                 print('[LOGIN]', 'Ensuring login on Bing...')
@@ -250,10 +254,9 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     print('[LOGIN]', 'Writing password...')
     # Click next
     browser.find_element(By.ID, 'idSIButton9').click()
-    if totpSecret is not None:
-        answerTOTP(totpSecret)
     # Wait 5 seconds
     time.sleep(5)
+    answerTOTP(totpSecret)
     try:
         if browser.title == "":
             waitToLoadBlankPage()
@@ -360,17 +363,21 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         browser.find_element(By.ID, "i0118").send_keys(pwd)
         print('[LOGIN]', 'Writing password...')
         browser.find_element(By.ID, 'idSIButton9').click()
-        if totpSecret is not None:
+        time.sleep(5)
+        # Enter TOTP code if needed
+        if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+            if totpSecret is None:
+                print('[LOGIN]', 'TOTP code required but no secret was provided.')
+                time.sleep(5)
+                return
+            # Enter TOTP code
+            totpCode = pyotp.TOTP(totpSecret).now()
+            browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+            print('[LOGIN]', 'Writing TOTP code...')
+            # Click submit
+            browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
             # Wait 5 seconds
             time.sleep(5)
-            if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
-                # Enter TOTP code
-                totpCode = pyotp.TOTP(totpSecret).now()
-                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
-                print('[LOGIN]', 'Writing TOTP code...')
-                # Click submit
-                browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
-        time.sleep(5)
         if isElementExists(browser, By.ID, "idSIButton9"):
             if ARGS.session:
                 # Click Yes to stay signed in.
