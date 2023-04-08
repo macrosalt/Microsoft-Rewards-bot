@@ -17,4 +17,8 @@ class UnusualActivityException(Exception):
     
 class ProxyIsDeadException(Exception):
     """Exception raised when proxy is dead to skip the account"""
+
+
+class TOTPInvalidException(Exception):
+    """Exception raised when the TOTP code is wrong"""
     

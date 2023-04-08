@@ -8,6 +8,7 @@ ipapi
 func_timeout
 random-word==1.0.7
 pyyaml
+pyotp
 notifiers
 pyvirtualdisplay
 webdriver-manager>=3.8.5

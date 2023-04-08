@@ -14,6 +14,7 @@ import copy
 import traceback
 import ipapi
 import requests
+import pyotp
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
 from random_word import RandomWords
@@ -138,7 +139,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
 
 
 # Define login function
-def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
+def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: bool = False):
 
     def answerToBreakFreeFromPassword():
         # Click No thanks on break free from password question
@@ -168,6 +169,23 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             (By.CSS_SELECTOR, "html[lang]")))
         wait.until(lambda driver: driver.execute_script(
             "return document.readyState") == "complete")
+
+    def answerTOTP(totpSecret):
+        """Enter TOTP code and submit"""
+        if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+            if totpSecret is not None:
+                # Enter TOTP code
+                totpCode = pyotp.TOTP(totpSecret).now()
+                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                print('[LOGIN]', 'Writing TOTP code...')
+                # Click submit
+                browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
+            else:
+                print('[LOGIN]', 'TOTP code required but no secret was provided.')
+            # Wait 5 seconds
+            time.sleep(5)
+            if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+                raise TOTPInvalidException
 
     # Close welcome tab for new sessions
     if ARGS.session:
@@ -214,6 +232,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
                 time.sleep(2)
                 browser.find_element(By.ID, 'idSIButton9').click()
                 time.sleep(5)
+                answerTOTP(totpSecret)
                 prGreen('[LOGIN] Account logged in again !')
                 RewardsLogin(browser)
                 print('[LOGIN]', 'Ensuring login on Bing...')
@@ -238,6 +257,7 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
     browser.find_element(By.ID, 'idSIButton9').click()
     # Wait 5 seconds
     time.sleep(5)
+    answerTOTP(totpSecret)
     try:
         if browser.title == "":
             waitToLoadBlankPage()
@@ -331,12 +351,12 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     def getEmailPass():
         for account in ACCOUNTS:
             if account["username"] == CURRENT_ACCOUNT:
-                return account["username"], account["password"]
+                return account["username"], account["password"], account.get("totpSecret", None)
 
     def loginAgain():
         waitUntilVisible(browser, By.ID, 'loginHeader', 10)
         print('[LOGIN]', 'Writing email...')
-        email, pwd = getEmailPass()
+        email, pwd, totpSecret = getEmailPass()
         browser.find_element(By.NAME, "loginfmt").send_keys(email)
         browser.find_element(By.ID, 'idSIButton9').click()
         time.sleep(calculateSleep(5))
@@ -345,6 +365,21 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         print('[LOGIN]', 'Writing password...')
         browser.find_element(By.ID, 'idSIButton9').click()
         time.sleep(5)
+        # Enter TOTP code if needed
+        if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+            if totpSecret is not None:
+                # Enter TOTP code
+                totpCode = pyotp.TOTP(totpSecret).now()
+                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                print('[LOGIN]', 'Writing TOTP code...')
+                # Click submit
+                browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
+            else:
+                print('[LOGIN]', 'TOTP code required but no secret was provided.')
+            # Wait 5 seconds
+            time.sleep(5)
+            if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+                raise TOTPInvalidException
         if isElementExists(browser, By.ID, "idSIButton9"):
             if ARGS.session:
                 # Click Yes to stay signed in.
@@ -1883,6 +1918,9 @@ def createMessage():
         elif value[1]['Last check'] == 'Provided Proxy is Dead, Please replace a new one and run the script again':
             status = '📛 Provided Proxy is Dead, Please replace a new one and run the script again'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+        elif value[1]['Last check'] == 'Your TOTP secret was wrong !':
+            status = '📛 TOTP code was wrong'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
             status = f'Farmed on {value[1]["Last check"]}'
             new_points = value[1]["Today's points"]
@@ -2493,7 +2531,7 @@ def farmer():
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in...')
-                login(browser, account['username'], account['password'])
+                login(browser, account['username'], account['password'], account.get('totpSecret', None))
                 prGreen('[LOGIN] Logged-in successfully !')
                 STARTING_POINTS = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) +
@@ -2554,7 +2592,7 @@ def farmer():
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in mobile...')
-                login(browser, account['username'], account['password'], True)
+                login(browser, account['username'], account['password'], account.get('totpSecret', None), True)
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     STARTING_POINTS = POINTS_COUNTER
@@ -2578,7 +2616,7 @@ def farmer():
                     browser = browserSetup(
                         False, PC_USER_AGENT, account.get('proxy', None))
                     print('[LOGIN]', 'Logging-in...')
-                    login(browser, account['username'], account['password'])
+                    login(browser, account['username'], account['password'], account.get('totpSecret', None))
                     prGreen('[LOGIN] Logged-in successfully!')
                     browser.get(BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
@@ -2620,6 +2658,16 @@ def farmer():
         updateLogs()
         cleanLogs()
         prPurple('\n[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again\n')
+        checkInternetConnection()
+        farmer()
+
+    except TOTPInvalidException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your TOTP secret was wrong !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        prRed('[ERROR] Your TOTP secret was wrong !')
         checkInternetConnection()
         farmer()
     
