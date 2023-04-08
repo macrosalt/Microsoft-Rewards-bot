@@ -173,18 +173,19 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     def answerTOTP(totpSecret):
         """Enter TOTP code and submit"""
         if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
-            if totpSecret is None:
+            if totpSecret is not None:
+                # Enter TOTP code
+                totpCode = pyotp.TOTP(totpSecret).now()
+                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                print('[LOGIN]', 'Writing TOTP code...')
+                # Click submit
+                browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
+            else:
                 print('[LOGIN]', 'TOTP code required but no secret was provided.')
-                time.sleep(5)
-                return
-            # Enter TOTP code
-            totpCode = pyotp.TOTP(totpSecret).now()
-            browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
-            print('[LOGIN]', 'Writing TOTP code...')
-            # Click submit
-            browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
             # Wait 5 seconds
             time.sleep(5)
+            if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+                raise TOTPInvalidException
 
     # Close welcome tab for new sessions
     if ARGS.session:
@@ -2653,6 +2654,16 @@ def farmer():
         updateLogs()
         cleanLogs()
         prPurple('\n[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again\n')
+        checkInternetConnection()
+        farmer()
+
+    except TOTPInvalidException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your TOTP secret was wrong !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        prRed('[ERROR] Your TOTP secret was wrong !')
         checkInternetConnection()
         farmer()
     
