@@ -51,7 +51,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
     {
         "username": "Your Email",
         "password": "Your Password",
-        "totpSecret": "Your TOTP Secret (optional)"
+        "totpSecret": "Your TOTP Secret (optional)",
         "mobile_user_agent": "your preferred mobile user agent",
         "proxy": "HTTP proxy (IP:PORT)",
         "goal": "Amazon"
@@ -59,7 +59,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
     {
         "username": "Your Email 2",
         "password": "Your Password 2",
-        "totpSecret": "Your TOTP Secret (optional)"
+        "totpSecret": "Your TOTP Secret (optional)",
         "mobile_user_agent": "your preferred mobile user agent",
         "proxy": "HTTP proxy (IP:PORT)",
         "goal": "Xbox Game Pass Ultimate"
