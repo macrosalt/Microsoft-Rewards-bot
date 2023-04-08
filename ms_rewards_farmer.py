@@ -367,18 +367,19 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
         time.sleep(5)
         # Enter TOTP code if needed
         if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
-            if totpSecret is None:
+            if totpSecret is not None:
+                # Enter TOTP code
+                totpCode = pyotp.TOTP(totpSecret).now()
+                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                print('[LOGIN]', 'Writing TOTP code...')
+                # Click submit
+                browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
+            else:
                 print('[LOGIN]', 'TOTP code required but no secret was provided.')
-                time.sleep(5)
-                return
-            # Enter TOTP code
-            totpCode = pyotp.TOTP(totpSecret).now()
-            browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
-            print('[LOGIN]', 'Writing TOTP code...')
-            # Click submit
-            browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
             # Wait 5 seconds
             time.sleep(5)
+            if isElementExists(browser, By.ID, 'idTxtBx_SAOTCC_OTC'):
+                raise TOTPInvalidException
         if isElementExists(browser, By.ID, "idSIButton9"):
             if ARGS.session:
                 # Click Yes to stay signed in.
