@@ -1918,6 +1918,9 @@ def createMessage():
         elif value[1]['Last check'] == 'Provided Proxy is Dead, Please replace a new one and run the script again':
             status = '📛 Provided Proxy is Dead, Please replace a new one and run the script again'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+        elif value[1]['Last check'] == 'Your TOTP secret was wrong !':
+            status = '📛 TOTP code was wrong'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         else:
             status = f'Farmed on {value[1]["Last check"]}'
             new_points = value[1]["Today's points"]
