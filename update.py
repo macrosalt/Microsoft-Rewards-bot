@@ -5,6 +5,7 @@ import sys
 import os
 from shutil import rmtree, copy
 from subprocess import call
+from typing import Union
 
 # get args
 parser = ArgumentParser(description="Microsoft Rewards Farmer Updater, use '--update'.")
@@ -96,7 +97,7 @@ def delete_dir(dir_name: str) -> None:
     print(f"Directory deleted: {path}")
 
 
-def user_permissions() -> str | bool:
+def user_permissions() -> Union[str, bool]:
     """Ask user if Yes or No"""
     if not args.y:
         rights = input("Automatic installer will download and update your program files. If you have the appropriate file, and download rights please continue by entering 'Y'. [y/N] ")
