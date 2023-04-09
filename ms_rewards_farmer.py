@@ -1453,6 +1453,8 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
             By.TAG_NAME, 'button').click()
 
     try:
+        if ARGS.headless and platform.system() == "Linux":
+            browser.set_window_size(1920, 1080)
         tries = 0
         print("[MSN GAME] Trying to complete MSN shopping game...")
         print("[MSN GAME] Checking if user is signed in ...")
