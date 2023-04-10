@@ -1,26 +1,30 @@
 {
     "spxbtglt@outlook.com": {
-        "Last check": "2023-04-08",
+        "Last check": "2023-04-09",
         "Today's points": 100,
-        "Points": 18895
+        "Points": 18895,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "elftxvvs@outlook.com": {
         "Last check": "2023-04-08",
         "Today's points": 100,
         "Points": 17275,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
-        "PC searches": true
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "wigpbsoy@outlook.com": {
-        "Last check": "2023-04-08",
+        "Last check": "2023-04-09",
         "Today's points": 100,
-        "Points": 40049
+        "Points": 40369
     },
     "sgrdwprt@outlook.com": {
-        "Last check": "Unknown error !",
+        "Last check": "2023-04-09",
         "Today's points": 100,
-        "Points": 41587
+        "Points": 41997
     }
 }
