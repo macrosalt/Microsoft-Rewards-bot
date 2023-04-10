@@ -504,7 +504,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
 
 def handleUnusualActivity(browser: WebDriver, isMobile: bool = False):
     prYellow('[ERROR] Unusual activity detected !')
-    if isElementExists("iShowSkip") and ARGS.skip_unusual:
+    if isElementExists(browser, By.ID, "iShowSkip") and ARGS.skip_unusual:
         try:
             waitUntilClickable(browser, By.ID, "iShowSkip")
             browser.find_element(By.ID, "iShowSkip").click()
