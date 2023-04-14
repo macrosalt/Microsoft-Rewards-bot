@@ -2852,6 +2852,8 @@ def main():
         prBlue(f"\n[INFO] Farmer will start at {run_at}")
         while True:
             if datetime.now().strftime("%H:%M") == run_at:
+                if not ARGS.dont_check_for_updates:
+                    update_handler(version)
                 start = time.time()
                 logs()
                 farmer()
