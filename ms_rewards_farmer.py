@@ -2873,7 +2873,8 @@ def main():
 def get_version():
     """Get version from version.json"""
     try:
-        with open('version.json', 'r') as version_json:
+        VERSION_PATH = Path(__file__).parent / 'version.json'
+        with open(VERSION_PATH, 'r') as version_json:
             return json.load(version_json)['version']
     except Exception as exc:  # skipcq
         prRed(exc if ERROR else "")
