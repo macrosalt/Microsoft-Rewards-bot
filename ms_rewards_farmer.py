@@ -2827,8 +2827,6 @@ def main():
 
     logo()
     prArgs()
-    if not ARGS.dont_check_for_updates:
-        update_handler(version)  # CHECK FOR UPDATES
     loadAccounts()
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
@@ -2862,6 +2860,8 @@ def main():
             time.sleep(30)
     else:
         start = time.time()
+        if not ARGS.dont_check_for_updates:
+            update_handler(version)  # CHECK FOR UPDATES
         logs()
         farmer()
     end = time.time()
