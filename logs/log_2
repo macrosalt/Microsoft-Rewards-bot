@@ -1,13 +1,17 @@
 {
     "spxbtglt@outlook.com": {
-        "Last check": "2023-04-12",
+        "Last check": "Unknown error !",
         "Today's points": 100,
         "Points": 19700
     },
     "elftxvvs@outlook.com": {
-        "Last check": "2023-04-12",
+        "Last check": "Unknown error !",
         "Today's points": 100,
-        "Points": 18325
+        "Points": 18325,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "wigpbsoy@outlook.com": {
         "Last check": "Unknown error !",
