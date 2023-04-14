@@ -2574,7 +2574,7 @@ def update_handler(local_version):
 
     # COMPARE LOCAL AND LATEST VERSION
     if local_version != response["version"]:
-        if not ARGS.headless:
+        if not (ARGS.headless or ARGS.virtual_display):
             update_window(
                 local_version, response['version'], response['changelog'])
         prRed(f"\n[UPDATER] Your version ({local_version}) is outdated. "
