@@ -15,6 +15,7 @@ import traceback
 import ipapi
 import requests
 import pyotp
+from functools import wraps
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
 from random_word import RandomWords
@@ -81,6 +82,30 @@ def createDisplay():
         prRed(exc if ERROR else "")
 
 
+def retry_on_500_errors(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        driver: WebDriver = args[0]
+        error_codes = ["HTTP ERROR 500", "HTTP ERROR 502", "HTTP ERROR 503", "HTTP ERROR 504", "HTTP ERROR 505"]
+        status_code = "-"
+        result = function(*args, **kwargs)
+        while True:
+            try:
+                status_code = driver.execute_script("return document.readyState;")
+                if status_code == "complete" and not any(error_code in driver.page_source for error_code in error_codes):
+                    return result
+                elif status_code == "loading":
+                    return result
+                else:
+                    raise Exception("Page not loaded")
+            except Exception as e:
+                if any(error_code in driver.page_source for error_code in error_codes): # Check if the page contains 500 errors
+                    driver.refresh() # Recursively refresh
+                else:
+                    raise Exception(f"another exception occurred during handling 500 errors with status '{status_code}': {e}")
+    return wrapper
+
+
 def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = None) -> WebDriver:
     """Create Chrome browser"""
     from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -138,6 +163,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
     return browser
 
 
+@retry_on_500_errors
+def goToURL(browser: WebDriver, url: str):
+    browser.get(url)
+
+
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: bool = False):
 
@@ -169,6 +199,13 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             (By.CSS_SELECTOR, "html[lang]")))
         wait.until(lambda driver: driver.execute_script(
             "return document.readyState") == "complete")
+        
+    def acceptNewPrivacy():
+        time.sleep(3)
+        waitUntilVisible(browser, By.ID, "id__0", 15)
+        browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        waitUntilClickable(browser, By.ID, "id__0", 15)
+        browser.find_element(By.ID, "id__0").click()
 
     def answerTOTP(totpSecret):
         """Enter TOTP code and submit"""
@@ -200,11 +237,13 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             browser.switch_to.window(current_window)
     time.sleep(1)
     # Access to bing.com
-    browser.get('https://login.live.com/')
+    goToURL(browser, 'https://login.live.com/')
     # Check if account is already logged in
     if ARGS.session:
         if browser.title == "":
             waitToLoadBlankPage()
+        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
+            acceptNewPrivacy()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
@@ -259,8 +298,16 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     time.sleep(5)
     answerTOTP(totpSecret)
     try:
+        if ARGS.session:
+            # Click Yes to stay signed in.
+            browser.find_element(By.ID, 'idSIButton9').click()
+        else:
+            # Click No.
+            browser.find_element(By.ID, 'idBtn_Back').click()
         if browser.title == "":
             waitToLoadBlankPage()
+        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
+            acceptNewPrivacy()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
@@ -268,12 +315,6 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         # Click No thanks on break free from password question
         if isElementExists(browser, By.ID, "setupAppDesc") or browser.title == "Break free from your passwords":
             answerToBreakFreeFromPassword()
-        if ARGS.session:
-            # Click Yes to stay signed in.
-            browser.find_element(By.ID, 'idSIButton9').click()
-        else:
-            # Click No.
-            browser.find_element(By.ID, 'idBtn_Back').click()
     except NoSuchElementException:
         # Check for if account has been locked.
         if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME,
@@ -314,7 +355,7 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
 
 def RewardsLogin(browser: WebDriver):
     """Login into Rewards"""
-    browser.get(BASE_URL)
+    goToURL(browser, BASE_URL)
     try:
         time.sleep(calculateSleep(10))
         # click on sign up button if needed
@@ -387,10 +428,10 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             else:
                 # Click No.
                 browser.find_element(By.ID, 'idBtn_Back').click()
-        browser.get("https://bing.com/")
+        goToURL(browser, "https://bing.com/")
 
     global POINTS_COUNTER  # pylint: disable=global-statement
-    browser.get('https://bing.com/')
+    goToURL(browser, 'https://bing.com/')
     time.sleep(calculateSleep(15))
     # try to get points at first if account already logged in
     if ARGS.session:
@@ -465,7 +506,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
     # Wait 5 seconds
     time.sleep(5)
     # Refresh page
-    browser.get('https://bing.com/')
+    goToURL(browser, 'https://bing.com/')
     # Wait 15 seconds
     time.sleep(calculateSleep(15))
     # Update Counter
@@ -622,10 +663,10 @@ def resetTabs(browser: WebDriver):
 
         browser.switch_to.window(curr)
         time.sleep(0.5)
-        browser.get(BASE_URL)
+        goToURL(browser, BASE_URL)
         waitUntilVisible(browser, By.ID, 'app-host', 30)
     except:
-        browser.get(BASE_URL)
+        goToURL(browser, BASE_URL)
         waitUntilVisible(browser, By.ID, 'app-host', 30)
 
 
@@ -698,9 +739,9 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
                 browser.find_element(By.ID, 'sb_form_q').clear()
                 time.sleep(1)
             else:
-                browser.get('https://bing.com')
+                goToURL(browser, 'https://bing.com')
         except:
-            browser.get('https://bing.com')
+            goToURL(browser, 'https://bing.com')
         time.sleep(2)
         searchbar = browser.find_element(By.ID, 'sb_form_q')
         if FAST or SUPER_FAST:
@@ -1059,7 +1100,7 @@ def completePunchCards(browser: WebDriver):
 
     def completePunchCard(url: str, childPromotions: dict):
         """complete punch card"""
-        browser.get(url)
+        goToURL(browser, url)
         for child in childPromotions:
             if not child['complete']:
                 if child['promotionType'] == "urlreward":
@@ -1154,7 +1195,7 @@ def completePunchCards(browser: WebDriver):
                 prRed(str(exc))
             resetTabs(browser)
     time.sleep(2)
-    browser.get(BASE_URL)
+    goToURL(browser, BASE_URL)
     time.sleep(2)
     LOGS[CURRENT_ACCOUNT]['Punch cards'] = True
     updateLogs()
@@ -1458,7 +1499,7 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
         print("[MSN GAME] Checking if user is signed in ...")
         while tries <= 4:
             tries += 1
-            browser.get("https://www.msn.com/en-us/shopping")
+            goToURL(browser, "https://www.msn.com/en-us/shopping")
             waitUntilVisible(browser, By.TAG_NAME, 'shopping-page-base', 45)
             time.sleep(calculateSleep(15))
             try:
@@ -1507,7 +1548,7 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
         prGreen("[MSN GAME] Completed MSN shopping game successfully !")
         finished = True
     finally:
-        browser.get(BASE_URL)
+        goToURL(browser, BASE_URL)
         LOGS[CURRENT_ACCOUNT]["MSN shopping game"] = True
         updateLogs()
         return finished
@@ -2012,7 +2053,7 @@ def setRedeemGoal(browser: WebDriver, goal: str):
     print("[GOAL SETTER] Setting new account goal...")
 
     goal = goal.lower()
-    browser.get("https://rewards.microsoft.com/")
+    goToURL(browser, "https://rewards.microsoft.com/")
     try:
         goal_name = browser.find_element(
             By.XPATH,
@@ -2085,7 +2126,7 @@ def setRedeemGoal(browser: WebDriver, goal: str):
         prRed(str(e))
         return
     finally:
-        browser.get("https://rewards.microsoft.com/")
+        goToURL(browser, BASE_URL)
 
 
 def redeemGoal(browser: WebDriver):
@@ -2134,7 +2175,7 @@ def redeemGoal(browser: WebDriver):
                 browser.find_element(
                     By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]/span[1]').click()
         except NoSuchElementException as exc:
-            browser.get("https://rewards.microsoft.com/")
+            goToURL(browser, BASE_URL)
             prRed("[REDEEM] Ran into an exception trying to redeem!")
             prRed(str(exc))
             return
@@ -2536,7 +2577,7 @@ def farmer():
                 STARTING_POINTS = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) +
                         ' points on your account !')
-                browser.get(BASE_URL)
+                goToURL(browser, BASE_URL)
                 waitUntilVisible(browser, By.ID, 'app-host', 30)
                 redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
 
@@ -2596,7 +2637,7 @@ def farmer():
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     STARTING_POINTS = POINTS_COUNTER
-                    browser.get(BASE_URL)
+                    goToURL(browser, BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
                     redeem_goal_title, redeem_goal_price = getRedeemGoal(
                         browser)
@@ -2618,7 +2659,7 @@ def farmer():
                     print('[LOGIN]', 'Logging-in...')
                     login(browser, account['username'], account['password'], account.get('totpSecret', None))
                     prGreen('[LOGIN] Logged-in successfully!')
-                    browser.get(BASE_URL)
+                    goToURL(browser, BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
                     redeemGoal(browser)
                 if ARGS.telegram or ARGS.discord:
