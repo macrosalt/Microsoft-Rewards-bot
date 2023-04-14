@@ -2574,7 +2574,7 @@ def update_handler(local_version):
 
     # COMPARE LOCAL AND LATEST VERSION
     if local_version != response["version"]:
-        if not ARGS.headless:
+        if not (ARGS.headless or ARGS.virtual_display):
             update_window(
                 local_version, response['version'], response['changelog'])
         prRed(f"\n[UPDATER] Your version ({local_version}) is outdated. "
@@ -2827,8 +2827,6 @@ def main():
 
     logo()
     prArgs()
-    if not ARGS.dont_check_for_updates:
-        update_handler(version)  # CHECK FOR UPDATES
     loadAccounts()
 
     LANG, GEO, TZ = getCCodeLangAndOffset()
@@ -2852,6 +2850,8 @@ def main():
         prBlue(f"\n[INFO] Farmer will start at {run_at}")
         while True:
             if datetime.now().strftime("%H:%M") == run_at:
+                if not ARGS.dont_check_for_updates:
+                    update_handler(version)
                 start = time.time()
                 logs()
                 farmer()
@@ -2860,6 +2860,8 @@ def main():
             time.sleep(30)
     else:
         start = time.time()
+        if not ARGS.dont_check_for_updates:
+            update_handler(version)  # CHECK FOR UPDATES
         logs()
         farmer()
     end = time.time()
