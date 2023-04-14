@@ -387,6 +387,7 @@ def RewardsLogin(browser: WebDriver):
             raise RegionException
     except NoSuchElementException:
         pass
+    handleFirstVisit(browser)
 
 
 @func_set_timeout(300)
@@ -572,6 +573,27 @@ def handleUnusualActivity(browser: WebDriver, isMobile: bool = False):
         input('Press any key to close...')
         os._exit(0)
 
+
+def handleFirstVisit(browser : WebDriver):
+    #Pass The Welcome Page.
+    try:
+        if isElementExists(browser, By.CLASS_NAME, "rewards-slide"):
+            try:
+                browser.find_element(By.XPATH, "//div[@class='rewards-slide']//a").click()
+                time.sleep(calculateSleep(5))
+                progress, total = browser.find_element(By.XPATH, "//div[@class='rewards-slide']//mee-rewards-counter-animation/span").get_attribute("innerHTML").split("/")
+                progress = int(progress)
+                total = int(total)
+                if(progress < total):                
+                    browser.find_element(By.XPATH, "//mee-rewards-welcome-tour//mee-rewards-slide[contains(@class, 'ng-scope') and not(contains(@class,'ng-hide'))]//mee-rewards-check-mark/../a").click()
+                    time.sleep(calculateSleep(5))
+            except:
+                pass
+
+            browser.find_element(By.XPATH, "//button[@data-modal-close-button]").click()
+            time.sleep(calculateSleep(5))
+    except:
+        print('[LOGIN]', "Can't pass the first time quiz.")
 
 def waitUntilVisible(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
     """Wait until visible"""
