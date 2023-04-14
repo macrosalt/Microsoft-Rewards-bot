@@ -22,3 +22,7 @@ class ProxyIsDeadException(Exception):
 class TOTPInvalidException(Exception):
     """Exception raised when the TOTP code is wrong"""
     
+    
+class InvalidCredentialsException(Exception):
+    """Exception raised when the email is invalid"""
+    

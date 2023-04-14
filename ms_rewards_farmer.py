@@ -286,6 +286,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     browser.find_element(By.ID, 'idSIButton9').click()
     # Wait 2 seconds
     time.sleep(calculateSleep(5))
+    if isElementExists(browser, By.ID, "usernameError"):
+        raise InvalidCredentialsException
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter password
@@ -296,6 +298,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     browser.find_element(By.ID, 'idSIButton9').click()
     # Wait 5 seconds
     time.sleep(5)
+    if isElementExists(browser, By.ID, "passwordError"):
+        raise InvalidCredentialsException
     answerTOTP(totpSecret)
     try:
         if ARGS.session:
@@ -1958,6 +1962,9 @@ def createMessage():
         elif value[1]['Last check'] == 'Unknown error !':
             status = '⛔️ Unknown error occurred'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
+        elif value[1]['Last check'] == 'Your email or password was not valid !':
+            status = '📛 Your email/password was invalid'
+            message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
         elif value[1]['Last check'] == 'Provided Proxy is Dead, Please replace a new one and run the script again':
             status = '📛 Provided Proxy is Dead, Please replace a new one and run the script again'
             message += f"{index}. {value[0]}\n📝 Status: {status}\n\n"
@@ -2721,6 +2728,16 @@ def farmer():
         updateLogs()
         cleanLogs()
         prRed('[ERROR] Your account has been locked !')
+        checkInternetConnection()
+        farmer()
+    
+    except InvalidCredentialsException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your email or password was not valid !'
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        prRed('[ERROR] Your Email or password was not valid !')
         checkInternetConnection()
         farmer()
         
