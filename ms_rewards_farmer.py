@@ -545,7 +545,7 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
 
 def handleUnusualActivity(browser: WebDriver, isMobile: bool = False):
     prYellow('[ERROR] Unusual activity detected !')
-    if isElementExists("iShowSkip") and ARGS.skip_unusual:
+    if isElementExists(browser, By.ID, "iShowSkip") and ARGS.skip_unusual:
         try:
             waitUntilClickable(browser, By.ID, "iShowSkip")
             browser.find_element(By.ID, "iShowSkip").click()
@@ -1494,6 +1494,8 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
             By.TAG_NAME, 'button').click()
 
     try:
+        if ARGS.headless and platform.system() == "Linux":
+            browser.set_window_size(1920, 1080)
         tries = 0
         print("[MSN GAME] Trying to complete MSN shopping game...")
         print("[MSN GAME] Checking if user is signed in ...")
