@@ -23,7 +23,7 @@ from selenium import webdriver
 from selenium.common.exceptions import (ElementNotInteractableException, NoAlertPresentException,
                                         NoSuchElementException, SessionNotCreatedException, TimeoutException,
                                         UnexpectedAlertPresentException, JavascriptException,
-                                        ElementNotVisibleException)
+                                        ElementNotVisibleException, ElementClickInterceptedException)
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -2130,9 +2130,9 @@ def setRedeemGoal(browser: WebDriver, goal: str):
             else:
                 prGreen("[GOAL SETTER] New account goal set successfully!")
 
-    except NoSuchElementException as e:
+    except (NoSuchElementException, ElementClickInterceptedException) as exc:
         prRed("[GOAL SETTER] Ran into an exception trying to redeem!")
-        prRed(str(e))
+        prRed(str(exc))
         return
     finally:
         goToURL(browser, BASE_URL)
@@ -2150,7 +2150,7 @@ def redeemGoal(browser: WebDriver):
                 value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
             ).click()
             time.sleep(random.uniform(5, 7))
-        except NoSuchElementException:
+        except (NoSuchElementException, ElementClickInterceptedException):
             browser.find_element(
                 By.XPATH,
                 value="/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/div/mee-rewards-redeem-info-card/div/mee-card-group/div/div[1]/mee-card/div/card-content/mee-rewards-redeem-goal-card/div/div[2]/div/a[1]",
@@ -2166,9 +2166,9 @@ def redeemGoal(browser: WebDriver):
                     By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]'
                 ).click()
                 time.sleep(random.uniform(5, 7))
-            except NoSuchElementException:
+            except (NoSuchElementException, ElementClickInterceptedException):
                 browser.find_element(
-                    By.XPATH, value=f'//*[@id="redeem-pdp_{id}"]/span[1]'
+                    By.XPATH, value="/html/body/div[1]/div[2]/main/div[2]/div[2]/div[3]/a[2]"
                 ).click()
             # If a cookie consent container is present, we need to accept
             # those cookies to be able to redeem the reward
@@ -2180,10 +2180,10 @@ def redeemGoal(browser: WebDriver):
                 browser.find_element(
                     By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]').click()
                 time.sleep(random.uniform(2, 4))
-            except NoSuchElementException:
+            except (NoSuchElementException, ElementClickInterceptedException):
                 browser.find_element(
                     By.XPATH, value='//*[@id="redeem-checkout-review-confirm"]/span[1]').click()
-        except NoSuchElementException as exc:
+        except (NoSuchElementException, ElementClickInterceptedException) as exc:
             goToURL(browser, BASE_URL)
             prRed("[REDEEM] Ran into an exception trying to redeem!")
             prRed(str(exc))
@@ -2198,7 +2198,7 @@ def redeemGoal(browser: WebDriver):
                 updateLogs()
                 cleanLogs()
                 return
-        except NoSuchElementException:
+        except (NoSuchElementException, ElementClickInterceptedException):
             pass
         finally:
             time.sleep(random.uniform(2, 4))
@@ -2212,7 +2212,7 @@ def redeemGoal(browser: WebDriver):
                 updateLogs()
                 cleanLogs()
                 return
-        except NoSuchElementException:
+        except (NoSuchElementException, ElementClickInterceptedException):
             pass
         prGreen(f"[REDEEM] {CURRENT_ACCOUNT} card redeemed!")
         LOGS[CURRENT_ACCOUNT]['Auto redeem'] = 'Redeemed!'
@@ -2220,7 +2220,7 @@ def redeemGoal(browser: WebDriver):
         cleanLogs()
         global auto_redeem_counter  # pylint: disable=global-statement
         auto_redeem_counter += 1
-    except NoSuchElementException as exc:
+    except (NoSuchElementException, ElementClickInterceptedException) as exc:
         prRed("[REDEEM] Ran into an exception trying to redeem!")
         prRed(str(exc))
         return
