@@ -132,6 +132,8 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
              "webrtc.nonproxied_udp_enabled": False}
     if ARGS.no_images:
         prefs["profile.managed_default_content_settings.images"] = 2
+    else:
+        prefs["profile.managed_default_content_settings.images"] = 1
     if ARGS.account_browser:
         prefs["detach"] = True
     if proxy is not None:
