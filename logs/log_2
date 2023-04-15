@@ -8,9 +8,9 @@
         "Last check": "Unknown error !",
         "Today's points": 100,
         "Points": 18325,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
         "PC searches": false
     },
     "wigpbsoy@outlook.com": {
