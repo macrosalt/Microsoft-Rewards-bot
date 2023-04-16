@@ -259,7 +259,7 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             print('[LOGIN]', 'Ensuring login on Bing...')
             checkBingLogin(browser, isMobile)
             return
-        elif browser.title == 'Your account has been temporarily suspended':
+        elif browser.title == 'Your account has been temporarily suspended' or browser.current_url.startswith("https://account.live.com/Abuse"):
             raise AccountLockedException
         elif browser.title == "Help us protect your account" or browser.current_url.startswith(
                 "https://account.live.com/proofs/Add"):
@@ -323,8 +323,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             answerToBreakFreeFromPassword()
     except NoSuchElementException:
         # Check for if account has been locked.
-        if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME,
-                                                                                             "serviceAbusePageContainer  PageContainer"):
+        if browser.title == "Your account has been temporarily suspended" or isElementExists(browser, By.CLASS_NAME, "serviceAbusePageContainer  PageContainer") or \
+		or browser.current_url.startswith("https://account.live.com/Abuse"):
             raise AccountLockedException
         elif browser.title == "Help us protect your account" or \
                 browser.current_url.startswith("https://account.live.com/proofs/Add"):
