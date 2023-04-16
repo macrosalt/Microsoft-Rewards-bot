@@ -1,5 +1,6 @@
 import json
 import os
+import builtins
 import platform
 import random
 import subprocess
@@ -132,8 +133,6 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
              "webrtc.nonproxied_udp_enabled": False}
     if ARGS.no_images:
         prefs["profile.managed_default_content_settings.images"] = 2
-    else:
-        prefs["profile.managed_default_content_settings.images"] = 1
     if ARGS.account_browser:
         prefs["detach"] = True
     if proxy is not None:
@@ -208,8 +207,6 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         waitUntilClickable(browser, By.ID, "id__0", 15)
         browser.find_element(By.ID, "id__0").click()
-        WebDriverWait(browser, 25).until_not(ec.visibility_of_element_located((By.ID, "id__0")))
-        time.sleep(5)
 
     def answerTOTP(totpSecret):
         """Enter TOTP code and submit"""
@@ -244,10 +241,10 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     goToURL(browser, 'https://login.live.com/')
     # Check if account is already logged in
     if ARGS.session:
-        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
-            acceptNewPrivacy()
         if browser.title == "":
             waitToLoadBlankPage()
+        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
+            acceptNewPrivacy()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
@@ -312,10 +309,10 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         else:
             # Click No.
             browser.find_element(By.ID, 'idBtn_Back').click()
-        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
-            acceptNewPrivacy()
         if browser.title == "":
             waitToLoadBlankPage()
+        if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
+            acceptNewPrivacy()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
@@ -1779,6 +1776,10 @@ def argumentParser():
                         help="Prevent script from checking internet connection.",
                         action="store_true",
                         required=False)
+    parser.add_argument("--print-to-webhook",
+                        help="Print every message to webhook.",
+                        action="store_true",
+                        required=False)
     
     args = parser.parse_args()
     if args.superfast or args.fast:
@@ -2073,10 +2074,11 @@ def sendToDiscord(message):
         content = {"username": "⭐️ Microsoft Rewards Bot ⭐️",
                    "content": message}
         response = requests.post(webhook_url, json=content)
-    if response.status_code == 204:
-        prGreen("[LOGS] Report sent to Discord.\n")
-    else:
-        prRed("[ERROR] Could not send report to Discord.\n")
+    if not ARGS.print_to_webhook: # this is to prevent infinite loop
+        if response.status_code == 204:
+            prGreen("[LOGS] Report sent to Discord.\n")
+        else:
+            prRed("[ERROR] Could not send report to Discord.\n")
 
 
 def setRedeemGoal(browser: WebDriver, goal: str):
@@ -2269,26 +2271,36 @@ def calculateSleep(default_sleep: int):
 
 def prRed(prt):
     """colour print"""
+    if ARGS.print_to_webhook:
+        return print(prt)
     print(f"\033[91m{prt}\033[00m")
 
 
 def prGreen(prt):
     """colour print"""
+    if ARGS.print_to_webhook:
+        return print(prt)
     print(f"\033[92m{prt}\033[00m")
 
 
 def prYellow(prt):
     """colour print"""
+    if ARGS.print_to_webhook:
+        return print(prt)
     print(f"\033[93m{prt}\033[00m")
 
 
 def prBlue(prt):
     """colour print"""
+    if ARGS.print_to_webhook:
+        return print(prt)
     print(f"\033[94m{prt}\033[00m")
 
 
 def prPurple(prt):
     """colour print"""
+    if ARGS.print_to_webhook:
+        return print(prt)
     print(f"\033[95m{prt}\033[00m")
 
 
@@ -2818,17 +2830,14 @@ def farmer():
 
 def main():
     """main"""
-    global LANG, GEO, TZ, ARGS  # pylint: disable=global-statement
+    global LANG, GEO, TZ  # pylint: disable=global-statement
     if not platform.system() == "Linux":
         # show colors in terminal
         os.system('color')
-    ARGS = argumentParser()
-
     # MS REWARD CALCULATOR
     if ARGS.calculator:
         tkinter_calculator()
         return sys.exit(0)
-
     logo()
     prArgs()
     loadAccounts()
@@ -2911,7 +2920,13 @@ def get_version():
 
 if __name__ == '__main__':
     version = get_version()
-
+    global ARGS # pylint: disable=global-statement
+    ARGS = argumentParser()
+    def print(*args, **kwargs):
+        if ARGS.print_to_webhook and (ARGS.telegram or ARGS.discord):
+            sendReportToMessenger(" ".join(args))
+        return builtins.print(*args, **kwargs)
+    
     try:
         main()
     except Exception as e:
