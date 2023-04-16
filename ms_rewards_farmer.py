@@ -86,12 +86,14 @@ def retry_on_500_errors(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         driver: WebDriver = args[0]
-        error_codes = ["HTTP ERROR 500", "HTTP ERROR 502", "HTTP ERROR 503", "HTTP ERROR 504", "HTTP ERROR 505"]
+        error_codes = ["HTTP ERROR 500", "HTTP ERROR 502",
+                       "HTTP ERROR 503", "HTTP ERROR 504", "HTTP ERROR 505"]
         status_code = "-"
         result = function(*args, **kwargs)
         while True:
             try:
-                status_code = driver.execute_script("return document.readyState;")
+                status_code = driver.execute_script(
+                    "return document.readyState;")
                 if status_code == "complete" and not any(error_code in driver.page_source for error_code in error_codes):
                     return result
                 elif status_code == "loading":
@@ -99,10 +101,12 @@ def retry_on_500_errors(function):
                 else:
                     raise Exception("Page not loaded")
             except Exception as e:
-                if any(error_code in driver.page_source for error_code in error_codes): # Check if the page contains 500 errors
-                    driver.refresh() # Recursively refresh
+                # Check if the page contains 500 errors
+                if any(error_code in driver.page_source for error_code in error_codes):
+                    driver.refresh()  # Recursively refresh
                 else:
-                    raise Exception(f"another exception occurred during handling 500 errors with status '{status_code}': {e}")
+                    raise Exception(
+                        f"another exception occurred during handling 500 errors with status '{status_code}': {e}")
     return wrapper
 
 
@@ -142,18 +146,21 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             prBlue(f"Using proxy: {proxy}")
         else:
             if ARGS.recheck_proxy:
-                prYellow("[PROXY] Your entered proxy is not working, rechecking the provided proxy.")
+                prYellow(
+                    "[PROXY] Your entered proxy is not working, rechecking the provided proxy.")
                 if isProxyWorking(proxy):
                     options.add_argument(f'--proxy-server={proxy}')
                     prBlue(f"Using proxy: {proxy}")
                 elif ARGS.skip_if_proxy_dead:
-                        raise ProxyIsDeadException
+                    raise ProxyIsDeadException
                 else:
-                    prYellow("[PROXY] Your entered proxy is not working, continuing without proxy.")
+                    prYellow(
+                        "[PROXY] Your entered proxy is not working, continuing without proxy.")
             elif ARGS.skip_if_proxy_dead:
                 raise ProxyIsDeadException
             else:
-                    prYellow("[PROXY] Your entered proxy is not working, continuing without proxy.")
+                prYellow(
+                    "[PROXY] Your entered proxy is not working, continuing without proxy.")
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -210,14 +217,16 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             (By.CSS_SELECTOR, "html[lang]")))
         wait.until(lambda driver: driver.execute_script(
             "return document.readyState") == "complete")
-        
+
     def acceptNewPrivacy():
         time.sleep(3)
         waitUntilVisible(browser, By.ID, "id__0", 15)
-        browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        browser.execute_script(
+            "window.scrollTo(0, document.body.scrollHeight);")
         waitUntilClickable(browser, By.ID, "id__0", 15)
         browser.find_element(By.ID, "id__0").click()
-        WebDriverWait(browser, 25).until_not(ec.visibility_of_element_located((By.ID, "id__0")))
+        WebDriverWait(browser, 25).until_not(
+            ec.visibility_of_element_located((By.ID, "id__0")))
         time.sleep(5)
 
     def answerTOTP(totpSecret):
@@ -226,7 +235,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
             if totpSecret is not None:
                 # Enter TOTP code
                 totpCode = pyotp.TOTP(totpSecret).now()
-                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                browser.find_element(
+                    By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
                 print('[LOGIN]', 'Writing TOTP code...')
                 # Click submit
                 browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
@@ -429,7 +439,8 @@ def checkBingLogin(browser: WebDriver, isMobile: bool = False):
             if totpSecret is not None:
                 # Enter TOTP code
                 totpCode = pyotp.TOTP(totpSecret).now()
-                browser.find_element(By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
+                browser.find_element(
+                    By.ID, "idTxtBx_SAOTCC_OTC").send_keys(totpCode)
                 print('[LOGIN]', 'Writing TOTP code...')
                 # Click submit
                 browser.find_element(By.ID, 'idSubmit_SAOTCC_Continue').click()
@@ -587,26 +598,31 @@ def handleUnusualActivity(browser: WebDriver, isMobile: bool = False):
         os._exit(0)
 
 
-def handleFirstVisit(browser : WebDriver):
-    #Pass The Welcome Page.
+def handleFirstVisit(browser: WebDriver):
+    # Pass The Welcome Page.
     try:
         if isElementExists(browser, By.CLASS_NAME, "rewards-slide"):
             try:
-                browser.find_element(By.XPATH, "//div[@class='rewards-slide']//a").click()
+                browser.find_element(
+                    By.XPATH, "//div[@class='rewards-slide']//a").click()
                 time.sleep(calculateSleep(5))
-                progress, total = browser.find_element(By.XPATH, "//div[@class='rewards-slide']//mee-rewards-counter-animation/span").get_attribute("innerHTML").split("/")
+                progress, total = browser.find_element(
+                    By.XPATH, "//div[@class='rewards-slide']//mee-rewards-counter-animation/span").get_attribute("innerHTML").split("/")
                 progress = int(progress)
                 total = int(total)
-                if(progress < total):                
-                    browser.find_element(By.XPATH, "//mee-rewards-welcome-tour//mee-rewards-slide[contains(@class, 'ng-scope') and not(contains(@class,'ng-hide'))]//mee-rewards-check-mark/../a").click()
+                if (progress < total):
+                    browser.find_element(
+                        By.XPATH, "//mee-rewards-welcome-tour//mee-rewards-slide[contains(@class, 'ng-scope') and not(contains(@class,'ng-hide'))]//mee-rewards-check-mark/../a").click()
                     time.sleep(calculateSleep(5))
             except:
                 pass
 
-            browser.find_element(By.XPATH, "//button[@data-modal-close-button]").click()
+            browser.find_element(
+                By.XPATH, "//button[@data-modal-close-button]").click()
             time.sleep(calculateSleep(5))
     except:
         print('[LOGIN]', "Can't pass the first time quiz.")
+
 
 def waitUntilVisible(browser: WebDriver, by_: By, selector: str, time_to_wait: int = 10):
     """Wait until visible"""
@@ -951,7 +967,8 @@ def completeDailySet(browser: WebDriver):
                             browser.find_element(
                                 By.ID, 'bnp_hfly_cta2').click()
                             time.sleep(2)
-                        waitUntilClickable(browser, By.ID, f"rqAnswerOption{str(i)}", 25)
+                        waitUntilClickable(
+                            browser, By.ID, f"rqAnswerOption{str(i)}", 25)
                         browser.find_element(
                             By.ID, "rqAnswerOption" + str(i)).click()
                         time.sleep(calculateSleep(6))
@@ -1177,7 +1194,8 @@ def completePunchCards(browser: WebDriver):
                     for question in range(numberOfQuestions):
                         answer = browser.execute_script(
                             "return _w.rewardsQuizRenderInfo.correctAnswer")
-                        waitUntilClickable(browser, By.XPATH, f'//input[@value="{answer}"]', 25)
+                        waitUntilClickable(
+                            browser, By.XPATH, f'//input[@value="{answer}"]', 25)
                         browser.find_element(
                             By.XPATH, f'//input[@value="{answer}"]').click()
                         time.sleep(calculateSleep(25))
@@ -1196,7 +1214,8 @@ def completePunchCards(browser: WebDriver):
                     browser.switch_to.window(
                         window_name=browser.window_handles[1])
                     time.sleep(calculateSleep(8))
-                    waitUntilVisible(browser, By.XPATH, '//*[@id="QuestionPane0"]/div[2]', 15)
+                    waitUntilVisible(browser, By.XPATH,
+                                     '//*[@id="QuestionPane0"]/div[2]', 15)
                     counter = str(
                         browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[
                         :-1][1:]
@@ -1298,7 +1317,8 @@ def completeMorePromotions(browser: WebDriver):
                 for i in range(4):
                     if browser.find_element(By.ID, f"rqAnswerOption{str(i)}").get_attribute(
                             "data-option") == correctOption:
-                        waitUntilClickable(browser, By.ID, f"rqAnswerOption{str(i)}", 25)
+                        waitUntilClickable(
+                            browser, By.ID, f"rqAnswerOption{str(i)}", 25)
                         browser.find_element(
                             By.ID, f"rqAnswerOption{str(i)}").click()
                         time.sleep(5)
@@ -1319,7 +1339,8 @@ def completeMorePromotions(browser: WebDriver):
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(10))
-        waitUntilVisible(browser, By.XPATH, '//*[@id="QuestionPane0"]/div[2]', 15)
+        waitUntilVisible(browser, By.XPATH,
+                         '//*[@id="QuestionPane0"]/div[2]', 15)
         counter = str(browser.find_element(By.XPATH, '//*[@id="QuestionPane0"]/div[2]').get_attribute('innerHTML'))[
             :-1][1:]
         numberOfQuestions = max([int(s)
@@ -1792,7 +1813,7 @@ def argumentParser():
                         help="Rechecks proxy in case you face proxy dead error",
                         action="store_true",
                         required=False)
-    
+
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -2620,7 +2641,8 @@ def farmer():
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in...')
-                login(browser, account['username'], account['password'], account.get('totpSecret', None))
+                login(browser, account['username'], account['password'], account.get(
+                    'totpSecret', None))
                 prGreen('[LOGIN] Logged-in successfully !')
                 STARTING_POINTS = POINTS_COUNTER
                 prGreen('[POINTS] You have ' + str(POINTS_COUNTER) +
@@ -2646,7 +2668,8 @@ def farmer():
                     if goal != '':
                         # Goal needs to be updated
                         setRedeemGoal(browser, goal)
-                        redeem_goal_title, redeem_goal_price = getRedeemGoal(browser)
+                        redeem_goal_title, redeem_goal_price = getRedeemGoal(
+                            browser)
 
                 if not LOGS[CURRENT_ACCOUNT]['Daily']:
                     completeDailySet(browser)
@@ -2668,7 +2691,8 @@ def farmer():
                 if remainingSearches != 0:
                     print('[BING]', 'Starting Desktop and Edge Bing searches...')
                     bingSearches(browser, remainingSearches)
-                    prGreen('\n[BING] Finished Desktop and Edge Bing searches !')
+                    prGreen(
+                        '\n[BING] Finished Desktop and Edge Bing searches !')
                 LOGS[CURRENT_ACCOUNT]['PC searches'] = True
                 updateLogs()
                 ERROR = False
@@ -2681,7 +2705,8 @@ def farmer():
                     account.get('proxy', None)
                 )
                 print('[LOGIN]', 'Logging-in mobile...')
-                login(browser, account['username'], account['password'], account.get('totpSecret', None), True)
+                login(browser, account['username'], account['password'], account.get(
+                    'totpSecret', None), True)
                 prGreen('[LOGIN] Logged-in successfully !')
                 if LOGS[account['username']]['PC searches'] and ERROR:
                     STARTING_POINTS = POINTS_COUNTER
@@ -2705,7 +2730,8 @@ def farmer():
                     browser = browserSetup(
                         False, PC_USER_AGENT, account.get('proxy', None))
                     print('[LOGIN]', 'Logging-in...')
-                    login(browser, account['username'], account['password'], account.get('totpSecret', None))
+                    login(browser, account['username'], account['password'], account.get(
+                        'totpSecret', None))
                     prGreen('[LOGIN] Logged-in successfully!')
                     goToURL(browser, BASE_URL)
                     waitUntilVisible(browser, By.ID, 'app-host', 30)
@@ -2722,7 +2748,7 @@ def farmer():
         ERROR = True
         browser.quit()
         farmer()
-    
+
     except SessionNotCreatedException:
         prBlue('[Driver] Session not created.')
         prBlue(
@@ -2730,7 +2756,7 @@ def farmer():
         prBlue('[Driver] https://chromedriver.chromium.org/downloads')
         input('Press any key to close...')
         sys.exit()
-    
+
     except KeyboardInterrupt:
         ERROR = True
         browser.quit()
@@ -2740,13 +2766,14 @@ def farmer():
             farmer()
         except KeyboardInterrupt:
             sys.exit("Force Exit (ctrl+c)")
-    
+
     except ProxyIsDeadException:
         LOGS[CURRENT_ACCOUNT]['Last check'] = 'Provided Proxy is Dead, Please replace a new one and run the script again'
         FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
         updateLogs()
         cleanLogs()
-        prPurple('\n[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again\n')
+        prPurple(
+            '\n[PROXY] Your Provided Proxy is Dead, Please replace a new one and run the script again\n')
         checkInternetConnection()
         farmer()
 
@@ -2759,7 +2786,7 @@ def farmer():
         prRed('[ERROR] Your TOTP secret was wrong !')
         checkInternetConnection()
         farmer()
-    
+
     except AccountLockedException:
         browser.quit()
         LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been locked !'
@@ -2769,7 +2796,7 @@ def farmer():
         prRed('[ERROR] Your account has been locked !')
         checkInternetConnection()
         farmer()
-    
+
     except InvalidCredentialsException:
         browser.quit()
         LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your email or password was not valid !'
@@ -2779,7 +2806,7 @@ def farmer():
         prRed('[ERROR] Your Email or password was not valid !')
         checkInternetConnection()
         farmer()
-        
+
     except UnusualActivityException:
         browser.quit()
         LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
@@ -2789,7 +2816,7 @@ def farmer():
         prRed("[ERROR] Unusual activity detected !")
         checkInternetConnection()
         farmer()
-    
+
     except AccountSuspendedException:
         browser.quit()
         LOGS[CURRENT_ACCOUNT]['Last check'] = 'Your account has been suspended'
@@ -2800,13 +2827,13 @@ def farmer():
         FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
         checkInternetConnection()
         farmer()
-    
+
     except RegionException:
         browser.quit()
         prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
         input('[ERROR] Press any key to close...')
         os._exit(0)
-    
+
     except Exception as e:
         if "executable needs to be in PATH" in str(e):
             prRed('[ERROR] WebDriver not found.\n')
@@ -2821,7 +2848,7 @@ def farmer():
             browser.quit()
         checkInternetConnection()
         farmer()
-    
+
     else:
         if ARGS.telegram or ARGS.discord:
             message = createMessage()
