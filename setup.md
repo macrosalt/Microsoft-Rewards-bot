@@ -5,7 +5,7 @@ Firstly install the latest version of [Python](https://www.python.org/downloads/
 To download the bot go to [@farshadz1997's github page](https://github.com/farshadz1997/Microsoft-Rewards-bot), click the green **code** button, and then click **Download ZIP**. Once it is installed onto your machine, extract the .zip file and move it to a memorable place such as **Documents**.
 ## Installing Chrome
 If you already have Google Chrome installed, skip this step. Otherwise download the latest version of [Google Chrome](https://www.google.com/intl/en_au/chrome/thank-you.html?statcb=0&installdataindex=empty&defaultbrowser=0).
-## Initalising the bot
+## Initalizing the bot
 On Windows, in file explorer click on the address bar, type "**wt**" into the field, then hit enter. In terminal run the following commands.
 **Windows:**
 ```
@@ -47,3 +47,25 @@ To add/edit accounts open **accounts.json** and change the sample email and pass
 **Make sure when adding more accounts you add a comma after the curly bracket.**
 ## Running the script
 Finally! You've reached the point where we are ready to run the script. Simply in the folder where your bot is located, double click **manual_run.bat**. To keep it running daily just double click **run_at_6.30am_daily.bat** and make sure not to close terminal. To use microsoft rewards calculator open **calculator.bat** Enjoy!
+
+
+# Setting up Microsoft Rewards Bot for Arm Processors using Linux
+
+> All steps have been tested on Ubuntu 22.04. If you use another distribution, you will need to discover command equivalents for your distribution. It is also expected that you have previously installed Python, cloned the bot,added accounts, and installed its dependencies.
+
+## Installing Supported Browser
+Because Chrome does not provide an arm version for Linux, you will need to install the chromium browser in order to run this script.
+```
+sudo apt install chromium-browser
+```
+Use the command above to install the chromium browser on your arm device.
+
+## Installing Supported Webdriver
+Run the command below to install a compatible chromedriver.
+```
+sudo apt install chromium-chromedriver
+```
+
+## Running the Bot
+
+You may run the bot in the same way you would on any other linux device; simply add `--no-webdriver-manager` to the options. for example `python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session --no-webdriver-manager`

@@ -142,9 +142,11 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             prBlue(f"Using proxy: {proxy}")
         else:
             if ARGS.recheck_proxy:
+                prYellow("[PROXY] Your entered proxy is not working, rechecking the provided proxy.")
                 if isProxyWorking(proxy):
                     options.add_argument(f'--proxy-server={proxy}')
                     prBlue(f"Using proxy: {proxy}")
+                else:
                     if ARGS.skip_if_proxy_dead:
                                     raise ProxyIsDeadException
                     else:
