@@ -2924,7 +2924,7 @@ if __name__ == '__main__':
     ARGS = argumentParser()
     def print(*args, **kwargs):
         if ARGS.print_to_webhook and (ARGS.telegram or ARGS.discord):
-            sendReportToMessenger(" ".join(args))
+            sendReportToMessenger("```" + " ".join(args)+ " ```")
         return builtins.print(*args, **kwargs)
     
     try:
