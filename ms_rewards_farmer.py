@@ -208,6 +208,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         waitUntilClickable(browser, By.ID, "id__0", 15)
         browser.find_element(By.ID, "id__0").click()
+        WebDriverWait(browser, 25).until_not(ec.visibility_of_element_located((By.ID, "id__0")))
+        time.sleep(5)
 
     def answerTOTP(totpSecret):
         """Enter TOTP code and submit"""
@@ -242,10 +244,10 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     goToURL(browser, 'https://login.live.com/')
     # Check if account is already logged in
     if ARGS.session:
-        if browser.title == "":
-            waitToLoadBlankPage()
         if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
             acceptNewPrivacy()
+        if browser.title == "":
+            waitToLoadBlankPage()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
@@ -310,10 +312,10 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         else:
             # Click No.
             browser.find_element(By.ID, 'idBtn_Back').click()
-        if browser.title == "":
-            waitToLoadBlankPage()
         if browser.title == "Microsoft account privacy notice" or isElementExists(browser, By.XPATH, '//*[@id="interruptContainer"]/div[3]/div[3]/img'):
             acceptNewPrivacy()
+        if browser.title == "":
+            waitToLoadBlankPage()
         if browser.title == "We're updating our terms" or isElementExists(browser, By.ID, 'iAccrualForm'):
             answerUpdatingTerms()
         if browser.title == 'Is your security info still accurate?' or isElementExists(browser, By.ID, 'iLooksGood'):
