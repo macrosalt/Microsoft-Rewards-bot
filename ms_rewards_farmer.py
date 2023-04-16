@@ -141,10 +141,19 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             options.add_argument(f'--proxy-server={proxy}')
             prBlue(f"Using proxy: {proxy}")
         else:
-            if ARGS.skip_if_proxy_dead:
-                raise ProxyIsDeadException
+            if ARGS.recheck_proxy:
+                if isProxyWorking(proxy):
+                    options.add_argument(f'--proxy-server={proxy}')
+                    prBlue(f"Using proxy: {proxy}")
+                    if ARGS.skip_if_proxy_dead:
+                                    raise ProxyIsDeadException
+                    else:
+                        prYellow("[PROXY] Your entered proxy is not working, continuing without proxy.")
             else:
-                prYellow("[PROXY] Your entered proxy is not working, continuing without proxy.")
+                if ARGS.skip_if_proxy_dead:
+                                raise ProxyIsDeadException
+                else:
+                    prYellow("[PROXY] Your entered proxy is not working, continuing without proxy.")
     options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -1777,6 +1786,10 @@ def argumentParser():
                         required=False)
     parser.add_argument("--dont-check-internet",
                         help="Prevent script from checking internet connection.",
+                        action="store_true",
+                        required=False)
+    parser.add_argument("--recheck-proxy",
+                        help="Rechecks proxy in case you face proxy dead error",
                         action="store_true",
                         required=False)
     
