@@ -51,7 +51,7 @@ Finally! You've reached the point where we are ready to run the script. Simply i
 
 # Setting up Microsoft Rewards Bot for Arm Processors using Linux
 
-> All steps have been tested on Ubuntu 22.04. If you use another distribution, you will need to discover command equivalents for your distribution. It is also expected that you have previously installed Python, cloned the bot,added accounts, and installed its dependencies.
+> All steps have been tested on Ubuntu 22.04. If you use another distribution, you will need to find command equivalents for your distribution. It is also expected that you have previously installed Python, cloned the bot,added accounts, and installed bot dependencies.
 
 ## Installing Supported Browser
 Because Chrome does not provide an arm version for Linux, you will need to install the chromium browser in order to run this script.
