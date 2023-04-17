@@ -5,18 +5,22 @@
         "Points": 6015
     },
     "pjysssqw@outlook.com": {
-        "Last check": "2023-04-15",
-        "Today's points": 380,
-        "Points": 28150
+        "Last check": "2023-04-16",
+        "Today's points": 28480,
+        "Points": 28480
     },
     "wfaobymr@outlook.com": {
-        "Last check": "2023-04-15",
+        "Last check": "Unknown error !",
         "Today's points": 13957,
         "Points": 42107
     },
     "csdmuvrk@outlook.com": {
-        "Last check": "2023-04-15",
+        "Last check": "Unknown error !",
         "Today's points": -3170,
-        "Points": 38937
+        "Points": 38937,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
