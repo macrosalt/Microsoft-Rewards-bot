@@ -1,8 +1,8 @@
 {
     "coprnbbt@outlook.com": {
-        "Last check": "2023-04-16",
-        "Today's points": 300,
-        "Points": 13900
+        "Last check": "2023-04-17",
+        "Today's points": 435,
+        "Points": 14335
     },
     "vckoyirs@outlook.com": {
         "Last check": "Unknown error !",
@@ -10,13 +10,17 @@
         "Points": 27335
     },
     "smcinqjj@outlook.com": {
-        "Last check": "2023-04-16",
-        "Today's points": 330,
-        "Points": 16715
+        "Last check": "2023-04-17",
+        "Today's points": 2740,
+        "Points": 17075
     },
     "bncpiwkk@outlook.com": {
-        "Last check": "2023-04-16",
+        "Last check": "Unknown error !",
         "Today's points": -535,
-        "Points": 16180
+        "Points": 16180,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     }
 }
