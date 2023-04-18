@@ -98,6 +98,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--currency CURRENCY</code> Converts your points into your preferred currency. Available currencies: EUR, USD, AUD, INR, GBP, CAD, JPY, CHF, NZD, ZAR, BRL, CNY, HKD, SGD, THB</li>
             <li><code>--skip-if-proxy-dead</code> skips farming a particular account whose supplied proxy is no longer active.</li>
+            <li><code>--recheck-proxy</code> rechecks proxy in case they are reported dead.</li>
             <li><code>--dont-check-internet</code> Bot won't look for internet connection if you use this arg.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
