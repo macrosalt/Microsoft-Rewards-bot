@@ -68,7 +68,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
 ```
 
 </li>
-    <li>Due to limits of Ipapi sometimes it returns error, and it causes bot stops. So you can define default language and location to prevent it from 
+    <li>Due to the limits of Ipapi sometimes it returns an error, and it causes the bot to stop. So you can define the default language and location to prevent it from 
       <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/479b2d4b25761d245dc6b3519627162a44d8f85b/ms_rewards_farmer.py#L367">here</a>.</li>
     <li>Run the script</li>
       <ul>
