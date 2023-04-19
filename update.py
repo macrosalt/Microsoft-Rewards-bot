@@ -170,7 +170,7 @@ if __name__ == '__main__':
     # Check latest version
     print("Checking latest version online.")
     check_version = download(validate(repository, "version.json"), "check latest version")
-    print(f"Found an version online! Attempting to update to {check_version['version']}.")
+    print(f"Found a version online! Attempting to update to {check_version['version']}.")
     debug(check_version)
 
     # Get online files
