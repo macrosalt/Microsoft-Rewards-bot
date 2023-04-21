@@ -2,7 +2,11 @@
     "joothsto@outlook.com": {
         "Last check": "Your account has been locked !",
         "Today's points": 5976,
-        "Points": 30202
+        "Points": 30202,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "nipexfsj@outlook.com": {
         "Last check": "Unknown error !",
@@ -14,13 +18,17 @@
         "PC searches": false
     },
     "jboqcenv@outlook.com": {
-        "Last check": "Unknown error !",
-        "Today's points": 395,
-        "Points": 37199
+        "Last check": "2023-04-20",
+        "Today's points": 340,
+        "Points": 37584
     },
     "rvyujeks@outlook.com": {
-        "Last check": "Unknown error !",
+        "Last check": "2023-04-21",
         "Today's points": -12315,
-        "Points": 24884
+        "Points": 24884,
+        "Daily": true,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
