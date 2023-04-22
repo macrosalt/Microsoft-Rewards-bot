@@ -18,17 +18,17 @@
         "PC searches": false
     },
     "jboqcenv@outlook.com": {
-        "Last check": "2023-04-20",
-        "Today's points": 340,
-        "Points": 37584
+        "Last check": "2023-04-21",
+        "Today's points": 370,
+        "Points": 37954
     },
     "rvyujeks@outlook.com": {
-        "Last check": "2023-04-21",
+        "Last check": "2023-04-22",
         "Today's points": -12315,
         "Points": 24884,
         "Daily": true,
-        "Punch cards": false,
-        "More promotions": false,
+        "Punch cards": true,
+        "More promotions": true,
         "PC searches": false
     }
 }
