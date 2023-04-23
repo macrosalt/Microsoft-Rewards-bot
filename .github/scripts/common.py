@@ -75,7 +75,7 @@ MACHINE_TO_ACCOUNT = {
         "theworld":"",
     },
     "miHyper_win1022H2": {           
-        "edge":"pyizsvhy@outlook.com",
+        "edge":"",
         "chrome":"fvevijqg@outlook.com",
         "firefox":"",
         "yandex":"huqafhdp@outlook.com",
@@ -91,17 +91,17 @@ MACHINE_TO_ACCOUNT = {
         "midori":"pjysssqw@outlook.com",
         "ur":"vqkufecw@outlook.com",
         "pale_moon":"",
-        "srware_iron":"fudxyrsc@outlook.com",
+        "srware_iron":"",
         "slimjet":"spxbtglt@outlook.com",
         "avg":"lfsqfgnp@outlook.com",
-        "liebao":"rtwumktx@outlook.com",
+        "liebao":"",
         "cent":"nipexfsj@outlook.com",
         "theworld":"nhywkmfn@outlook.com",
     },
     "miHyper_win7": {           
         "edge":"fcbsqnjg@outlook.com",
         "chrome":"cthinvmh@outlook.com",
-        "firefox":"hkxeycss@outlook.com",
+        "firefox":"",
         "yandex":"jboqcenv@outlook.com",
         "opera":"fxfyxblj@outlook.com",
         "vivaldi":"wcpxwrcn@outlook.com",
@@ -126,7 +126,7 @@ MACHINE_TO_ACCOUNT = {
         "chrome":"ymizpwly@outlook.com",
         "chrome2":"wotfvcat@outlook.com",
         "safari":"jmbltatj@outlook.com",
-        "brave":"febgcblg@outlook.com",
+        "brave":"",
     },
 }
 
