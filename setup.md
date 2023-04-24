@@ -69,3 +69,27 @@ sudo apt install chromium-chromedriver
 ## Running the Bot
 
 You may run the bot in the same way you would on any other linux device; simply add `--no-webdriver-manager` to the options. for example `python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session --no-webdriver-manager`
+
+# Setup Microsoft-Rewards-bot in termux
+
+## Install required packages
+
+Chromium and chromedriver is there in tur repo and x11 repo contains some dependencies of chromium
+
+Run these commands
+
+```
+pkg install -y tur-repo x11-repo python python-tkinter
+pkg install -y chromium xorg-xerver-xvfb
+```
+
+- Clone the repo
+ 
+- Setup the repo like how you would do normally
+
+- In the command, `--virtual-display -no-webdriver-manager` must be added and do not add `--headless` ( otherwise it will throw an error ).
+
+Example:
+```
+python3 ms_rewards_farmer.py --no-images --session --superfast --no-webdriver-manager --virtual-display 
+```
