@@ -103,6 +103,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
             <li><code>--skip-if-proxy-dead</code> skips farming a particular account whose supplied proxy is no longer active.</li>
             <li><code>--recheck-proxy</code> rechecks proxy in case they are reported dead.</li>
             <li><code>--dont-check-internet</code> Bot won't look for internet connection if you use this arg.</li>
+            <li><code>--send-to-webhhok</code> Bot will send all the message printed to cli to the webhhok. (will not work if you don't use either discord or telegram argument).</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled.</li>
