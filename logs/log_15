@@ -1,13 +1,17 @@
 {
     "dcpnzssa@outlook.com": {
-        "Last check": "2023-04-22",
-        "Today's points": -12279,
-        "Points": 7477
+        "Last check": "2023-04-23",
+        "Today's points": -12249,
+        "Points": 7812
     },
     "ardjjelo@outlook.com": {
-        "Last check": "2023-04-22",
+        "Last check": "Unknown error !",
         "Today's points": 15305,
-        "Points": 22782
+        "Points": 22782,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     },
     "hkxeycss@outlook.com": {
         "Last check": "Your account has been locked !",
@@ -15,8 +19,8 @@
         "Points": 12398
     },
     "chlsnyec@outlook.com": {
-        "Last check": "2023-04-22",
-        "Today's points": 415,
-        "Points": 19756
+        "Last check": "2023-04-23",
+        "Today's points": 305,
+        "Points": 20061
     }
 }
