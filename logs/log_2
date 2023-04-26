@@ -5,9 +5,13 @@
         "Points": 21400
     },
     "elftxvvs@outlook.com": {
-        "Last check": "2023-04-24",
+        "Last check": "Unknown error !",
         "Today's points": 100,
-        "Points": 1055
+        "Points": 1055,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "wigpbsoy@outlook.com": {
         "Last check": "Unknown error !",
@@ -15,7 +19,7 @@
         "Points": 29599
     },
     "yisjuold@outlook.com": {
-        "Last check": "2023-04-24",
+        "Last check": "Unknown error !",
         "Today's points": 180,
         "Points": 190
     }
