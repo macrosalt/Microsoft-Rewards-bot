@@ -80,7 +80,7 @@ Run these commands
 
 ```
 pkg install -y tur-repo x11-repo python python-tkinter
-pkg install -y chromium xorg-xerver-xvfb
+pkg install -y chromium xorg-server-xvfb
 ```
 
 - Clone the repo
