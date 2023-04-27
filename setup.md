@@ -87,7 +87,7 @@ pkg install -y chromium xorg-xerver-xvfb
  
 - Setup the repo like how you would do normally
 
-- In the command, `--virtual-display -no-webdriver-manager` must be added and do not add `--headless` ( otherwise it will throw an error ).
+- In the command, `--virtual-display --no-webdriver-manager` must be added and do not add `--headless` ( otherwise it will throw an error ).
 
 Example:
 ```
