@@ -19,7 +19,6 @@ import pyotp
 from functools import wraps
 from func_timeout import FunctionTimedOut, func_set_timeout
 from notifiers import get_notifier
-from random_word import RandomWords
 from selenium import webdriver
 from selenium.common.exceptions import (ElementNotInteractableException, NoAlertPresentException,
                                         NoSuchElementException, SessionNotCreatedException, TimeoutException,
@@ -850,24 +849,19 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
 
     global POINTS_COUNTER  # pylint: disable=global-statement
     i = 0
-    r = RandomWords()
     try:
-        search_terms = r.get_random_words(limit=numberOfSearches)
+        words = open("searchwords.txt", "r").read().splitlines()
+        search_terms = random.sample(words, numberOfSearches)
         if search_terms is None:
             raise Exception
     except Exception:
         search_terms = getGoogleTrends(numberOfSearches)
         if len(search_terms) == 0:
-            try:
-                words = open(
-                    f"{Path.cwd().resolve()}/searchwords.txt", "r").read().splitlines()
-                search_terms = random.sample(words, numberOfSearches)
-            except:
-                prRed('[ERROR] No search terms found, account skipped.')
-                finishedAccount()
-                cleanLogs()
-                updateLogs()
-                raise Exception()
+            prRed('[ERROR] No search terms found, account skipped.')
+            finishedAccount()
+            cleanLogs()
+            updateLogs()
+            raise Exception()
     for word in search_terms:
         i += 1
         print(f'[BING] {i}/{numberOfSearches}', end="\r")
