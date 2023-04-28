@@ -1,5 +1,5 @@
 import json
-import os
+import os, traceback
 import platform
 import random
 import subprocess
@@ -40,8 +40,8 @@ from exceptions import *
 
 
 # Define user-agents
-PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.51'
-MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36 EdgA/111.0.1661.48'
+PC_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.58'
+MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-N9750) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36 EdgA/112.0.1722.46'
 
 POINTS_COUNTER = 0
 
@@ -148,6 +148,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
             if ARGS.recheck_proxy:
                 prYellow(
                     "[PROXY] Your entered proxy is not working, rechecking the provided proxy.")
+                time.sleep(5)
                 if isProxyWorking(proxy):
                     options.add_argument(f'--proxy-server={proxy}')
                     prBlue(f"Using proxy: {proxy}")
@@ -184,7 +185,14 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
 @retry_on_500_errors
 def goToURL(browser: WebDriver, url: str):
     browser.get(url)
+    
 
+def displayError(e: Exception):
+    if ERROR:
+        tb = e.__traceback__
+        tb_str = traceback.format_tb(tb)
+        error = "\n".join(tb_str).strip() + f"\n{e}"
+        prRed(error)
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: bool = False):
@@ -314,6 +322,7 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     # Wait complete loading
     waitUntilVisible(browser, By.ID, 'loginHeader', 10)
     # Enter password
+    time.sleep(3)
     browser.find_element(By.ID, "i0118").send_keys(pwd)
     # browser.execute_script("document.getElementById('i0118').value = '" + pwd + "';")
     print('[LOGIN]', 'Writing password...')
@@ -1141,8 +1150,7 @@ def completeDailySet(browser: WebDriver):
                                 '[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
                             completeDailySetVariableActivity(cardNumber)
         except Exception as exc:
-            if ERROR:
-                prRed(str(exc))
+            displayError(exc)
             error = True
             resetTabs(browser)
     if not error:
@@ -1252,8 +1260,7 @@ def completePunchCards(browser: WebDriver):
                 url = punchCard['parentPromotion']['attributes']['destination']
                 completePunchCard(url, punchCard['childPromotions'])
         except Exception as exc:
-            if ERROR:
-                prRed(str(exc))
+            displayError(exc)
             resetTabs(browser)
     time.sleep(2)
     goToURL(browser, BASE_URL)
@@ -1448,8 +1455,7 @@ def completeMorePromotions(browser: WebDriver):
                     and promotion['destinationUrl'] == BASE_URL:
                 completeMorePromotionSearch(i)
         except Exception as exc:
-            if ERROR:
-                prRed(str(exc))
+            displayError(exc)
             resetTabs(browser)
 
     completePromotionalItems()
@@ -1605,8 +1611,7 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
         prYellow("[MSN GAME] Failed to locate MSN shopping game !")
         finished = False
     except Exception as exc:  # skipcq
-        if ERROR:
-            prRed(str(exc))
+        displayError(exc)
         prYellow("[MSN GAME] Failed to complete MSN shopping game !")
         finished = False
     else:
@@ -2195,7 +2200,7 @@ def setRedeemGoal(browser: WebDriver, goal: str):
 
     except (NoSuchElementException, ElementClickInterceptedException) as exc:
         prRed("[GOAL SETTER] Ran into an exception trying to redeem!")
-        prRed(str(exc))
+        displayError(exc)
         return
     finally:
         goToURL(browser, BASE_URL)
@@ -2843,8 +2848,7 @@ def farmer():
             prRed(str(e))
             input("Press Enter to close...")
             os._exit(0)
-        if ARGS.error:
-            traceback.print_exc()
+        displayError(e)
         print('\n')
         ERROR = True
         if browser is not None:
@@ -2948,7 +2952,7 @@ def get_version():
         with open(VERSION_PATH, 'r') as version_json:
             return json.load(version_json)['version']
     except Exception as exc:  # skipcq
-        prRed(exc if ERROR else "")
+        displayError(exc)
         return "Unknown"
 
 
@@ -2958,6 +2962,5 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        traceback.print_exc()
-        prRed(str(e))
+        displayError(e)
         input("press Enter to close...")
