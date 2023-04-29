@@ -1,5 +1,6 @@
 import json
-import os, traceback
+import os
+import traceback
 import builtins
 import platform
 import random
@@ -168,6 +169,9 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
         options.add_argument("--headless=new")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
+    if ARGS.virtual_display:
+        # Fix MSN Shopping Game when using virtual display
+        options.add_argument("--window-size=1920,1080")
     if platform.system() == 'Linux':
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -183,7 +187,7 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
 @retry_on_500_errors
 def goToURL(browser: WebDriver, url: str):
     browser.get(url)
-    
+
 
 def displayError(e: Exception):
     if ERROR:
@@ -191,6 +195,7 @@ def displayError(e: Exception):
         tb_str = traceback.format_tb(tb)
         error = "\n".join(tb_str).strip() + f"\n{e}"
         prRed(error)
+
 
 # Define login function
 def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: bool = False):
@@ -354,7 +359,7 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
         if (
             browser.title == "Your account has been temporarily suspended" or
             isElementExists(browser, By.CLASS_NAME, "serviceAbusePageContainer  PageContainer") or
-		    browser.current_url.startswith("https://account.live.com/Abuse")
+            browser.current_url.startswith("https://account.live.com/Abuse")
         ):
             raise AccountLockedException
         elif browser.title == "Help us protect your account" or \
@@ -2112,7 +2117,7 @@ def sendToDiscord(message):
         content = {"username": "⭐️ Microsoft Rewards Bot ⭐️",
                    "content": message}
         response = requests.post(webhook_url, json=content)
-    if not ARGS.print_to_webhook: # this is to prevent infinite loop
+    if not ARGS.print_to_webhook:  # this is to prevent infinite loop
         if response.status_code == 204:
             prGreen("[LOGS] Report sent to Discord.\n")
         else:
@@ -2963,13 +2968,14 @@ def get_version():
 
 if __name__ == '__main__':
     version = get_version()
-    global ARGS # pylint: disable=global-statement
+    global ARGS  # pylint: disable=global-statement
     ARGS = argumentParser()
+
     def print(*args, **kwargs):
         if ARGS.print_to_webhook and (ARGS.telegram or ARGS.discord):
-            sendReportToMessenger("```" + " ".join(args)+ " ```")
+            sendReportToMessenger("```" + " ".join(args) + " ```")
         return builtins.print(*args, **kwargs)
-    
+
     try:
         main()
     except Exception as e:
