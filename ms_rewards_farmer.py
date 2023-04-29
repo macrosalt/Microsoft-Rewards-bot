@@ -189,9 +189,7 @@ def goToURL(browser: WebDriver, url: str):
 
 
 def displayError(exp: Exception):
-    """
-    Display error message with traceback
-    """
+    """Display error message with traceback"""
     if ERROR:
         tb = exp.__traceback__
         tb_str = traceback.format_tb(tb)
