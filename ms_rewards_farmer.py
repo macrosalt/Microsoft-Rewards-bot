@@ -13,7 +13,6 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Union, List, Literal
 import copy
-import traceback
 import ipapi
 import requests
 import pyotp
@@ -189,11 +188,11 @@ def goToURL(browser: WebDriver, url: str):
     browser.get(url)
 
 
-def displayError(e: Exception):
+def displayError(exp: Exception):
     if ERROR:
-        tb = e.__traceback__
+        tb = exp.__traceback__
         tb_str = traceback.format_tb(tb)
-        error = "\n".join(tb_str).strip() + f"\n{e}"
+        error = "\n".join(tb_str).strip() + f"\n{exp}"
         prRed(error)
 
 
