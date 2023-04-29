@@ -168,9 +168,6 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
         options.add_argument("--headless=new")
     options.add_argument('log-level=3')
     options.add_argument("--start-maximized")
-    if ARGS.virtual_display or ARGS.headless:
-        # Fix MSN Shopping Game when using virtual display or headless mode
-        options.add_argument("--window-size=1920,1080")
     if platform.system() == 'Linux':
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -188,12 +185,12 @@ def goToURL(browser: WebDriver, url: str):
     browser.get(url)
 
 
-def displayError(exp: Exception):
+def displayError(exc: Exception):
     """Display error message with traceback"""
     if ERROR:
-        tb = exp.__traceback__
+        tb = exc.__traceback__
         tb_str = traceback.format_tb(tb)
-        error = "\n".join(tb_str).strip() + f"\n{exp}"
+        error = "\n".join(tb_str).strip() + f"\n{exc}"
         prRed(error)
 
 
@@ -1561,7 +1558,7 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
             By.TAG_NAME, 'button').click()
 
     try:
-        if ARGS.headless and platform.system() == "Linux":
+        if (ARGS.headless or ARGS.virtual_display) and platform.system() == "Linux":
             browser.set_window_size(1920, 1080)
         tries = 0
         print("[MSN GAME] Trying to complete MSN shopping game...")
