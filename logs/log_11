@@ -1,21 +1,25 @@
 {
     "ymizpwly@outlook.com": {
-        "Last check": "Unknown error !",
-        "Today's points": 290,
-        "Points": 22400
+        "Last check": "2023-05-02",
+        "Today's points": 23161,
+        "Points": 23161
     },
     "qnxwkvcs@outlook.com": {
-        "Last check": "2023-05-01",
-        "Today's points": 450,
-        "Points": 18770
+        "Last check": "2023-05-02",
+        "Today's points": -4010,
+        "Points": 19151
     },
     "rmslyruy@outlook.com": {
-        "Last check": "2023-05-01",
+        "Last check": "Unknown error !",
         "Today's points": 490,
-        "Points": 23294
+        "Points": 23294,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "lejhdeey@outlook.com": {
-        "Last check": "2023-05-01",
+        "Last check": "Unknown error !",
         "Today's points": -9489,
         "Points": 9281
     }
