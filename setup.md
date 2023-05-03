@@ -48,6 +48,14 @@ To add/edit accounts open **accounts.json** and change the sample email and pass
 ## Running the script
 Finally! You've reached the point where we are ready to run the script. Simply in the folder where your bot is located, double click **manual_run.bat**. To keep it running daily just double click **run_at_6.30am_daily.bat** and make sure not to close terminal. To use microsoft rewards calculator open **calculator.bat** Enjoy!
 
+## Running script in Linux
+```bash
+./run.sh
+```
+> This will execute the default command **python3 ms_rewards_farmer.py**, if you want to add more options, you can add them in the run.sh file. For example, if you want to run the script with --redeem option, you can open run.sh file and add --redeem option at the end of the command like this:
+```bash
+python3 ms_rewards_farmer.py --redeem
+```
 
 # Setting up Microsoft Rewards Bot for Arm Processors using Linux
 
