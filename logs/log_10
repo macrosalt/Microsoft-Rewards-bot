@@ -5,12 +5,16 @@
         "Points": 30202
     },
     "nipexfsj@outlook.com": {
-        "Last check": "2023-05-01",
+        "Last check": "Unknown error !",
         "Today's points": 530,
-        "Points": 17630
+        "Points": 17630,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "jboqcenv@outlook.com": {
-        "Last check": "2023-05-01",
+        "Last check": "Unknown error !",
         "Today's points": 490,
         "Points": 39649
     },
