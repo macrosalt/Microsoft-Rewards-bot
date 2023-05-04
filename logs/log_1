@@ -9,16 +9,12 @@
         "PC searches": false
     },
     "ookknadg@outlook.com": {
-        "Last check": "2023-04-30",
+        "Last check": "Unknown error !",
         "Today's points": 295,
-        "Points": 11705,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Points": 11705
     },
     "wotfvcat@outlook.com": {
-        "Last check": "Unknown error !",
+        "Last check": "2023-05-03",
         "Today's points": 290,
         "Points": 14455,
         "Daily": false,
@@ -28,11 +24,7 @@
     },
     "bocpsbvb@outlook.com": {
         "Last check": "2023-05-03",
-        "Today's points": 0,
-        "Points": 0,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": false,
-        "PC searches": false
+        "Today's points": 290,
+        "Points": 1025
     }
 }
