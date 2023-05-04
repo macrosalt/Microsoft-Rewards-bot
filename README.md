@@ -104,6 +104,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
             <li><code>--recheck-proxy</code> rechecks proxy in case they are reported dead.</li>
             <li><code>--dont-check-internet</code> Bot won't look for internet connection if you use this arg.</li>
             <li><code>--print-to-webhook</code> Bot will send all the message printed to cli to the webhhok. (will not work if you don't use either discord or telegram argument).</li>
+            <li><code>--accounts-file ACCOUNTS_FILE</code> if this arg provided with name of your accounts file in bot path, it will use that instead of <code>accounts.json</code>.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
         <li>Run the script normally that session and headless disabled.</li>
