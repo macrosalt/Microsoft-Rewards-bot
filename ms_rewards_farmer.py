@@ -1698,6 +1698,12 @@ def argumentParser():
         else:
             parser.error(f"Session not found for {session}")
 
+    def isAccountfileExists(accountfile: str):
+        if Path(f"{Path(__file__).parent}/{accountfile}").is_file():
+            return accountfile
+        else:
+            parser.error(f"Account file not found for {accountfile}")
+    
     parser = ArgumentParser(
         description=f"Microsoft Rewards Farmer {version}",
         allow_abbrev=False,
@@ -1820,7 +1826,13 @@ def argumentParser():
                         help="Rechecks proxy in case you face proxy dead error",
                         action="store_true",
                         required=False)
-
+    parser.add_argument("--accounts-file",
+                        help="Specify the name of the accounts file in bot directory.",
+                        metavar="<FILE NAME>",
+                        required=False,
+                        nargs=1,
+                        type=isAccountfileExists)
+    
     args = parser.parse_args()
     if args.superfast or args.fast:
         global SUPER_FAST, FAST  # pylint: disable=global-statement
@@ -1894,6 +1906,11 @@ def logs():
                                          "PC searches": False}
         updateLogs()
         prGreen(f'[LOGS] "Logs_{ACCOUNTS_PATH.stem}.txt" created.\n')
+    except json.decoder.JSONDecodeError as e:
+        prRed("\n[LOGS] Invalid JSON format in logs file, try to delete logs or fix the error then try again.")
+        prRed(str(e))
+        input("Press enter to close...")
+        os._exit(0)
 
 
 def updateLogs():
@@ -2511,7 +2528,10 @@ def loadAccounts():
     """get or create accounts.json"""
     global ACCOUNTS, ACCOUNTS_PATH  # pylint: disable=global-statement
     try:
-        ACCOUNTS_PATH = Path(__file__).parent / 'accounts.json'
+        if ARGS.accounts_file:
+            ACCOUNTS_PATH = Path(__file__).parent / ARGS.accounts_file[0]
+        else:
+            ACCOUNTS_PATH = Path(__file__).parent / 'accounts.json'
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
     except FileNotFoundError:
         with open(ACCOUNTS_PATH, 'w') as f:
@@ -2523,6 +2543,11 @@ def loadAccounts():
                  "\n[ACCOUNT] Edit with your credentials and save, then press any key to continue...")
         input()
         ACCOUNTS = json.load(open(ACCOUNTS_PATH, "r"))
+    except json.decoder.JSONDecodeError as e:
+        prRed("\n[ACCOUNTS] Invalid JSON format in accounts file.")
+        prRed(str(e))
+        input("Press enter to close...")
+        os._exit(0)
     finally:
         if ARGS.shuffle:
             random.shuffle(ACCOUNTS)
