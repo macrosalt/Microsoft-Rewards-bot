@@ -14,8 +14,8 @@
         "Today's points": -13865,
         "Points": 11186,
         "Daily": true,
-        "Punch cards": false,
-        "More promotions": false,
+        "Punch cards": true,
+        "More promotions": true,
         "PC searches": false
     },
     "vmtgmjti@outlook.com": {
