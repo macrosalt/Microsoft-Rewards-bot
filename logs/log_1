@@ -3,32 +3,24 @@
         "Last check": "Unknown error !",
         "Today's points": 320,
         "Points": 25715,
-        "Daily": false,
+        "Daily": true,
         "Punch cards": false,
         "More promotions": false,
         "PC searches": false
     },
     "ookknadg@outlook.com": {
         "Last check": "2023-05-05",
-        "Today's points": 295,
-        "Points": 11705,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Today's points": 340,
+        "Points": 12381
     },
     "wotfvcat@outlook.com": {
-        "Last check": "2023-05-03",
+        "Last check": "Unknown error !",
         "Today's points": 290,
-        "Points": 14455,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Points": 14455
     },
     "bocpsbvb@outlook.com": {
-        "Last check": "2023-05-04",
-        "Today's points": 295,
-        "Points": 1486
+        "Last check": "2023-05-05",
+        "Today's points": 260,
+        "Points": 1807
     }
 }
