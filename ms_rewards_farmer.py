@@ -320,7 +320,7 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
     if isElementExists(browser, By.ID, "usernameError"):
         raise InvalidCredentialsException
     # Wait complete loading
-    waitUntilVisible(browser, By.ID, 'loginHeader', 10)
+    waitUntilVisible(browser, By.ID, 'i0118', 10)
     # Enter password
     time.sleep(3)
     browser.find_element(By.ID, "i0118").send_keys(pwd)
@@ -880,14 +880,25 @@ def bingSearches(browser: WebDriver, numberOfSearches: int, isMobile: bool = Fal
             break
 
 
+def locateQuestCard(browser: WebDriver, activity: dict) -> WebElement:
+    """Locate rewards card on the page"""
+    time.sleep(5)
+    all_cards = browser.find_elements(By.CLASS_NAME, "rewards-card-container")
+    for card in all_cards:
+        data_bi_id = card.get_attribute("data-bi-id")
+        if activity["offerId"] == data_bi_id:
+            return card
+    else:
+        raise NoSuchElementException(f"could not locate the provided card: {activity['name']}")
+
+
 def completeDailySet(browser: WebDriver):
     """Complete daily set"""
 
-    def completeDailySetSearch(cardNumber: int):
+    def completeDailySetSearch(_activity: dict):
         """Complete daily set search"""
-        time.sleep(5)
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(15))
@@ -896,11 +907,10 @@ def completeDailySet(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeDailySetSurvey(cardNumber: int):
+    def completeDailySetSurvey(_activity: dict):
         """Complete daily set survey"""
-        time.sleep(5)
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(8))
@@ -922,11 +932,10 @@ def completeDailySet(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeDailySetQuiz(cardNumber: int):
+    def completeDailySetQuiz(_activity: dict):
         """Complete daily set quiz"""
-        time.sleep(5)
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section[1]/div/mee-card-group[1]/div[1]/mee-card[{str(cardNumber)}]/div[1]/card-content[1]/mee-rewards-daily-set-item-content[1]/div[1]/a[1]/div[3]/span[1]').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(3)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(12))
@@ -989,11 +998,10 @@ def completeDailySet(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeDailySetVariableActivity(cardNumber: int):
+    def completeDailySetVariableActivity(_activity: dict):
         """Complete daily set variable activity"""
-        time.sleep(2)
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(10))
@@ -1047,14 +1055,10 @@ def completeDailySet(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeDailySetThisOrThat(cardNumber: int):
+    def completeDailySetThisOrThat(_activity: dict):
         """Complete daily set this or that"""
-        time.sleep(2)
-        browser.find_element(
-            By.XPATH,
-            f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/\
-            mee-rewards-daily-set-section/div/mee-card-group/div/mee-card[{str(cardNumber)}]\
-            /div/card-content/mee-rewards-daily-set-item-content/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(2)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(25))
@@ -1117,16 +1121,16 @@ def completeDailySet(browser: WebDriver):
                 if activity['promotionType'] == "urlreward":
                     print('[DAILY SET]',
                           'Completing search of card ' + str(cardNumber))
-                    completeDailySetSearch(cardNumber)
+                    completeDailySetSearch(activity)
                 if activity['promotionType'] == "quiz":
                     if activity['pointProgressMax'] == 50 and activity['pointProgress'] == 0:
                         print(
                             '[DAILY SET]', 'Completing This or That of card ' + str(cardNumber))
-                        completeDailySetThisOrThat(cardNumber)
+                        completeDailySetThisOrThat(activity)
                     elif (activity['pointProgressMax'] == 40 or activity['pointProgressMax'] == 30) and activity['pointProgress'] == 0:
                         print('[DAILY SET]',
                               'Completing quiz of card ' + str(cardNumber))
-                        completeDailySetQuiz(cardNumber)
+                        completeDailySetQuiz(activity)
                     elif activity['pointProgressMax'] == 10 and activity['pointProgress'] == 0:
                         searchUrl = urllib.parse.unquote(
                             urllib.parse.parse_qs(urllib.parse.urlparse(activity['destinationUrl']).query)['ru'][0])
@@ -1139,11 +1143,11 @@ def completeDailySet(browser: WebDriver):
                         if "PollScenarioId" in filters:
                             print(
                                 '[DAILY SET]', 'Completing poll of card ' + str(cardNumber))
-                            completeDailySetSurvey(cardNumber)
+                            completeDailySetSurvey(activity)
                         else:
                             print(
                                 '[DAILY SET]', 'Completing quiz of card ' + str(cardNumber))
-                            completeDailySetVariableActivity(cardNumber)
+                            completeDailySetVariableActivity(activity)
         except Exception as exc:
             displayError(exc)
             error = True
@@ -1268,10 +1272,10 @@ def completePunchCards(browser: WebDriver):
 def completeMorePromotions(browser: WebDriver):
     """Complete more promotions"""
 
-    def completeMorePromotionSearch(cardNumber: int):
+    def completeMorePromotionSearch(_activity: dict):
         """Complete more promotion search"""
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(15))
@@ -1280,10 +1284,10 @@ def completeMorePromotions(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeMorePromotionQuiz(cardNumber: int):
+    def completeMorePromotionQuiz(_activity: dict):
         """Complete more promotion quiz"""
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(10))
@@ -1337,10 +1341,10 @@ def completeMorePromotions(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeMorePromotionABC(cardNumber: int):
+    def completeMorePromotionABC(_activity: dict):
         """Complete more promotion ABC"""
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(10))
@@ -1360,10 +1364,10 @@ def completeMorePromotions(browser: WebDriver):
         browser.switch_to.window(window_name=browser.window_handles[0])
         time.sleep(2)
 
-    def completeMorePromotionThisOrThat(cardNumber: int):
+    def completeMorePromotionThisOrThat(_activity: dict):
         """Complete more promotion this or that"""
-        browser.find_element(By.XPATH,
-                             f'//*[@id="app-host"]/ui-view/mee-rewards-dashboard/main/div/mee-rewards-more-activities-card/mee-card-group/div/mee-card[{str(cardNumber)}]/div/card-content/mee-rewards-more-activities-card-item/div/a/div/span').click()
+        card = locateQuestCard(browser, _activity)
+        card.click()
         time.sleep(1)
         browser.switch_to.window(window_name=browser.window_handles[1])
         time.sleep(calculateSleep(8))
@@ -1434,21 +1438,21 @@ def completeMorePromotions(browser: WebDriver):
             i += 1
             if promotion['complete'] is False and promotion['pointProgressMax'] != 0:
                 if promotion['promotionType'] == "urlreward":
-                    completeMorePromotionSearch(i)
+                    completeMorePromotionSearch(promotion)
                 elif promotion['promotionType'] == "quiz":
                     if promotion['pointProgressMax'] == 10:
-                        completeMorePromotionABC(i)
+                        completeMorePromotionABC(promotion)
                     elif promotion['pointProgressMax'] == 30 or promotion['pointProgressMax'] == 40:
-                        completeMorePromotionQuiz(i)
+                        completeMorePromotionQuiz(promotion)
                     elif promotion['pointProgressMax'] == 50:
-                        completeMorePromotionThisOrThat(i)
+                        completeMorePromotionThisOrThat(promotion)
                 else:
                     if promotion['pointProgressMax'] == 100 or promotion['pointProgressMax'] == 200:
-                        completeMorePromotionSearch(i)
+                        completeMorePromotionSearch(promotion)
             if promotion['complete'] is False and promotion['pointProgressMax'] == 100 and promotion[
                 'promotionType'] == "" \
                     and promotion['destinationUrl'] == BASE_URL:
-                completeMorePromotionSearch(i)
+                completeMorePromotionSearch(promotion)
         except Exception as exc:
             displayError(exc)
             resetTabs(browser)
@@ -1519,7 +1523,7 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
         getSignInButton()
 
     def getGamingCard() -> Union[WebElement, Literal[False]]:
-        """get gaming card"""
+        """get gaming card, if completed before raises GamingCardIsNotActive exception"""
         shopping_page_base_childs = expandShadowElement(
             browser.find_element(By.TAG_NAME, 'shopping-page-base'), 0)
         shopping_homepage = shopping_page_base_childs.find_element(
@@ -1530,6 +1534,8 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
         for element in msn_shopping_game_pane:
             if element.get_attribute("gamestate") == "active":
                 return element
+            elif element.get_attribute("gamestate") == "idle":
+                raise GamingCardIsNotActive
         else:
             return False
 
@@ -1595,8 +1601,9 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
             if scrolls == 5 and not gaming_card:
                 raise NoSuchElementException("Gaming card not found")
         print("[MSN GAME] Answering questions ...")
-        for _ in range(10):
+        for question in range(10):
             try:
+                print(f"[MSN GAME] Answering {question}/10", end="\r")
                 clickCorrectAnswer()
                 clickPlayAgain()
                 time.sleep(calculateSleep(10))
@@ -1605,6 +1612,9 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
     except NoSuchElementException:
         prYellow("[MSN GAME] Failed to locate MSN shopping game !")
         finished = False
+    except GamingCardIsNotActive:
+        prGreen("[MSN] Quiz has been already completed !")
+        finished = True
     except Exception as exc:  # skipcq
         displayError(exc)
         prYellow("[MSN GAME] Failed to complete MSN shopping game !")

@@ -26,3 +26,6 @@ class TOTPInvalidException(Exception):
 class InvalidCredentialsException(Exception):
     """Exception raised when the email is invalid"""
     
+
+class GamingCardIsNotActive(Exception):
+    """Exception raised when the gaming card is not active"""
