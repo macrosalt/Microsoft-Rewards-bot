@@ -22,7 +22,7 @@
 </p>
 
 <h2 align="center">👋 Welcome to the future of automation</h2>
-<h3 align="center">A simple bot that uses selenium to farm Microsoft Rewards written in Python.</h3>
+<h3 align="center">A simple bot written in Python that uses selenium to farm Microsoft Rewards.</h3>
 <details align="center">
   <summary><h3>GUI versions available</h3></summary>
   <details>
@@ -71,43 +71,43 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
 ```
 
 </li>
-    <li>Due to the limits of Ipapi sometimes it returns an error, and it causes the bot to stop. So you can define the default language and location to prevent it from 
+    <li>Due to the limits of Ipapi, it may return an error and cause the bot to stop. You can define the default language and location to prevent it from crashing 
       <a href="https://github.com/farshadz1997/Microsoft-Rewards-bot/blob/479b2d4b25761d245dc6b3519627162a44d8f85b/ms_rewards_farmer.py#L367">here</a>.</li>
     <li>Run the script</li>
       <ul>
         <li>Use optional arguments</li>
           <ul>
-            <li><code>--headless</code> You can use this argument to run the script in headless mode.</li>
-            <li><code>--no-images</code> Prevent images from loading to increase performance.</li>
+            <li><code>--headless</code> You can use this argument to run the script in headless mode (BAN RISK).</li>
+            <li><code>--no-images</code> Prevent images from loading to increase performance and decrease bandwidth.</li>
             <li><code>--dont-check-for-updates</code> Prevents script from checking updates.</li>
             <li><code>--shuffle</code> Randomize the order in which accounts are farmed.</li>
             <li><code>--redeem</code> Enable auto-redeem rewards based on accounts.json goals.</li>
             <li><code>--calculator</code> Opens GUI calculator with custom options. When using this flag the script will not run.</li>
             <li><code>--session</code> Use this argument to create session for each account.</li>
             <li><code>--start-at TIME</code> This argument takes time in 24h format (HH:MM) to run it at the given time.</li>
-            <li><code>--everyday</code> This argument makes the script to stay open and start it again next day at time you start.</li>
-            <li><code>--fast</code> This argument reduces delays of script and make it faster (use this if you have high speed connection).</li>
-            <li><code>--superfast</code> This argument is faster than fast (use this if you have a very high speed and reliable connection).</li>            
+            <li><code>--everyday</code> This argument makes the script stay open and start again next day at the time you ran it.</li>
+            <li><code>--fast</code> This argument reduces delays of the script and makes it faster (use this if you have high speed connection).</li>
+            <li><code>--superfast</code> This argument is faster than --fast (use this if you have a very high speed and reliable connection).</li>            
             <li><code>--account-browser ACCOUNT</code> This argument opens session for given account if it's already exist else returns error.</li>  
-            <li><code>--error</code> When you use this argument, app displays crash error in terminal when it fails.</li>
-            <li><code>--telegram TOKEN CHAT_ID</code> Use this argument to send logs to your telegram through your bot.</li>
-            <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through webhook.</li>
+            <li><code>--error</code> When you use this argument, bot displays crash errors in terminal when it fails.</li>
+            <li><code>--telegram TOKEN CHAT_ID</code> Sends logs to your telegram through your bot.</li>
+            <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through a webhook.</li>
             <li><code>--skip-unusual</code> Click on skip for 5 days on unusual activity detection.</li>
             <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.</li>
             <li><code>--skip-shopping</code> Skips MSN shopping game.</li>
             <li><code>--repeat-shopping</code> Repeat MSN shopping game. (So it runs twice per account consecutively)</li>
-            <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager.</li>
+            <li><code>--no-webdriver-manager</code> Use system installed webdriver instead of webdriver-manager (Needed for ARM devices).</li>
             <li><code>--virtual-display</code> Use PyVirtualDisplay (intended for Raspberry Pi users).</li>
             <li><code>--on-finish ACTION</code> Action to perform on finish from one of the following: shutdown, sleep, hibernate, exit.</li>
             <li><code>--currency CURRENCY</code> Converts your points into your preferred currency. Available currencies: EUR, USD, AUD, INR, GBP, CAD, JPY, CHF, NZD, ZAR, BRL, CNY, HKD, SGD, THB</li>
             <li><code>--skip-if-proxy-dead</code> skips farming a particular account whose supplied proxy is no longer active.</li>
             <li><code>--recheck-proxy</code> rechecks proxy in case they are reported dead.</li>
-            <li><code>--dont-check-internet</code> Bot won't look for internet connection if you use this arg.</li>
-            <li><code>--print-to-webhook</code> Bot will send all the message printed to cli to the webhhok. (will not work if you don't use either discord or telegram argument).</li>
-            <li><code>--accounts-file ACCOUNTS_FILE</code> if this arg provided with name of your accounts file in bot path, it will use that instead of <code>accounts.json</code>.</li>
+            <li><code>--dont-check-internet</code> Bot won't look for internet connection if you use this argument.</li>
+            <li><code>--print-to-webhook</code> Bot will send all the message printed to cli to the webhhok. (discord or telegram argument is required).</li>
+            <li><code>--accounts-file ACCOUNTS_FILE</code> specify a different account.json file path rather than the default</code>.</li>
             <li>For example type in your terminal <code>python ms_rewards_farmer.py --start-at 14:30 --everyday --fast --session</code> You don't need to use all of arguments.</li>
           </ul>
-        <li>Run the script normally that session and headless disabled.</li>
+        <li>Session and headless are disabled by default.</li>
       </ul>
    </ul>
 
@@ -115,42 +115,42 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
 <p align="center">
 <ul>
   <li>Bing searches (Desktop, Mobile and Edge) with User-Agents</li>
-  <li>Complete automatically the daily set</li>
-  <li>Complete automatically punch cards</li>
-  <li>Complete automatically the others promotions</li>
-  <li>Complete MSN shopping game quiz</li>
+  <li>Automatically completes the daily set</li>
+  <li>Automatically completes punch cards</li>
+  <li>Automatically completes other promotions</li>
+  <li>Completes MSN shopping game quiz</li>
   <li>Headless Mode</li>
   <li>Multi-Account Management</li>
-  <li>If it faces to an unexpected error then try the account from first</li>  
-  <li>Save progress of bot in a log file and use it to pass completed account on the next start at the same day</li>
+  <li>Restarts account when faced with an error</li>  
+  <li>Save progress of bot in a log file to detect farmed status if run again</li>
   <li>Detect suspended accounts</li>
   <li>Detect locked accounts</li>
   <li>Detect unusual activities</li>
-  <li>Uses time out to prevent infinite loop</li>
-  <li>You can assign custom user-agent for mobile like above example</li>
-  <li>Set clock to start it at specific time</li>
-  <li>For Bing search it uses random word at first try and if api failed then it uses google trends</li>
-  <li>Support HTTP proxy</li>
+  <li>Uses time outs to prevent infinite loops</li>
+  <li>You can assign custom user-agents for mobile like the example above</li>
+  <li>Set to run at a specific time</li>
+  <li>Uses random words for bind searches and uses bing trends if the api fails</li>
+  <li>Support HTTP proxies</li>
   <li>Auto-redeem rewards</li>
   <li>Rewards Calculator </li>
 </ul>
 <h2 align="center">AUTO-REDEEM (BETA)</h2>
 <p align="left">
-  <h4 align="left">This feature is still in beta! Feel free to try it and report any problems you find. Bear in mind that this feature was designed, so it would only redeem one card from one account each time you run the farmer. This is intentional so your accounts are less likely to get banned. If you do not specify any goal in accounts.json, it will default to Amazon Gift Cards</h4>
+  <h4 align="left">This feature is still in beta! Feel free to try it and report any problems you find. Bear in mind that this feature was designed so it would only redeem one card from one account each time you run the farmer. This is intentional so your accounts are less likely to get banned. If you do not specify any goal in accounts.json, it will default to Amazon Gift Cards</h4>
 <br>
 <h2 align="center">⚠️CAUTION!⚠️</h2>
 <p align="center">
-  <h4 align="center">Do not use headless mode, it can cause your account to be suspended from Microsoft Rewards.</h4>
+  <h4 align="center">Do not use headless mode, it can cause your account to get suspended from Microsoft Rewards.</h4>
 </p>
 
 ## Legal Notice!
 
-I and contributors do not endorse breaking Microsoft’s ToS. This is a proof of concept and purely for educational purposes to learn about Python and Selenium. Contributors and I have learned a lot about Python, Selenium and even using Github and how to collaborate as a team of people remotely.
+I and contributors do not endorse breaking Microsoft’s ToS. This is a proof of concept and purely for educational purposes to learn about Python and Selenium. The contributors and I have learned a lot about Python, Selenium, how to collaborate as a team of people remotely, and even using Github.
 Please take a look at [Microsoft ToS](https://www.microsoft.com/en-us/servicesagreement/).
 
 ## Support me
 
-Your support will be much appreciated
+Your support will be very appreciated.
 
 - <b>BTC (BTC network):</b> bc1qn52jx934nd54vhcv6x5xxsrc7z2qvwf6atcut3
 - <b>ETH (ERC20):</b> 0x2486D75EC2675833569b85d77b01C2c37097ECc2
