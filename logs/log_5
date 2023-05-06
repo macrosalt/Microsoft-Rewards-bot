@@ -13,9 +13,9 @@
         "Last check": "Unknown error !",
         "Today's points": -13865,
         "Points": 11186,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
         "PC searches": false
     },
     "vmtgmjti@outlook.com": {
