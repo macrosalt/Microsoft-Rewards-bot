@@ -148,11 +148,12 @@ def login(browser: WebDriver, email: str, pwd: str, isMobile: bool = False):
             input('Press any key to close...')
             os._exit(0)
         else:
-            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unknown error !'
+            unknown_err_msg = f'Unknown error: {browser.title} !'
+            LOGS[CURRENT_ACCOUNT]['Last check'] = unknown_err_msg
             FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
             updateLogs()
             cleanLogs()
-            raise Exception(prRed('[ERROR] Unknown error !'))
+            raise Exception(prRed(unknown_err_msg))
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
