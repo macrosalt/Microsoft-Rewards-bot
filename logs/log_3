@@ -15,8 +15,12 @@
         "Points": 14092
     },
     "iebtfdkf@outlook.com": {
-        "Last check": "2023-05-06",
+        "Last check": "2023-05-08",
         "Today's points": 270,
-        "Points": 14149
+        "Points": 14149,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": false,
+        "PC searches": false
     }
 }
