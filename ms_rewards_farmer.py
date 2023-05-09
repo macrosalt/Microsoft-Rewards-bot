@@ -424,6 +424,10 @@ def RewardsLogin(browser: WebDriver):
         elif browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute(
                 'innerHTML') == 'Microsoft Rewards is not available in this country or region.':
             raise RegionException
+        else:
+            error_text = browser.find_element(By.XPATH, '//*[@id="error"]/h1').get_attribute("innerHTML")
+            prRed(f"[ERROR] {error_text}")
+            raise DashboardException
     except NoSuchElementException:
         pass
     handleFirstVisit(browser)
@@ -1539,6 +1543,8 @@ def completeMSNShoppingGame(browser: WebDriver) -> bool:
             if element.get_attribute("gamestate") == "active":
                 return element
             elif element.get_attribute("gamestate") == "idle":
+                browser.execute_script(
+                    "arguments[0].scrollIntoView();", element)
                 raise GamingCardIsNotActive
         else:
             return False
@@ -2899,6 +2905,15 @@ def farmer():
             prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
             input('[ERROR] Press any key to close...')
             os._exit(0)
+    
+    except DashboardException:
+        browser.quit()
+        LOGS[CURRENT_ACCOUNT]["Last check"] = "Unknown error !"
+        FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+        updateLogs()
+        cleanLogs()
+        checkInternetConnection()
+        farmer()
 
     except Exception as e:
         if "executable needs to be in PATH" in str(e):

@@ -29,3 +29,7 @@ class InvalidCredentialsException(Exception):
 
 class GamingCardIsNotActive(Exception):
     """Exception raised when the gaming card is not active"""
+    
+
+class DashboardException(Exception):
+    """Exception when there's an error on Rewards Dashboard page"""
