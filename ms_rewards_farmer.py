@@ -294,6 +294,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
                 "https://account.live.com/proofs/Add"):
             handleUnusualActivity(browser, isMobile)
             return
+        elif browser.title == "Help us secure your account" or browser.current_url.startswith("https://account.live.com/recover"):
+            raise UnusualActivityException
         elif isElementExists(browser, By.ID, 'mectrl_headerPicture') or 'Sign In or Create' in browser.title:
             browser.find_element(By.ID, 'mectrl_headerPicture').click()
             waitUntilVisible(browser, By.ID, 'i0118', 15)
@@ -363,6 +365,8 @@ def login(browser: WebDriver, email: str, pwd: str, totpSecret: str, isMobile: b
                 browser.current_url.startswith("https://account.live.com/proofs/Add"):
             handleUnusualActivity(browser, isMobile)
             return
+        elif browser.title == "Help us secure your account" or browser.current_url.startswith("https://account.live.com/recover"):
+            raise UnusualActivityException
     # Wait 5 seconds
     time.sleep(5)
     # Click Security Check
@@ -2883,9 +2887,18 @@ def farmer():
 
     except RegionException:
         browser.quit()
-        prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
-        input('[ERROR] Press any key to close...')
-        os._exit(0)
+        if account.get("proxy", False):
+            LOGS[CURRENT_ACCOUNT]['Last check'] = 'Unusual activity detected !'
+            FINISHED_ACCOUNTS.append(CURRENT_ACCOUNT)
+            updateLogs()
+            cleanLogs()
+            prRed("[ERROR] Unusual activity detected !")
+            checkInternetConnection()
+            farmer()
+        else:
+            prRed('[ERROR] Microsoft Rewards is not available in this country or region !')
+            input('[ERROR] Press any key to close...')
+            os._exit(0)
 
     except Exception as e:
         if "executable needs to be in PATH" in str(e):
