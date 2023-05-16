@@ -1700,7 +1700,6 @@ def accountBrowser(chosen_account: str):
     return browser
 
 
-
 def argumentParser():
     """getting args from command line"""
 
