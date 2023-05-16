@@ -26,11 +26,11 @@ from selenium.common.exceptions import (ElementNotInteractableException, NoAlert
                                         ElementNotVisibleException, ElementClickInterceptedException)
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
-from selenium_stealth import stealth
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
+from selenium_stealth import stealth
 from pyvirtualdisplay import Display
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
@@ -179,13 +179,13 @@ def browserSetup(isMobile: bool, user_agent: str = PC_USER_AGENT, proxy: str = N
         browser = webdriver.Chrome(options=options) if ARGS.no_webdriver_manager else webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options)
         stealth(browser,
-        languages=["en-US", "en"],
-        vendor="Google Inc.",
-        platform="Win32",
-        webgl_vendor="Intel Inc.",
-        renderer="Intel Iris OpenGL Engine",
-        fix_hairline=True,
-        )
+                languages=["en-US", "en"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+               )
     return browser
 
 
