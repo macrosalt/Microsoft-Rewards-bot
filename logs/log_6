@@ -1,13 +1,13 @@
 {
     "rjkiwmjl@outlook.com": {
-        "Last check": "Unknown error: Microsoft account privacy notice !",
-        "Today's points": 320,
-        "Points": 13063
+        "Last check": "2023-05-16",
+        "Today's points": 370,
+        "Points": 13908
     },
     "fcbsqnjg@outlook.com": {
-        "Last check": "2023-05-15",
-        "Today's points": 390,
-        "Points": 35312
+        "Last check": "2023-05-16",
+        "Today's points": 21779,
+        "Points": 35687
     },
     "fxfyxblj@outlook.com": {
         "Last check": "Unknown error: Microsoft account privacy notice !",
@@ -15,8 +15,12 @@
         "Points": 48822
     },
     "ygbxznxy@outlook.com": {
-        "Last check": "2023-05-15",
+        "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 9378,
-        "Points": 44690
+        "Points": 44690,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
