@@ -1695,7 +1695,8 @@ def accountBrowser(chosen_account: str):
             break
     else:
         return None
-    browser = browserSetup(False, PC_USER_AGENT)
+    proxy = account.get('proxy', None)
+    browser = browserSetup(False, PC_USER_AGENT, proxy)
     return browser
 
 
