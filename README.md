@@ -90,7 +90,7 @@ You can use the simple installation guide <a href="https://github.com/farshadz19
             <li><code>--superfast</code> This argument is faster than --fast (use this if you have a very high speed and reliable connection).</li>            
             <li><code>--account-browser ACCOUNT</code> This argument opens session for given account if it's already exist else returns error.</li>  
             <li><code>--error</code> When you use this argument, bot displays crash errors in terminal when it fails.</li>
-            <li><code>--telegram TOKEN CHAT_ID</code> Sends logs to your telegram through your bot.</li>
+            <li><code>--telegram TOKEN CHAT_ID</code> Sends logs to your telegram through your bot. The bot and TOKEN can be created using this official <a href="https://t.me/BotFather">bot</a>. CHAT_ID can be retrieved via this <a href="https://t.me/myidbot">bot</a> and using the <code>/getid</code> command.</li>
             <li><code>--discord WEBHOOK_URL</code> Use this argument to send logs to your Discord server through a webhook.</li>
             <li><code>--skip-unusual</code> Click on skip for 5 days on unusual activity detection.</li>
             <li><code>--edge</code> Use Microsoft Edge webdriver instead of Chrome.</li>
