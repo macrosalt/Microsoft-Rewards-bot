@@ -11,7 +11,8 @@ import urllib.parse
 from argparse import ArgumentParser
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Union, List, Literal
+from typing import Union, List
+from typing_extensions import Literal
 import copy
 import ipapi
 import requests
