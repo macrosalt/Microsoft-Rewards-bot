@@ -1,7 +1,10 @@
 *.json
 *.txt
 .vscode
-chromedriver.exe
 env
 *.deb
+accounts.json
+chromedriver.exe
+Profiles
 __pycache__
+run.sh

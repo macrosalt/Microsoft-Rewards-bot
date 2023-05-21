@@ -1,0 +1,27 @@
+name: Update Version JSON
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update-version-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get commit code
+        run: echo "{commit_code}={$(git rev-parse HEAD)}" >> $GITHUB_OUTPUT
+        id: get_commit_code
+      - name: Update version.json
+        run: |
+          COMMIT_HASH=$(git rev-parse --short=7 HEAD)
+          sed -i "s/\"version\": \".*\"/\"version\": \"$COMMIT_HASH\"/g" version.json
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add version.json
+          git commit -m "Update version.json with latest commit code"
+          git push
