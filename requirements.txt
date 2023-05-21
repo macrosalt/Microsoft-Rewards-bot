@@ -14,5 +14,5 @@ pyyaml
 pyotp
 notifiers
 pyvirtualdisplay
-webdriver-manager>=3.8.5
+webdriver-manager
 typing_extensions
