@@ -1836,6 +1836,7 @@ def argumentParser():
                         required=False)
     parser.add_argument("--virtual-display",
                         help="Use PyVirtualDisplay (intended for Raspberry Pi users).",
+                        default=True,
                         action="store_true",
                         required=False)
     parser.add_argument("--dont-check-for-updates",
