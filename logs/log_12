@@ -1,8 +1,8 @@
 {
     "tlwesqjg@outlook.com": {
-        "Last check": "Unknown error: Microsoft account privacy notice !",
-        "Today's points": 400,
-        "Points": 49148
+        "Last check": "2023-05-24",
+        "Today's points": 345,
+        "Points": 49808
     },
     "dicxdycq@outlook.com": {
         "Last check": "Your account has been locked !",
@@ -10,17 +10,17 @@
         "Points": 13362
     },
     "cthinvmh@outlook.com": {
-        "Last check": "Unknown error: Microsoft account privacy notice !",
-        "Today's points": 415,
-        "Points": 30228,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Last check": "2023-05-24",
+        "Today's points": -19250,
+        "Points": 30558
     },
     "vhldgkyv@outlook.com": {
-        "Last check": "2023-05-23",
+        "Last check": "2023-05-25",
         "Today's points": 3410,
-        "Points": 33638
+        "Points": 33638,
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": false
     }
 }
