@@ -11,14 +11,10 @@
     "ookknadg@outlook.com": {
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 340,
-        "Points": 12381,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Points": 12381
     },
     "wotfvcat@outlook.com": {
-        "Last check": "Unknown error: Microsoft account privacy notice !",
+        "Last check": "2023-05-24",
         "Today's points": 275,
         "Points": 15066,
         "Daily": false,
@@ -27,12 +23,8 @@
         "PC searches": false
     },
     "bocpsbvb@outlook.com": {
-        "Last check": "2023-05-23",
-        "Today's points": 40,
-        "Points": 3328,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": false,
-        "PC searches": false
+        "Last check": "2023-05-24",
+        "Today's points": 315,
+        "Points": 4493
     }
 }
