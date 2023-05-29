@@ -1,13 +1,13 @@
 {
     "coprnbbt@outlook.com": {
-        "Last check": "Unknown error: Microsoft account privacy notice !",
-        "Today's points": 300,
-        "Points": 26293
+        "Last check": "2023-05-28",
+        "Today's points": 305,
+        "Points": 26863
     },
     "vckoyirs@outlook.com": {
-        "Last check": "2023-05-27",
-        "Today's points": 315,
-        "Points": 27418
+        "Last check": "2023-05-28",
+        "Today's points": 860,
+        "Points": 27723
     },
     "smcinqjj@outlook.com": {
         "Last check": "Your account has been suspended",
@@ -18,9 +18,9 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 365,
         "Points": 26438,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     }
 }
