@@ -1,22 +1,26 @@
 {
     "rjkiwmjl@outlook.com": {
-        "Last check": "2023-05-28",
-        "Today's points": 330,
-        "Points": 18033
+        "Last check": "2023-05-29",
+        "Today's points": 375,
+        "Points": 18408
     },
     "fcbsqnjg@outlook.com": {
-        "Last check": "2023-05-28",
-        "Today's points": 330,
-        "Points": 38957
+        "Last check": "2023-05-29",
+        "Today's points": 20969,
+        "Points": 39377
     },
     "fxfyxblj@outlook.com": {
-        "Last check": "2023-05-28",
-        "Today's points": 13110,
-        "Points": 52067
+        "Last check": "2023-05-29",
+        "Today's points": 420,
+        "Points": 52487
     },
     "ygbxznxy@outlook.com": {
-        "Last check": "2023-05-28",
+        "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": -4062,
-        "Points": 48005
+        "Points": 48005,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
