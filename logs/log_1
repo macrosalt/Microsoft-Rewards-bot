@@ -3,8 +3,8 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 320,
         "Points": 25715,
-        "Daily": false,
-        "Punch cards": false,
+        "Daily": true,
+        "Punch cards": true,
         "More promotions": false,
         "PC searches": false
     },
@@ -19,8 +19,8 @@
         "Points": 15066
     },
     "bocpsbvb@outlook.com": {
-        "Last check": "2023-06-06",
-        "Today's points": 5933,
-        "Points": 5933
+        "Last check": "2023-06-07",
+        "Today's points": 6268,
+        "Points": 6268
     }
 }
