@@ -4,7 +4,7 @@
         "Today's points": 320,
         "Points": 25715,
         "Daily": true,
-        "Punch cards": false,
+        "Punch cards": true,
         "More promotions": false,
         "PC searches": false
     },
@@ -19,8 +19,8 @@
         "Points": 15066
     },
     "bocpsbvb@outlook.com": {
-        "Last check": "2023-06-09",
-        "Today's points": 285,
-        "Points": 7088
+        "Last check": "2023-06-10",
+        "Today's points": 7408,
+        "Points": 7408
     }
 }
