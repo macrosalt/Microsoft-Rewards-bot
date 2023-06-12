@@ -8,15 +8,15 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 25334,
         "Points": 47563,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     },
     "cloaveoc@outlook.com": {
-        "Last check": "Unknown error: Microsoft account privacy notice !",
-        "Today's points": 390,
-        "Points": 22619
+        "Last check": "2023-06-11",
+        "Today's points": 23199,
+        "Points": 23199
     },
     "pzkxscig@outlook.com": {
         "Last check": "Your account has been suspended",
