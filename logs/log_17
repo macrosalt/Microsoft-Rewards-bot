@@ -13,10 +13,10 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 12320,
         "Points": 31145,
-        "Daily": false,
-        "Punch cards": false,
-        "More promotions": false,
-        "PC searches": false
+        "Daily": true,
+        "Punch cards": true,
+        "More promotions": true,
+        "PC searches": true
     },
     "hotlhswh@outlook.com": {
         "Last check": "Unknown error: Microsoft account privacy notice !",
