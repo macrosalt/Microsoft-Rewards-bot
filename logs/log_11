@@ -5,7 +5,7 @@
         "Points": 33363
     },
     "qnxwkvcs@outlook.com": {
-        "Last check": "2023-06-11",
+        "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 305,
         "Points": 31803
     },
@@ -13,14 +13,14 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 350,
         "Points": 35107,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
-        "PC searches": true
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "lejhdeey@outlook.com": {
-        "Last check": "2023-06-11",
-        "Today's points": -11494,
-        "Points": 20309
+        "Last check": "2023-06-12",
+        "Today's points": 355,
+        "Points": 20664
     }
 }
