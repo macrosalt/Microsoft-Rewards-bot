@@ -8,13 +8,13 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 25334,
         "Points": 47563,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
-        "PC searches": true
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "cloaveoc@outlook.com": {
-        "Last check": "2023-06-11",
+        "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 23199,
         "Points": 23199
     },
