@@ -8,10 +8,10 @@
         "Last check": "Unknown error: Microsoft account privacy notice !",
         "Today's points": 410,
         "Points": 15238,
-        "Daily": true,
-        "Punch cards": true,
-        "More promotions": true,
-        "PC searches": true
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "wigpbsoy@outlook.com": {
         "Last check": "Unknown error: Microsoft account privacy notice !",
