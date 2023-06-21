@@ -31,7 +31,7 @@
         "Today's points": 305,
         "Points": 8043,
         "Daily": true,
-        "Punch cards": false,
+        "Punch cards": true,
         "More promotions": false,
         "PC searches": false
     }
