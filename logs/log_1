@@ -30,8 +30,8 @@
         "Last check": "2023-07-02",
         "Today's points": 330,
         "Points": 8718,
-        "Daily": false,
-        "Punch cards": false,
+        "Daily": true,
+        "Punch cards": true,
         "More promotions": false,
         "PC searches": false
     }
