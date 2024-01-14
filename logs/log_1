@@ -27,12 +27,12 @@
         "PC searches": false
     },
     "bocpsbvb@outlook.com": {
-        "Last check": "2024-01-12",
+        "Last check": "2024-01-14",
         "Today's points": 330,
         "Points": 8718,
         "Daily": true,
         "Punch cards": true,
-        "More promotions": true,
+        "More promotions": false,
         "PC searches": false
     }
 }
