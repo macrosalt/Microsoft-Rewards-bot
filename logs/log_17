@@ -1,13 +1,21 @@
 {
     "jmbltatj@outlook.com": {
-        "Last check": "Unknown error: Microsoft account notice !",
+        "Last check": "2024-02-28",
         "Today's points": 24370,
-        "Points": 24370
+        "Points": 24370,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "pmceuitf@outlook.com": {
         "Last check": "Unknown error: Microsoft account notice !",
         "Today's points": -4860,
-        "Points": 18825
+        "Points": 18825,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     },
     "ztbsqsft@outlook.com": {
         "Last check": "Unknown error: Microsoft account notice !",
@@ -21,6 +29,10 @@
     "hotlhswh@outlook.com": {
         "Last check": "Unknown error: Microsoft account notice !",
         "Today's points": 510,
-        "Points": 25187
+        "Points": 25187,
+        "Daily": false,
+        "Punch cards": false,
+        "More promotions": false,
+        "PC searches": false
     }
 }
